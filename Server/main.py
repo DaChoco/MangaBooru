@@ -1,38 +1,18 @@
-#AWS
-import boto3 as aws
-import botocore.exceptions
-
 #MYSQL
 import mysql.connector
 
 #SECURITY
 import bcrypt
-import uuid
 import jwt
-
-#ENV FILES
-from dotenv import load_dotenv
-import os
 
 #FASTAPI
 import uvicorn
 from fastapi import FastAPI, HTTPException, Body, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag
 
 #Getting ENV files
-load_dotenv()
-
-passwd = os.getenv("passwd")
-username = os.getenv("username")
-db = os.getenv("db")
-hostplace = os.getenv("host")
-
-BUCKET_NAME = os.getenv("bucket")
-AMAZON_USERNAME = os.getenv("AMAZON_USERNAME")
-
-PERSONAL_IP = os.getenv("PERSONAL_IP")
-
+from vars import hostplace, db, passwd, username, PERSONAL_IP
 
 #MYSQL CONNECTING FUNCTION
 def createConnection():
@@ -49,44 +29,6 @@ def createConnection():
         print(f"This connection was refused: {e}")
 #END OF CONNECTIONS - Further MYSQL shall be handled within the APIs
 
-#AWS
-session = aws.Session(profile_name=AMAZON_USERNAME)
-
-s3 = session.client("s3")
-
-def presignedurls( object, expiration= 3600 ):
-    try:
-        print("haha")
-        url = s3.generate_presigned_url("get_object",
-                                  Params={"Bucket": BUCKET_NAME, "Key": object},
-                                  expiresin=expiration)
-        if url:
-            print("Transaction complete")
-        return url
-    except botocore.exceptions.NoCredentialsError as e:
-        print(f"You lack the credentials to follow through with this request: {e}")
-    except botocore.exceptions.ClientError as e:
-        print(f"An unforseen error has occured: {e}")
-
-def extractObjectKey(url:str):
-    return url.split(".com/")[-1]
-
-
-def uploadImage():
-    UUID_Name = str(uuid.uuid4())
-    OBJECT_NAME = f"TestingFiles/{UUID_Name}.png"
-    IMAGE_PATH = r""
-    try:
-        print("Uploading...")
-        s3.upload_file(IMAGE_PATH, BUCKET_NAME, OBJECT_NAME)
-        print("Upload complete!")
-    
-    except Exception as e:
-        print(str(e))
-       
-
-#END OF AWS
-
 #Security - Hashing password function
 def hashPassword(passwd:str):
     password_bytes = passwd.encode('utf-8')
@@ -97,20 +39,7 @@ def verifyPassword(normalpasswd: str, hashedpasswd: str):
     return bcrypt.checkpw(normalpasswd.encode("utf-8"), hashedpasswd.encode("utf-8"))
 #Will be used in a register and login function
 
-#Models used to extract jsons
 
-class LoginRequest(BaseModel):
-    email: str
-    passwd: str
-
-class RegisterRequest(BaseModel):
-    email: str
-    passwd: str
-    username: str
-
-class CreateSeries(BaseModel): #will use the upload series function
-    seriesname: str
-    seriesdesc: str
 
 #MY API ROUTES - SETUP
 
@@ -147,18 +76,19 @@ def login(data: LoginRequest):
         output = cursor.fetchone()
         if output:
             if verifyPassword(data.passwd, hashed_password) == True:
-                return {"Message": "Success, you are successfully logged in!", "username": output["userName"]}
+                return {"message": "Success, you are successfully logged in!", "username": output["userName"]}
             else:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password.")
 
         else:
-            return {"Message": "Incorrect username or password."}
+            return {"message": "Incorrect username or password."}
           
     except mysql.connector.Error:
-        return {"Message": "Apologies, an new error has occured. Please try again later"}
+        return {"message": "Apologies, an new error has occured. Please try again later"}
     except TypeError:
-        return {"Message": "Please type something for the email or the password"}
+        return {"message": "Please type something for the email or the password"}
     finally: 
+        cursor.close()
         conn.close()
     
 @app.post("/register")
@@ -181,70 +111,127 @@ def register(data: RegisterRequest):
                            (userName, seriesUploaded, email, password) VALUES
                            (%s, %s, %s, %s)""", SQL_Params)
             
-            return {"Message": "User successfully registered."}
+            return {"message": "User successfully registered."}
         except TypeError as e:
             conn.rollback()
-            return {"Message": f"Apologies, you have entered an invalid input: {e}"}
+            return {"message": f"Apologies, you have entered an invalid input: {e}"}
           
         except mysql.connector.DatabaseError as e:
             conn.rollback()
-            return {"Message": f"Apologies, a new database error has occured: {e}"}
+            return {"message": f"Apologies, a new database error has occured: {e}"}
         finally:
+            cursor.close()
             conn.close()
 
 #---------------------------------------------------------------------------END OF CRITICAL
+@app.get("/")
+def index():
+    return {"message": "Welcome to Mangabooru, hope you enjoy your stay"}
 
 @app.get("/getuser")
 def getUser():
-    return {"Message": "Success, you are successfully registered!"}
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT userID, userName FROM tblUsers WHERE userID = %s")
+        output = cursor.fetchone()
+
+        return {"message": "Success, you are successfully registered!", 
+                "userID": output["userID"],
+                "userName": output["userName"]} #is used on reload if signed in
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        return {"message": "Apologies, but you do not appear to be logged in to do this action"}
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.get("/returnBooruPics")
 def getUrls():
-    listURLS = []
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("SELECT url FROM tblseries")
     data = cursor.fetchall()
+    print(data)
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
     else:
-        for row in data:
-            listURLS.append(row["url"])
         cursor.close()
         conn.close()
-        return {"urls": listURLS} #Functional will be used for general browswing
+        return data #Functional will be used for general browswing
     
 @app.get("/MangaInfo") #general info
 def extractInfo():
     conn = createConnection()
     cursor = conn.cursor()
-
-    cursor.execute("""SELECT seriesName, seriesDesc, uploadDate, url FROM tblSeries 
+    try:
+        cursor.execute("""SELECT tblSeries.seriesID, seriesName, url FROM tblSeries 
                    INNER JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.SeriesID 
-                   INNER JOIN tbltags ON tbltagseries.tagID = tbltags.tagID""") #Intend to update later
+                   INNER JOIN tbltags ON tbltagseries.tagID = tbltags.tagID""") 
+        output = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        if not output:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Not found within the database")
+        else:
+            return output
+    #This is used so that when you click on an image, it can be matched to the appropriate info with the below route. 
+    # This will be used on load?
+    except mysql.connector.DatabaseError as e:
+        return {"message": f"An error has occured {e}"}
+    finally:
+            cursor.close()
+            conn.close()
+
 @app.get("/MangaInfo/{seriesname}") #is added to a tag div
 def seriesExtract(seriesname):
-    listTags = []
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute(
         """SELECT tagName FROM tbltags INNER JOIN 
         tblSeries ON tbltags.tagID = tbltagseries.tagID 
-        WHERE tblSeries.seriesName= %s""", (seriesname))
+        WHERE tblSeries.seriesName = %s""", (seriesname))
     
     output = cursor.fetchall()
+    return output
 
-    for row in output:
-        listTags.append(row["tagName"])
+@app.post("/uploadTag")
+def tagInsert(data: CreateTag):
+    SQL_Params = (data.tagname, data.tagdesc)
 
-    return {"tagNames": listTags}
+    conn = createConnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO tbltags (tagName, tagDesc) VALUES (%s, %s)", SQL_Params)
+        conn.commit()
+        return {"message": "Successfully added. Thank you!"}
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        return {"message": f"The server has experienced an error: {e}"}
+    except TypeError:
+        return {"message": "The server has experienced an error, please try again later"}
+    finally:
+        conn.close()
 
+@app.post("/uploadSeries")
+def seriesInsert(data: CreateSeries):
+    SQL_Params = (data.seriesname, data.seriesdesc)
 
+    conn = createConnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO tblSeries (seriesName, seriesDesc) VALUES (%s, %s)", SQL_Params)
+        conn.commit()
+        return {"message": "Series successfully added. Thank you!"}
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        return {"message": f"The server has experienced an error: {e}"}
+    except TypeError:
+        return {"message": "The server has experienced an error, please try again later"}
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
