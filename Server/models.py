@@ -17,3 +17,6 @@ class CreateSeries(BaseModel): #will use the upload series function
 class CreateTag(BaseModel):
     tagname: str
     tagdesc: str
+
+class SearchRequest(BaseModel):
+    userinput: str

@@ -7,9 +7,9 @@ import jwt
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, Body, Request, Response, status
+from fastapi import FastAPI, HTTPException, Body, Request, Response, status, Query
 from fastapi.middleware.cors import CORSMiddleware
-from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag
+from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP
@@ -23,7 +23,6 @@ def createConnection():
                                password=passwd,
                                user=username,
                                auth_plugin='mysql_native_password')
-        print("CONNECTED!")
         return conn
     except mysql.ConnectionRefusedError as e:
         print(f"This connection was refused: {e}")
@@ -162,14 +161,12 @@ def getUrls():
         conn.close()
         return data #Functional will be used for general browswing
     
-@app.get("/MangaInfo") #general info
+@app.get("/returnMangaInfo") #general info
 def extractInfo():
     conn = createConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute("""SELECT tblSeries.seriesID, seriesName, url FROM tblSeries 
-                   INNER JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.SeriesID 
-                   INNER JOIN tbltags ON tbltagseries.tagID = tbltags.tagID""") 
+        cursor.execute("""SELECT tblSeries.seriesID, seriesName, url FROM tblSeries""") 
         output = cursor.fetchall()
 
         if not output:
@@ -184,7 +181,7 @@ def extractInfo():
             cursor.close()
             conn.close()
 
-@app.get("/MangaInfo/{seriesname}") #is added to a tag div
+@app.get("/returnMangaInfo/{seriesname}") #is added to a tag div
 def seriesExtract(seriesname):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
@@ -194,8 +191,10 @@ def seriesExtract(seriesname):
         tblSeries ON tbltags.tagID = tbltagseries.tagID 
         WHERE tblSeries.seriesName = %s""", (seriesname))
     
-    output = cursor.fetchall()
-    return output
+    output_tags = cursor.fetchall()
+    return output_tags
+
+#uploads ------------------------------------------------------
 
 @app.post("/uploadTag")
 def tagInsert(data: CreateTag):
@@ -229,6 +228,24 @@ def seriesInsert(data: CreateSeries):
         conn.rollback()
         return {"message": f"The server has experienced an error: {e}"}
     except TypeError:
+        return {"message": "The server has experienced an error, please try again later"}
+    finally:
+        conn.close()
+
+#Search -----------------------------------
+
+@app.get("/search")
+def Search(query: str = Query(..., min_length=4)):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT seriesName FROM tblseries WHERE MATCH(seriesName) AGAINST (%s IN NATURAL LANGUAGE MODE) LIMIT 10", 
+                       (query,))
+        rows = cursor.fetchall()
+        return rows
+    except mysql.connector.DatabaseError:
+        conn.rollback()
         return {"message": "The server has experienced an error, please try again later"}
     finally:
         conn.close()
