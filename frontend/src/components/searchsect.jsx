@@ -6,10 +6,19 @@ function SearchBar(){
 
     const searchTagSeries = async (e) => {
         e.preventDefault()
-        const userInput = e.target.value
+        let userInput = e.target.value
+
+        const arrSplitTerms = userInput.split(" ")
         const url = `http://127.0.0.1/search?query=${encodeURIComponent(userInput)}`
         try{
-           const response = await fetch(url, {method: "GET"})
+           const response = await fetch(url, {method: "GET",
+            credentials: "include",
+            headers: {"content-type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    'Access-Control-Allow-Headers': "*",
+                    'Access-Control-Allow-Methods': "*"
+            }
+           })
            const data = await response.json()
            console.log(data)
         }

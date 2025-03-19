@@ -240,12 +240,15 @@ def Search(query: str = Query(..., min_length=4)):
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("SELECT seriesName FROM tblseries WHERE MATCH(seriesName) AGAINST (%s IN NATURAL LANGUAGE MODE) LIMIT 10", 
-                       (query,))
+        SQL_QUERY = """
+        SELECT seriesName, tagName FROM tblseries INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID
+        INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID
+        WHERE MATCH(seriesName) AGAINST (%s IN NATURAL LANGUAGE MODE) OR tagName Like %s LIMIT 10 """ 
+ 
+        cursor.execute(SQL_QUERY, ({query}, f"{query}%" ))
         rows = cursor.fetchall()
-        return rows
+        return {"results": rows}
     except mysql.connector.DatabaseError:
-        conn.rollback()
         return {"message": "The server has experienced an error, please try again later"}
     finally:
         conn.close()
@@ -253,5 +256,5 @@ def Search(query: str = Query(..., min_length=4)):
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
 
-#MY JS app, will be commnicating from port 3000 specifically
+#MY JS app, will be commnicating from port 5173 specifically
 
