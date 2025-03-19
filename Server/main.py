@@ -129,8 +129,10 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"]
                    )
 
-#MY API ROUTES - THE ROUTES THEMSELVES (Login and Register will be POST later. Just testing.):
+#MY API ROUTES - THE ROUTES THEMSELVES :
 
+
+#------------------------------------------------ CRITICAL! IMPLEMENT JWT!
 @app.post("/login")
 def login(data: LoginRequest):
     conn = createConnection()
@@ -159,8 +161,6 @@ def login(data: LoginRequest):
     finally: 
         conn.close()
     
-    
-
 @app.post("/register")
 def register(data: RegisterRequest):
         
@@ -192,6 +192,8 @@ def register(data: RegisterRequest):
         finally:
             conn.close()
 
+#---------------------------------------------------------------------------END OF CRITICAL
+
 @app.get("/getuser")
 def getUser():
     return {"Message": "Success, you are successfully registered!"}
@@ -204,16 +206,45 @@ def getUrls():
 
     cursor.execute("SELECT url FROM tblseries")
     data = cursor.fetchall()
-
-    for row in data:
-        listURLS.append(row["url"])
-    
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
     else:
+        for row in data:
+            listURLS.append(row["url"])
         cursor.close()
         conn.close()
-        return {"urls": listURLS} #Functional
+        return {"urls": listURLS} #Functional will be used for general browswing
+    
+@app.get("/MangaInfo") #general info
+def extractInfo():
+    conn = createConnection()
+    cursor = conn.cursor()
+
+    cursor.execute("""SELECT seriesName, seriesDesc, uploadDate, url FROM tblSeries 
+                   INNER JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.SeriesID 
+                   INNER JOIN tbltags ON tbltagseries.tagID = tbltags.tagID""") #Intend to update later
+
+    cursor.close()
+    conn.close()
+@app.get("/MangaInfo/{seriesname}") #is added to a tag div
+def seriesExtract(seriesname):
+    listTags = []
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(
+        """SELECT tagName FROM tbltags INNER JOIN 
+        tblSeries ON tbltags.tagID = tbltagseries.tagID 
+        WHERE tblSeries.seriesName= %s""", (seriesname))
+    
+    output = cursor.fetchall()
+
+    for row in output:
+        listTags.append(row["tagName"])
+
+    return {"tagNames": listTags}
+
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
