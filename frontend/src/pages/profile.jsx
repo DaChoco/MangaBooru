@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 function Profile(){
     return(
         <div></div>

@@ -1,7 +1,7 @@
-import './App.css'
+import './style/App.css'
 import {Routes, Route} from "react-router-dom"
 import {Favorites, Home, SavedSearch, Profile} from "./pages"
-import { useState, useEffect } from 'react'
+
 
 
 function App() {
