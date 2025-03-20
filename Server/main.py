@@ -241,7 +241,9 @@ def seriesInsert(data: CreateSeries):
 #Search -----------------------------------
 
 @app.get("/autocomplete")
-def autocomplete(query: str = Query(..., min_length=4)):
+def autocomplete(query: str = Query(..., min_length=2)):
+    if len(query) <= 1:
+        return {"message": "Keep typing"}
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
@@ -267,19 +269,19 @@ LIMIT 10;"""
             return rows
         else:
             return {"results": []}
-    except mysql.connector.DatabaseError:
-        return {"message": "The server has experienced an error, please try again later"}
+    except mysql.connector.DatabaseError as e:
+        return {"message": f"The server has experienced an error, please try again later. Error: {e}"}
     finally:
         conn.close()
 
-@app.get("/search")
+@app.post("/search")
 def fullsearch(data: SearchRequest): 
     #This search only occurs when enter is clicked or when the button is clicked.
     #Separating this from auto complete
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    searchTerms = data.arruserinput
+    searchTerms = data.inputtxt
     
     search_append = ""
     searchtuple = []
@@ -293,9 +295,9 @@ def fullsearch(data: SearchRequest):
         searchtuple.extend([f"{term}%", f"{term}%"]) 
 
     try:
-        SQL_Query_Base = """SELECT tblSeries.seriesID, seriesName, url FROM tblSeries INNER JOIN
+        SQL_Query_Base = """SELECT  DISTINCT (tblSeries.seriesID), seriesName, url FROM tblSeries INNER JOIN
         tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID INNER JOIN
-        tbltags ON tbltags.tagID = tbltagseries.tagID WHERE (seriesName LIKE %s OR tagName Like %s)"""
+        tbltags ON tbltags.tagID = tbltagseries.tagID WHERE"""
         FinalSQL_Query = f"{SQL_Query_Base} {search_append}"
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
@@ -305,8 +307,9 @@ def fullsearch(data: SearchRequest):
 
 
         
-    except mysql.connector.DatabaseError:
-          return {"message": "The server has experienced an error, please try again later"}
+    except mysql.connector.DatabaseError as e:
+          conn.rollback()
+          return {"message": f"The server has experienced an error, please try again later: {e}"}
     finally:
         conn.close()
 
