@@ -44,10 +44,10 @@ def verifyPassword(normalpasswd: str, hashedpasswd: str):
 
 app = FastAPI()
 
-ORIGINS = ["http://127.0.0.1:80",
-           "https://127.0.0.1:443", 
-           "http://127.0.0.1:3000", 
-           "http://127.0.0.1:3306",
+ORIGINS = ["http://localhost:80",
+           "https://localhost:443", 
+           "http://localhost:5173", 
+           "http://localhost:3306",
            PERSONAL_IP] 
 
 app.add_middleware(CORSMiddleware,
@@ -234,27 +234,78 @@ def seriesInsert(data: CreateSeries):
 
 #Search -----------------------------------
 
-@app.get("/search")
-def Search(query: str = Query(..., min_length=4)):
+@app.get("/autocomplete")
+def autocomplete(query: str = Query(..., min_length=4)):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
     try:
         SQL_QUERY = """
-        SELECT seriesName, tagName FROM tblseries INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID
-        INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID
-        WHERE MATCH(seriesName) AGAINST (%s IN NATURAL LANGUAGE MODE) OR tagName Like %s LIMIT 10 """ 
+        (SELECT seriesName AS result, 'series' AS source 
+        FROM tblSeries 
+        WHERE MATCH(seriesName) AGAINST ("%s*" IN BOOLEAN MODE))
+
+UNION ALL
+
+        (SELECT tagName AS result, 'tags' AS source  
+        FROM tblTags 
+        WHERE MATCH(tagName) AGAINST ("%s*" IN BOOLEAN MODE))
+
+LIMIT 10;""" 
  
-        cursor.execute(SQL_QUERY, ({query}, f"{query}%" ))
+        cursor.execute(SQL_QUERY, (query, query ))
         rows = cursor.fetchall()
-        return {"results": rows}
+  
+
+        if rows:
+            return rows
+        else:
+            return {"results": []}
     except mysql.connector.DatabaseError:
         return {"message": "The server has experienced an error, please try again later"}
     finally:
         conn.close()
 
+@app.get("/search")
+def fullsearch(data: SearchRequest): 
+    #This search only occurs when enter is clicked or when the button is clicked.
+    #Separating this from auto complete
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    searchTerms = data.arruserinput
+    
+    search_append = ""
+    searchtuple = []
+
+    for term in searchTerms:
+
+        if search_append == "":
+            search_append += "(seriesName LIKE %s OR tagName Like %s)"  
+        else:
+            search_append += "AND (seriesName LIKE %s OR tagName Like %s)" 
+        searchtuple.extend([f"{term}%", f"{term}%"]) 
+
+    try:
+        SQL_Query_Base = """SELECT tblSeries.seriesID, seriesName, url FROM tblSeries INNER JOIN
+        tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID INNER JOIN
+        tbltags ON tbltags.tagID = tbltagseries.tagID WHERE (seriesName LIKE %s OR tagName Like %s)"""
+        FinalSQL_Query = f"{SQL_Query_Base} {search_append}"
+
+        cursor.execute(FinalSQL_Query, tuple(searchtuple))
+
+        rows = cursor.fetchall()
+        return {"results": rows}
+
+
+        
+    except mysql.connector.DatabaseError:
+          return {"message": "The server has experienced an error, please try again later"}
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app, host="localhost", port=8000)
 
 #MY JS app, will be commnicating from port 5173 specifically
 
