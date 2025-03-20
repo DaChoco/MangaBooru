@@ -7,8 +7,8 @@ The site will have a tag based searching system, user login, registration, the a
 * **Python** with **FastAPI** in order to create restful apis, cookies and authentication
 * **Javascript** with React to create a dynamic page layout that can easily adapt to the data recieved from my api everytime the page needs to reload
 * Amazon Web services
-* **S3** will be used to host the images that are used on the site
-* **EC2** will be used to host my database. 
+  * **S3** will be used to host the images that are used on the site
+  * **EC2** will be used to host my database. 
 * **HTML** and **Plain CSS** will be used for all the design/styling
 * **MySQL** will be used for the database
 
