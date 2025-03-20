@@ -11,8 +11,11 @@ from fastapi import FastAPI, HTTPException, Body, Request, Response, status, Que
 from fastapi.middleware.cors import CORSMiddleware
 from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest
 
+#AWS
+from aws import mass_presignedurls
+
 #Getting ENV files
-from vars import hostplace, db, passwd, username, PERSONAL_IP
+from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX
 
 #MYSQL CONNECTING FUNCTION
 def createConnection():
@@ -151,15 +154,18 @@ def getUrls():
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT url FROM tblseries")
+    cursor.execute("SELECT url FROM tblseries") #returns the urls/keys
     data = cursor.fetchall()
-    print(data)
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
     else:
+        listkeys = []
+        for rows in data:
+            listkeys.append(mass_presignedurls(rows["url"], 3600))
+
         cursor.close()
         conn.close()
-        return data #Functional will be used for general browswing
+        return {"urls": listkeys} #Functional will be used for general browsing
     
 @app.get("/returnMangaInfo") #general info
 def extractInfo():
@@ -172,7 +178,7 @@ def extractInfo():
         if not output:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Not found within the database")
         else:
-            return output
+            return {"results": output}
     #This is used so that when you click on an image, it can be matched to the appropriate info with the below route. 
     # This will be used on load?
     except mysql.connector.DatabaseError as e:
@@ -305,7 +311,7 @@ def fullsearch(data: SearchRequest):
         conn.close()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="localhost", port=8000, reload=True)
 
 #MY JS app, will be commnicating from port 5173 specifically
 

@@ -1,22 +1,24 @@
 #AWS
 import boto3 as aws
 import botocore.exceptions
+from botocore.client import Config
 import uuid
 
 #Getting ENV files
-from vars import AMAZON_USERNAME, BUCKET_NAME
+from vars import AMAZON_USERNAME, BUCKET_NAME, BUCKET_PREFIX
 session = aws.Session(profile_name=AMAZON_USERNAME)
 
-s3 = session.client("s3")
+s3 = session.client("s3",
+                    config=Config(signature_version='s3v4'),
+                    region_name="af-south-1",
+                    endpoint_url="https://s3.af-south-1.amazonaws.com")
 
-def presignedurls( object, expiration= 3600 ):
+def mass_presignedurls( key, expiration: int ):
     try:
-        print("haha")
         url = s3.generate_presigned_url("get_object",
-                                  Params={"Bucket": BUCKET_NAME, "Key": object},
-                                  expiresin=expiration)
-        if url:
-            print("Transaction complete")
+                                  Params={"Bucket": BUCKET_NAME, "Key": key},
+                                  ExpiresIn=expiration)
+    
         return url
     except botocore.exceptions.NoCredentialsError as e:
         print(f"You lack the credentials to follow through with this request: {e}")
