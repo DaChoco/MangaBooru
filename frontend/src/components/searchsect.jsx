@@ -87,8 +87,7 @@ function SearchBar(){
                 )) 
                 }
             </ul>
-            )}
-            
+            )}    
         </form>
     )
     

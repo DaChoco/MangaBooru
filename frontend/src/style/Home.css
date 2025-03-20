@@ -1,0 +1,49 @@
+
+
+.home-container{
+    width: min(900px, 90%);
+    margin: auto auto;
+}
+
+.searchbar{
+    width: 80%;
+    font-size: 1.5rem;
+    margin-right: 0.25rem;
+    border-radius: 0.2rem;
+}
+
+.search-btn{
+    
+    width: 20%;
+    height: max-content;
+    font-size: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.small-home-txt{
+    width: 30%;
+    margin: 0.5rem auto;
+    text-align: center;
+}
+
+.search-container{
+    padding: 0.2rem;
+    display: flex;
+    margin: 0 auto;
+    width: 80%;
+}
+
+ul{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 50%;
+    margin: 0 auto;
+}
+
+h1{
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: space-around;
+    font-size: 4em;
+}
