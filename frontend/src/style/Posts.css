@@ -1,0 +1,43 @@
+ul.topnav-content{
+    display: flex;
+    flex-direction: row;
+    width: 50%;
+    font-size: 1.5rem;
+    margin: 0;
+    padding: 0;
+    align-self: flex-end;
+}
+
+.menulinks{
+    padding: 1.5rem;
+    line-height: 2rem;
+}
+
+.menulinks a{
+    margin: 5px 0;
+}
+
+img{
+    width: 4rem;
+}
+
+.lightordark-container{ /*Container of light or dark mode*/
+    width: 30%;
+    display: flex;
+    flex-direction: row-reverse;
+
+}
+
+.total-top{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.svglightdark{
+    padding: 1.5rem 1.75rem;
+    margin: auto 0;
+    height: 3rem;
+    width: 3rem;
+    visibility: visible;
+}

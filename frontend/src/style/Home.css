@@ -33,7 +33,7 @@
     width: 80%;
 }
 
-ul{
+ul.optionslist{
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;

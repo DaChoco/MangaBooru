@@ -1,7 +1,17 @@
 
+import { SearchBar, Topnav } from "../components"
 function Posts(){
     return (
-        <div></div>
+        <>
+        <header>
+            <Topnav>
+                <SearchBar></SearchBar>
+            </Topnav>
+            
+        </header>
+        
+        </>
+        
     )
 }
 
