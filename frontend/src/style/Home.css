@@ -31,6 +31,7 @@
     display: flex;
     margin: 0 auto;
     width: 80%;
+    position: relative;
 }
 
 ul.optionslist{
@@ -41,9 +42,28 @@ ul.optionslist{
     margin: 0 auto;
 }
 
+ul.dropdown-container{
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 2.5rem;
+    font-size: 1.5rem;
+}
+
+.dropdown-container li{
+    padding: 0.5rem;
+}
+
 h1{
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     display: flex;
     justify-content: space-around;
     font-size: 4em;
+}
+
+.tag-auto{
+    color:rgb(2, 146, 146);
+}
+.series-auto{
+    color:rgb(133, 13, 13);
 }

@@ -1,7 +1,19 @@
 import { useState, useEffect } from 'react'
+import { SearchBar, Topnav } from "../components"
+import "../style/Posts.css"
 function Profile(){
     return(
-        <div></div>
+
+        <div className="main-content">
+        
+            <Topnav></Topnav> 
+            <SearchBar></SearchBar>
+        
+
+       
+        </div>
+        
+        
     )
 }
 

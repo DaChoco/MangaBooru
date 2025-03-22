@@ -154,14 +154,15 @@ def getUrls():
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT url FROM tblseries") #returns the urls/keys
+    cursor.execute("SELECT url FROM tblseries WHERE url is not null") #returns the urls/keys
     data = cursor.fetchall()
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
     else:
         listkeys = []
         for rows in data:
-            listkeys.append(mass_presignedurls(rows["url"], 3600))
+            s3_key = rows["url"]
+            listkeys.append( mass_presignedurls(s3_key, 3600) )
 
         cursor.close()
         conn.close()
@@ -263,12 +264,13 @@ LIMIT 10;"""
  
         cursor.execute(SQL_QUERY, (query, query ))
         rows = cursor.fetchall()
+    
   
 
         if rows:
             return rows
         else:
-            return {"results": []}
+            return {"Message": "Apologies, but there was nothing returned"}
     except mysql.connector.DatabaseError as e:
         return {"message": f"The server has experienced an error, please try again later. Error: {e}"}
     finally:
@@ -295,7 +297,7 @@ def fullsearch(data: SearchRequest):
         searchtuple.extend([f"{term}%", f"{term}%"]) 
 
     try:
-        SQL_Query_Base = """SELECT  DISTINCT (tblSeries.seriesID), seriesName, url FROM tblSeries INNER JOIN
+        SQL_Query_Base = """SELECT  DISTINCT (tblSeries.seriesID), seriesName, url, tagName FROM tblSeries INNER JOIN
         tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID INNER JOIN
         tbltags ON tbltags.tagID = tbltagseries.tagID WHERE"""
         FinalSQL_Query = f"{SQL_Query_Base} {search_append}"

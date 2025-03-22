@@ -13,8 +13,9 @@ s3 = session.client("s3",
                     region_name="af-south-1",
                     endpoint_url="https://s3.af-south-1.amazonaws.com")
 
-def mass_presignedurls( key, expiration: int ):
+def mass_presignedurls(key: str, expiration: int ):
     try:
+        print(f"Producing presigned url for: {key}")
         url = s3.generate_presigned_url("get_object",
                                   Params={"Bucket": BUCKET_NAME, "Key": key},
                                   ExpiresIn=expiration)

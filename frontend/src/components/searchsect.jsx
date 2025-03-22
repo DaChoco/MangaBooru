@@ -4,12 +4,17 @@ function SearchBar(){
     const [query, setQuery] = useState("")
     const [auto, setAuto] = useState([])
     const [splitTerms, setSplitTerms] = useState([])
-  
-    let arrSplitTerms = []
-
 
     const pasteInput = (i) =>{
-        setQuery(i.target.textContent)
+        let suggesttxt = i.target.textContent
+
+        let subbedsuggest = 
+        suggesttxt.substring(
+            splitTerms[splitTerms.length -1].length, 
+            splitTerms[splitTerms.length -1].length + suggesttxt.length) //ensures we will always get the last word
+        
+        console.log(subbedsuggest)
+        setQuery(query + subbedsuggest)
         setAuto([])
         
     }
@@ -33,6 +38,7 @@ function SearchBar(){
 
             const data = await response.json()
             console.log(data)
+            
             return data
            
         }
@@ -58,6 +64,7 @@ function SearchBar(){
         try{
            const response = await fetch(url, {method: "GET"})
            const data = await response.json()
+           console.log(data)
            setAuto(data)
         }
         catch (error){
@@ -72,6 +79,7 @@ function SearchBar(){
     }
 
     return (
+
         <form className="search-container" onSubmit={fullSearch}>
             <input type="text" onKeyUp={autocomplete}
             id='SearchInput'
@@ -82,8 +90,12 @@ function SearchBar(){
 
             {auto.length > 0 && (
                 <ul className='dropdown-container'>
-                {auto.map((e, index) => (
-                    <li key={index} onClick={pasteInput}>{e.result}</li>
+                {auto.map((item, index) => 
+                item.source === "series" ?
+                (
+                    <li className="series-auto" key={index} onClick={pasteInput}>{item.result}</li>
+                ): (
+                    <li className="tag-auto" key={index} onClick={pasteInput}>{item.result}</li>
                 )) 
                 }
             </ul>

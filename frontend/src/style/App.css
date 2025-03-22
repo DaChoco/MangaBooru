@@ -1,0 +1,33 @@
+.LOADING-CONTAINER{ /*All caps are for errors and loading classes*/
+    font-size: 4rem;
+    margin: 0 auto;
+}
+
+.main-content{
+    display: grid;
+    grid-template-areas: 
+        'topnav topnav' 
+        "searchbar searchbar"
+        "sidenav maincontent"
+        "sidenav maincontent"
+        "footer footer";
+    grid-template-rows: max-content max-content auto auto;
+    grid-template-columns: 20% auto;
+ 
+}
+
+.topnav-container{
+    grid-area: topnav;
+}
+
+.search-container{
+    grid-area: searchbar;
+}
+
+.sidenav-container{
+    grid-area: sidenav;
+}
+
+.postcontent-container{
+    grid-area: maincontent;
+}

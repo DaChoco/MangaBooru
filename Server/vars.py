@@ -14,3 +14,6 @@ AMAZON_USERNAME = os.getenv("AMAZON_USERNAME")
 BUCKET_PREFIX = os.getenv("BUCKET_PREFIX")
 
 PERSONAL_IP = os.getenv("PERSONAL_IP")
+
+API_KEY_TAGS = os.getenv("API_KEY_TAGS")
+BASE_URL = os.getenv("BASE_URL")

@@ -2,8 +2,21 @@
 function PostBox(){
     return(
         <>
-        <div className="content-container">
-            <div>Hello</div>
+        <div className="postcontent-container">
+            <img src="" alt="Post" className="postitem" />
+            <img src="" alt="Post" className="postitem" />
+            <img src="" alt="Post" className="postitem" />
+     
+
+            <img src="" alt="Post" className="postitem" />
+            <img src="" alt="Post" className="postitem" />
+            <img src="" alt="Post" className="postitem" />
+
+
+            <img src="" alt="Post" className="postitem" />
+            <img src="" alt="Post" className="postitem" />
+            <img src="" alt="Post" className="postitem" />
+
         </div>
         </>
     )

@@ -10,7 +10,7 @@ ul.topnav-content{
 
 .menulinks{
     padding: 1.5rem;
-    line-height: 2rem;
+  
 }
 
 .menulinks a{
@@ -41,3 +41,11 @@ img{
     width: 3rem;
     visibility: visible;
 }
+
+.postcontent-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr ;
+    grid-template-rows: 1fr 1fr 1fr;
+    height: 100%;
+}
+

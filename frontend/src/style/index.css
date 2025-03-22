@@ -5,15 +5,20 @@
   line-height: 1.5;
   font-weight: 400;
 
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  transition: 0.5s;
 }
 
 body{
   margin: 0;
+  height: 100vh;
 }
+
 
 a {
   text-decoration: none;
