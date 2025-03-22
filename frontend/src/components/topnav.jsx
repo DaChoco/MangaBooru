@@ -5,14 +5,26 @@ import Msvg from "../assets/m-alphabet-icon.png"
 
 function Topnav({children}){
     const [toggledark, setToggledark] = useState(false)
+    const htmlElement = document.documentElement;
 
 
     const darkMode = () =>{
-        if (toggledark === false){
+        if (toggledark === false){ //to light
+            let currentTheme = htmlElement.getAttribute("data-theme")
+            let newTheme = currentTheme === "dark" ? "light": "dark"
+            
+            htmlElement.setAttribute("data-theme", newTheme)
+            
             setToggledark(true)
             
+            
         }
-        else{
+        else{ //to dark
+            let currentTheme = htmlElement.getAttribute("data-theme")
+            let newTheme = currentTheme === "light" ? "dark": "light"
+            
+            htmlElement.setAttribute("data-theme", newTheme)
+
             setToggledark(false)
             
         }
@@ -24,7 +36,7 @@ function Topnav({children}){
         <div className="total-top">
 
             <ul className="topnav-content">
-                <li className="menulinks"><Link to="/"><img src={Msvg} alt="" /></Link></li> 
+                <li className="menulinks"><Link to="/"><img id="m-icon" src={Msvg} alt="" /></Link></li> 
                 <li className="menulinks"><Link to="/profile">My account</Link></li>
                 <li className="menulinks"><Link to="/favorites">My Favorites </Link></li>
                 <li className="menulinks"><Link to="/Posts">Posts</Link></li>

@@ -16,10 +16,6 @@ function Posts(){
             <SearchBar></SearchBar>
             <PostBox></PostBox>
         
-
-        <main className="post-board-container">
-
-        </main>
     </div>
         
  

@@ -13,6 +13,7 @@
         "footer footer";
     grid-template-rows: max-content max-content auto auto;
     grid-template-columns: 20% auto;
+    height: max-content;
  
 }
 

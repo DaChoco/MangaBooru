@@ -15,7 +15,6 @@ s3 = session.client("s3",
 
 def mass_presignedurls(key: str, expiration: int ):
     try:
-        print(f"Producing presigned url for: {key}")
         url = s3.generate_presigned_url("get_object",
                                   Params={"Bucket": BUCKET_NAME, "Key": key},
                                   ExpiresIn=expiration)

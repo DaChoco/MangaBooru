@@ -11,17 +11,53 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --tag-text-color: rgb(133, 13, 13);
+  --series-text-color: rgb(2, 146, 146);
+
+
   transition: 0.5s;
+
+
 }
+
+html[data-theme=light]{
+  --base-color-topnav: #015969;
+  --base-color-dark: #f2f2f7; /*The background of the whole page*/
+  --text-color-topnav: #ffffff;
+  --base-text-dark: #1f1f20;
+  --link-text-dark: #d9f1f6;
+
+  --dropdown-color: #ebe6e6;
+
+  --nav-hover-color: #275963;
+}
+
+
+html[data-theme=dark]{
+  --base-color-topnav: #202124;
+  --base-color-dark: #32323D;
+  --text-color-topnav: #ffffff;
+  --base-text-dark: #FFFFFF;
+  --link-text-dark: #edf9f9;
+
+  --dropdown-color: #ebe6e6;
+
+  --nav-hover-color: #505766;
+
+}
+
 
 body{
   margin: 0;
   height: 100vh;
+  background-color: var(--base-color-dark);
+  color: var(--base-text-dark)
 }
 
 
 a {
   text-decoration: none;
+  color: var(--link-text-dark)
 }
 
 ul{

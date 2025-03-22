@@ -48,6 +48,9 @@ ul.dropdown-container{
     position: absolute;
     top: 2.5rem;
     font-size: 1.5rem;
+    background-color: var(--dropdown-color);
+    width: 80%;
+    border-radius: 0.5rem;
 }
 
 .dropdown-container li{
@@ -62,8 +65,8 @@ h1{
 }
 
 .tag-auto{
-    color:rgb(2, 146, 146);
+    color: var(--tag-text-color);
 }
 .series-auto{
-    color:rgb(133, 13, 13);
+    color: var(--series-text-color);
 }
