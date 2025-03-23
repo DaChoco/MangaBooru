@@ -1,13 +1,23 @@
 import React, {useState, useContext, createContext} from 'react'
-import { PostItemsContext } from './postItemContext'
+import { PostItemsContext } from '../contexts/postItemContext'
+import { PageNumContext } from '../contexts/pageNumContext'
 import { useNavigate } from 'react-router-dom'
 
-function SearchBar(){
+function SearchBar({children}){
     const [query, setQuery] = useState("")
     const [auto, setAuto] = useState([])
     const {setPosts} = useContext(PostItemsContext)
     const [splitTerms, setSplitTerms] = useState([])
+
+    const {setPage} = useContext(PageNumContext)
+    const {page} = useContext(PageNumContext)
+
     const navigate = useNavigate()
+
+    function incFunction(){
+        console.log(page)
+        setPage(page + 1)
+    }
     
 
     const pasteInput = (i) =>{
@@ -63,7 +73,8 @@ function SearchBar(){
         setSplitTerms(userInput.trim().split(/\s+/))
         console.log(splitTerms)
 
-        if (splitTerms[splitTerms.length-1] < 1){ 
+        if (splitTerms[splitTerms.length-1] < 1){
+            setAuto([]) 
             return 
         }
         const url = `http://localhost:8000/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
@@ -77,7 +88,7 @@ function SearchBar(){
             console.log("An error has occured: ", error)
         }
 
-        }, 150)
+        }, 400)
 
         
         }
@@ -93,7 +104,15 @@ function SearchBar(){
             placeholder="Eg. weekly_shonen_jump kohei_horikoshi"
             value={query.toLowerCase()} onChange={(e) => setQuery(e.target.value)}/>
             <button className="search-btn" type="submit">Search</button>
-            
+
+            <svg onClick={() => incFunction()} className='next-page-arrow' xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960">
+                <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+            </svg>
+
+
+
+            {children}
+         
 
             {auto.length > 0 && (
                 <ul className='dropdown-container'>

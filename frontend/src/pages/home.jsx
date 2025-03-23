@@ -10,7 +10,6 @@ function Home(){
     useEffect(()=>{
         setIsLoading(false)
         console.log("Page loaded")
-        
 
     }, [])
 

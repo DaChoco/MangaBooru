@@ -14,12 +14,16 @@
     border: 5px solid #f0f0f2;
 }
 
+.menu_small-screen{
+    display: none;
+}
+
 .search-btn{
     
     width: 20%;
     height: max-content;
     font-size: 1.5rem;
-    padding: 0.5rem;
+    padding: 0.7rem;
     border-radius: 0.5rem;
 }
 

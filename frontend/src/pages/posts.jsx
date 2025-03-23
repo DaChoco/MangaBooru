@@ -1,23 +1,24 @@
 import { SearchBar, Topnav, Sidebar, PostBox } from "../components"
-
+import { createContext, useState, useContext} from "react"
+import { PageNumContext } from "../contexts/pageNumContext"
 import "../style/Posts.css"
 function Posts(){
-    const data = {
-        results: [
-            { tagName: "React", dataPosted: "2024-03-21" },
-            { tagName: "JavaScript", dataPosted: "2024-03-20" },
-            { tagName: "CSS", dataPosted: "2024-03-19" }
-        ]
-    };
+    const {setPage} = useContext(PageNumContext)
+    const {page} = useContext(PageNumContext)
 
+   
+
+ 
     return (
+        
     <div className="main-content">
-     
+ 
             <Topnav></Topnav> 
-            <SearchBar></SearchBar>
+            <SearchBar>
+            
+            </SearchBar>   
             <PostBox></PostBox>
     
-        
     </div>
         
  

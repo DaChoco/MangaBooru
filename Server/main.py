@@ -1,6 +1,8 @@
 #MYSQL
 import mysql.connector
 
+from itertools import batched
+
 #SECURITY
 import bcrypt
 import jwt
@@ -149,10 +151,13 @@ def getUser():
         cursor.close()
         conn.close()
 
-@app.get("/returnBooruPics")
-def getUrls():
+@app.get("/returnBooruPics/{Page}")
+def getUrls(Page: int):
+    Page = Page - 1
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
+
+    
 
     cursor.execute("SELECT url FROM tblseries WHERE url is not null") #returns the urls/keys
     data = cursor.fetchall()
@@ -163,10 +168,16 @@ def getUrls():
         for rows in data:
             s3_key = rows["url"]
             listkeys.append( mass_presignedurls(s3_key, 3600) )
+        
+        keysdata: list[int] = listkeys
+        batch: batched = batched(keysdata, n=9)
+        paginated_list = list(batch)
+
+        print(paginated_list[Page])
 
         cursor.close()
         conn.close()
-        return {"urls": listkeys} #Functional will be used for general browsing
+        return {"urls": paginated_list[Page]} #Functional will be used for general browsing
     
 @app.get("/returnMangaInfo") #general info
 def extractInfo():
