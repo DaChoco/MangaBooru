@@ -12,6 +12,13 @@ The site will have a tag based searching system, user login, registration, the a
 * **HTML** and **Plain CSS** will be used for all the design/styling
 * **MySQL** will be used for the database
 
+# Things to do
+* Make return images route only return unique tag names
+* Style the footer
+* Making an account page (and account menu)
+* All tags page
+* -Further down the line: Parameterized routing per page/image
+
 # Features
 * Coming soon
 
