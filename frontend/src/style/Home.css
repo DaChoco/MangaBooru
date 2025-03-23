@@ -7,9 +7,11 @@
 
 .searchbar{
     width: 80%;
+    padding: 0.5rem;
     font-size: 1.5rem;
     margin-right: 0.25rem;
     border-radius: 0.2rem;
+    border: 5px solid #f0f0f2;
 }
 
 .search-btn{
@@ -17,7 +19,13 @@
     width: 20%;
     height: max-content;
     font-size: 1.5rem;
+    padding: 0.5rem;
     border-radius: 0.5rem;
+}
+
+input:focus{
+    outline: none;
+
 }
 
 .small-home-txt{
@@ -40,7 +48,14 @@ ul.optionslist{
     justify-content: space-evenly;
     width: 50%;
     margin: 0 auto;
+    
 }
+
+ul.optionslist a{
+    color: var(--base-text-dark);
+}
+
+
 
 ul.dropdown-container{
     margin: 0;

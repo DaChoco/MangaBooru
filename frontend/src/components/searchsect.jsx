@@ -1,9 +1,14 @@
-import React, {useState} from 'react'
+import React, {useState, useContext, createContext} from 'react'
+import { PostItemsContext } from './postItemContext'
+import { useNavigate } from 'react-router-dom'
 
 function SearchBar(){
     const [query, setQuery] = useState("")
     const [auto, setAuto] = useState([])
+    const {setPosts} = useContext(PostItemsContext)
     const [splitTerms, setSplitTerms] = useState([])
+    const navigate = useNavigate()
+    
 
     const pasteInput = (i) =>{
         let suggesttxt = i.target.textContent
@@ -36,10 +41,11 @@ function SearchBar(){
                 body: JSON.stringify({inputtxt: splitTerms})
             })
 
-            const data = await response.json()
-            console.log(data)
+            const data = await response.json()  
+            console.log(data.url)
+            setPosts(data.url)
+            navigate("/posts")
             
-            return data
            
         }
         catch (error){
@@ -71,7 +77,7 @@ function SearchBar(){
             console.log("An error has occured: ", error)
         }
 
-        }, 300)
+        }, 150)
 
         
         }
@@ -79,7 +85,7 @@ function SearchBar(){
     }
 
     return (
-
+  
         <form className="search-container" onSubmit={fullSearch}>
             <input type="text" onKeyUp={autocomplete}
             id='SearchInput'
@@ -87,6 +93,7 @@ function SearchBar(){
             placeholder="Eg. weekly_shonen_jump kohei_horikoshi"
             value={query.toLowerCase()} onChange={(e) => setQuery(e.target.value)}/>
             <button className="search-btn" type="submit">Search</button>
+            
 
             {auto.length > 0 && (
                 <ul className='dropdown-container'>
@@ -99,8 +106,13 @@ function SearchBar(){
                 )) 
                 }
             </ul>
+
+            
             )}    
+            
         </form>
+
+  
     )
     
 }

@@ -5,10 +5,13 @@ import "../style/Home.css"
 function Home(){
     const [isLoading, setIsLoading] = useState(true)
     const [progressbar, setProgressBar] = useState(0) //will use later
+    const htmlpage = document.documentElement;
 
     useEffect(()=>{
         setIsLoading(false)
         console.log("Page loaded")
+        
+
     }, [])
 
     return(

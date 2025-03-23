@@ -1,4 +1,5 @@
 import { SearchBar, Topnav, Sidebar, PostBox } from "../components"
+
 import "../style/Posts.css"
 function Posts(){
     const data = {
@@ -11,10 +12,11 @@ function Posts(){
 
     return (
     <div className="main-content">
-        
+     
             <Topnav></Topnav> 
             <SearchBar></SearchBar>
             <PostBox></PostBox>
+    
         
     </div>
         

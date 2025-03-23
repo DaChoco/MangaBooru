@@ -284,6 +284,8 @@ def fullsearch(data: SearchRequest):
     cursor = conn.cursor(dictionary=True)
 
     searchTerms = data.inputtxt
+
+    print(searchTerms)
     
     search_append = ""
     searchtuple = []
@@ -294,18 +296,30 @@ def fullsearch(data: SearchRequest):
             search_append += "(seriesName LIKE %s OR tagName Like %s)"  
         else:
             search_append += "AND (seriesName LIKE %s OR tagName Like %s)" 
-        searchtuple.extend([f"{term}%", f"{term}%"]) 
+        searchtuple.extend([f"%{term}%", f"%{term}%"]) 
 
     try:
-        SQL_Query_Base = """SELECT  DISTINCT (tblSeries.seriesID), seriesName, url, tagName FROM tblSeries INNER JOIN
-        tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID INNER JOIN
-        tbltags ON tbltags.tagID = tbltagseries.tagID WHERE"""
-        FinalSQL_Query = f"{SQL_Query_Base} {search_append}"
+        listkeys = []
+        listtags = []
+        GROUP_BY_APPEND = "GROUP BY tblSeries.seriesID, seriesName, url"
+        SQL_Query_Base = """
+        SELECT tblSeries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ', ') AS tags FROM tblSeries 
+        INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID 
+        INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
+        WHERE """
+        FinalSQL_Query = f"{SQL_Query_Base} {search_append} {GROUP_BY_APPEND}"
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
 
-        rows = cursor.fetchall()
-        return {"results": rows}
+        data = cursor.fetchall()
+        if not data:
+            return {"message": "Nothing here except us chickens"}
+        else:
+            for rows in data:
+                s3_key = rows.get("url")
+                listkeys.append( mass_presignedurls(s3_key, 3600) )
+                listtags.append(rows.get("tags"))
+            return {"result": data, "url": listkeys, "tags": listtags}
 
 
         
