@@ -28,7 +28,7 @@ function Home(){
                         <li><Link to="/profile">My Account</Link></li>
                         <li><Link to="/tagspage">All Tags</Link></li>
                     </ul>
-                <SearchBar></SearchBar>
+                <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
 
                 <p className='small-home-txt'>Contact here - About me</p>
             </div>)}

@@ -7,7 +7,7 @@ function Profile(){
         <div className="main-content">
         
             <Topnav></Topnav> 
-            <SearchBar></SearchBar>
+            <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
         
 
        

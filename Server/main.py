@@ -159,17 +159,17 @@ def getUrls(Page: int):
 
 #Extracts the image whether it has tags or not, but also gets tags - Cant use outer joins since this is not Post gres. Came up with an alternative
     SQL_PARAM_NO_TAG_INCLUDED = """ 
-SELECT url, group_concat(DISTINCT tagName order by tagName) as tagName
+SELECT url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
 LEFT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE url IS NOT NULL GROUP BY url
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail
 UNION
-SELECT url, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
+SELECT url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
 RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE url IS NOT NULL GROUP BY url
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail ORDER BY url DESC
 """
 
     cursor.execute(SQL_PARAM_NO_TAG_INCLUDED) #returns the urls/keys
@@ -184,8 +184,8 @@ WHERE url IS NOT NULL GROUP BY url
         listtags = []
    
         for rows in data:
-            s3_key = rows["url"]
-            listkeys.append(mass_presignedurls(s3_key, 3600) )
+            s3_key = rows["thumbnail"]
+            listkeys.append(s3_key)
             tag = rows["tagName"]
             if tag != None:
                 cleaned_tag = tag.split(",")
@@ -274,6 +274,23 @@ def seriesInsert(data: CreateSeries):
     finally:
         conn.close()
 
+@app.post("/tagnseriesrelations")
+def updateTagSeries():
+    conn = createConnection()
+    cursor = conn.cursor()
+
+    SQL_STRING = """
+INSERT INTO tbltagseries (tagID, seriesID)
+SELECT t.tagID, s.seriesID
+FROM tbltags t, tblseries s
+WHERE t.tagName = %s
+AND s.seriesName IN %s
+AND NOT EXISTS (
+    SELECT 1 FROM tbltagseries ts WHERE ts.tagID = t.tagID AND ts.seriesID = s.seriesID
+)
+"""
+    return {"result": "results"}
+
 #Search -----------------------------------
 
 @app.get("/autocomplete")
@@ -311,16 +328,17 @@ LIMIT 10;"""
     finally:
         conn.close()
 
-@app.post("/search")
-def fullsearch(data: SearchRequest): 
+@app.post("/search/{page}")
+def fullsearch(page: int, datareq: SearchRequest): 
     #This search only occurs when enter is clicked or when the button is clicked.
     #Separating this from auto complete
+    page = page - 1
+    if datareq == None:
+        return {"Message": "The user inputted nothing", "Success": False}
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    searchTerms = data.inputtxt
-
-    print(searchTerms)
+    searchTerms = datareq.inputtxt
     
     search_append = ""
     searchtuple = []
@@ -346,15 +364,22 @@ def fullsearch(data: SearchRequest):
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
 
-        data = cursor.fetchall()
-        if not data:
+        datareq = cursor.fetchall()
+        if not datareq or datareq == None:
             return {"message": "Nothing here except us chickens"}
         else:
-            for rows in data:
+            for rows in datareq:
                 s3_key = rows.get("url")
-                listkeys.append( mass_presignedurls(s3_key, 3600) )
-                listtags.append(rows.get("tags"))
-            return {"result": data, "url": listkeys, "tags": listtags}
+                if s3_key:
+                    listkeys.append( mass_presignedurls(s3_key, 3600) )
+                    listtags.append(rows.get("tags"))
+            
+            keysdata: list[int] = listkeys
+            batch: batched = batched(keysdata, n=9)
+            paginated_list = list(batch)
+
+     
+            return {"result": datareq, "url": paginated_list[page], "tags": listtags, "numpages": len(paginated_list), "Success": True}
 
     except mysql.connector.DatabaseError as e:
           conn.rollback()

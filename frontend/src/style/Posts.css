@@ -91,9 +91,17 @@ li.tagoutput{
     color: var(--demographic-color-tag);
 }
 
+.demographic-tag:hover{
+    color: #f8a703;
+}
+
 .generic-tag{
 
     color: var(--generic-tag);
+}
+
+.generic-tag:hover{
+    color: #56f3db;
 }
 
 .postcontent-container{

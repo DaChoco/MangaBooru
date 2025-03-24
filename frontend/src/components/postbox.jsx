@@ -1,8 +1,9 @@
 
-import { useEffect, useState, useContext } from "react"
+import React, { useEffect, useState, useContext } from "react"
 import { PostItemsContext } from "../contexts/postItemContext"
 import { PageNumContext } from "../contexts/pageNumContext"
 import Sidebar from "./sidebar"
+import SearchBar from "./searchsect"
 
 
 function PostBox(){
@@ -18,25 +19,47 @@ function PostBox(){
     const extractNum = (e) =>{
         //extracts the number from the box icon clicked which is used to change the page we are on.
         const extractedNum = e.target.textContent
-        console.log(extractedNum)
         setPage(extractedNum)
     }
 
     function incFunction(){
-        console.log(page)
-        setPage(page + 1)
+        if (page+1 <= lenoutput){
+            const newNum = page + 1
+            setPage(newNum)
+        }
+        else{
+            return
+        }
+        
     }
 
     function decFunction(){
-        if (page - 1 != 0){
-            setPage(page-1)
+        if (page - 1 >= 1){
+            const newNum = page - 1
+            setPage(newNum)
         }
         else{
             return
         }
     }
 
-    
+    const promptedPage = () =>{
+        try{
+        const userPage = parseInt(prompt("What page would you like to go to?", `${page+1}`))
+
+        if (userPage == null || !userPage){
+            console.log("The user entered nothing")
+            return
+        }
+        else{
+            setPage(userPage)
+        }
+    } 
+    catch (error){
+        setPage(page)
+        console.log("This number is not an integer")
+    }
+    }
 
     const seriesPostPics = posts?.length > 0 ? posts : seriesImg
 
@@ -59,6 +82,7 @@ function PostBox(){
     },[page])//make tag names unique next.
     return (
         <> 
+        <SearchBar data={{lenoutput, setLenoutput}}></SearchBar>
         <Sidebar data={tags}></Sidebar>
         <div className="postcontent-container">
         {//produces all the posts and their images
@@ -70,17 +94,26 @@ function PostBox(){
         <div className="footer-container">
             <div className="page-nums-container">
                 <ul className="list-num-page">
-                {lenoutput>1 ? (//conditionally prints the previous button
+                {lenoutput>1 && (//conditionally prints the previous button
                     <li className="pageboxes"><svg onClick={()=> decFunction()}  className="next-page-arrow" xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960" >
                         <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/>
                     </svg>
-                </li>): null}
+                </li>)}
                 
 
-                   {lenoutput > 0 && 6 ? (Array.apply(null, Array(lenoutput)).map((e, index) => 
+                   {lenoutput > 0 && lenoutput <= 6 ? (Array.apply(null, Array(lenoutput)).map((e, index) => 
                    (<li onClick={extractNum} className="pageboxes" key={index}>{index + 1}</li>
                    ))
-                    ): null} 
+                    ): 
+                    (<>
+                        {Array.apply(null, Array(4)).map((e, index) => 
+                        (<li onClick={extractNum} className="pageboxes" key={index}>{index + 1}</li>
+                        ))}
+                        <li className="pageboxes" onClick={promptedPage}>...</li>
+                        <li className="pageboxes">{lenoutput}</li>
+                        </>
+                        
+                    )} 
 
                     
                 <li className="pageboxes"><svg onClick={() => incFunction()} className='next-page-arrow' xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960">
@@ -89,6 +122,10 @@ function PostBox(){
                 </li>   
 
                 </ul>
+
+                <div className="rest-footer">
+                    <h2><a href="">GitHub Repo</a></h2>
+                </div>
             </div>
         </div>
         </>

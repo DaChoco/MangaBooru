@@ -2,8 +2,11 @@ import React, {useState, useContext, createContext} from 'react'
 import { PostItemsContext } from '../contexts/postItemContext'
 import { PageNumContext } from '../contexts/pageNumContext'
 import { useNavigate } from 'react-router-dom'
+import PostBox from './postbox'
 
-function SearchBar({children}){
+
+function SearchBar({data}){
+    const { lenoutput, setLenoutput } = data;
     const {setPosts} = useContext(PostItemsContext)
     const [query, setQuery] = useState("")
     const [auto, setAuto] = useState([])
@@ -37,12 +40,13 @@ function SearchBar({children}){
 
     const fullSearch = async (e) =>{
         e.preventDefault()
+        setPage(1) //when someone searches, they should start from page 1
 
-        const url = 'http://localhost:8000/search'
+        const url = `http://localhost:8000/search/${page}`
         console.log(splitTerms)
 
         try{
-            if (splitTerms.length != 0){
+            if (splitTerms.length != 0 && splitTerms.length != []){
             const response = await fetch(url, {method: "POST",
                 headers: {
                     "content-type": "application/json",
@@ -54,15 +58,15 @@ function SearchBar({children}){
             })
 
             const data = await response.json()  
-            console.log(data.url)
             setPosts(data.url)
+
+            setLenoutput(data.numpages)
+
             navigate("/posts")
             }
             else{
                 location.reload()
-            }
-            
-           
+            }   
         }
         catch (error){
             console.log("Apologies, an error has occured:", error)
@@ -102,7 +106,7 @@ function SearchBar({children}){
     }
 
     return (
-  
+        <>
         <form className="search-container" onSubmit={fullSearch}>
             <input type="text" onKeyUp={autocomplete}
             id='SearchInput'
@@ -111,11 +115,6 @@ function SearchBar({children}){
             value={query.toLowerCase()} onChange={(e) => setQuery(e.target.value)}/>
             <button className="search-btn" type="submit">Search</button>
 
-            
-
-
-
-            {children}
          
 
             {auto.length > 0 && (
@@ -134,6 +133,10 @@ function SearchBar({children}){
             )}    
             
         </form>
+
+        </>
+
+       
 
   
     )

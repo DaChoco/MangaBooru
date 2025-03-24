@@ -19,4 +19,4 @@ class CreateTag(BaseModel):
     tagdesc: str
 
 class SearchRequest(BaseModel):
-    inputtxt: list
+    inputtxt: list | None
