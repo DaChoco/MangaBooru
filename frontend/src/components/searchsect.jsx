@@ -4,9 +4,10 @@ import { PageNumContext } from '../contexts/pageNumContext'
 import { useNavigate } from 'react-router-dom'
 
 function SearchBar({children}){
+    const {setPosts} = useContext(PostItemsContext)
     const [query, setQuery] = useState("")
     const [auto, setAuto] = useState([])
-    const {setPosts} = useContext(PostItemsContext)
+    
     const [splitTerms, setSplitTerms] = useState([])
 
     const {setPage} = useContext(PageNumContext)
@@ -41,6 +42,7 @@ function SearchBar({children}){
         console.log(splitTerms)
 
         try{
+            if (splitTerms.length != 0){
             const response = await fetch(url, {method: "POST",
                 headers: {
                     "content-type": "application/json",
@@ -55,6 +57,10 @@ function SearchBar({children}){
             console.log(data.url)
             setPosts(data.url)
             navigate("/posts")
+            }
+            else{
+                location.reload()
+            }
             
            
         }
@@ -105,9 +111,7 @@ function SearchBar({children}){
             value={query.toLowerCase()} onChange={(e) => setQuery(e.target.value)}/>
             <button className="search-btn" type="submit">Search</button>
 
-            <svg onClick={() => incFunction()} className='next-page-arrow' xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960">
-                <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
-            </svg>
+            
 
 
 

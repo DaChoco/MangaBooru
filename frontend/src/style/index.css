@@ -1,5 +1,6 @@
 :root {
   font-family: 'Roboto';
+  transition: 0.5s;
   margin: 0;
   padding: 0;
   line-height: 1.5;
@@ -30,6 +31,8 @@ html[data-theme=light]{
   --dropdown-color: #ebe6e6;
 
   --nav-hover-color: #275963;
+
+  --page-btn-hover-color: #0cdfa3;
 }
 
 
@@ -43,6 +46,9 @@ html[data-theme=dark]{
   --dropdown-color: #ebe6e6;
 
   --nav-hover-color: #505766;
+  --page-btn-hover-color: var(--base-color-topnav);
+
+
 
 }
 

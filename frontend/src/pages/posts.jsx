@@ -14,9 +14,7 @@ function Posts(){
     <div className="main-content">
  
             <Topnav></Topnav> 
-            <SearchBar>
-            
-            </SearchBar>   
+            <SearchBar></SearchBar>   
             <PostBox></PostBox>
     
     </div>

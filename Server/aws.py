@@ -28,6 +28,10 @@ def mass_presignedurls(key: str, expiration: int ):
 def extractObjectKey(url:str):
     return url.split(".com/")[-1]
 
+def get_public_s3(object_key):
+     return f"https://{BUCKET_NAME}.s3.af-south-1.amazonaws.com/{object_key}"
+
+
 
 def uploadImage():
     UUID_Name = str(uuid.uuid4())

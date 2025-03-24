@@ -1,7 +1,7 @@
 #MYSQL
 import mysql.connector
 
-from itertools import batched
+from itertools import batched, chain
 
 #SECURITY
 import bcrypt
@@ -127,12 +127,12 @@ def register(data: RegisterRequest):
             cursor.close()
             conn.close()
 
-#---------------------------------------------------------------------------END OF CRITICAL
+#---------------------------------------------------------------------------END OF CRITICAL -BEGIN GENERAL
 @app.get("/")
 def index():
     return {"message": "Welcome to Mangabooru, hope you enjoy your stay"}
 
-@app.get("/getuser")
+@app.get("/getuser") #Will be used to extract JWT Tokens later
 def getUser():
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
@@ -157,34 +157,58 @@ def getUrls(Page: int):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    
+#Extracts the image whether it has tags or not, but also gets tags - Cant use outer joins since this is not Post gres. Came up with an alternative
+    SQL_PARAM_NO_TAG_INCLUDED = """ 
+SELECT url, group_concat(DISTINCT tagName order by tagName) as tagName
+FROM tblseries 
+LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
+LEFT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
+WHERE url IS NOT NULL GROUP BY url
+UNION
+SELECT url, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
+FROM tblseries 
+RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
+RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
+WHERE url IS NOT NULL GROUP BY url
+"""
 
-    cursor.execute("SELECT url FROM tblseries WHERE url is not null") #returns the urls/keys
+    cursor.execute(SQL_PARAM_NO_TAG_INCLUDED) #returns the urls/keys
     data = cursor.fetchall()
+
+    
+    
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
     else:
         listkeys = []
+        listtags = []
+   
         for rows in data:
             s3_key = rows["url"]
-            listkeys.append( mass_presignedurls(s3_key, 3600) )
+            listkeys.append(mass_presignedurls(s3_key, 3600) )
+            tag = rows["tagName"]
+            if tag != None:
+                cleaned_tag = tag.split(",")
+                listtags.append(cleaned_tag)    
         
         keysdata: list[int] = listkeys
         batch: batched = batched(keysdata, n=9)
         paginated_list = list(batch)
 
-        print(paginated_list[Page])
+        flattened = list(chain(*listtags))
+    
 
         cursor.close()
         conn.close()
-        return {"urls": paginated_list[Page]} #Functional will be used for general browsing
+
+        return {"urls": paginated_list[Page], "numpages": len(paginated_list), "tags": set(flattened)} #Functional will be used for general browsing
     
 @app.get("/returnMangaInfo") #general info
 def extractInfo():
     conn = createConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute("""SELECT tblSeries.seriesID, seriesName, url FROM tblSeries""") 
+        cursor.execute("""SELECT tblSeries.seriesID, seriesName, url FROM tblSeries WHERE url is not null""") 
         output = cursor.fetchall()
 
         if not output:
@@ -232,7 +256,7 @@ def tagInsert(data: CreateTag):
     finally:
         conn.close()
 
-@app.post("/uploadSeries")
+@app.post("/uploadSeries") #Adds a new manga series. Will need JWT in future. For now just prototyping
 def seriesInsert(data: CreateSeries):
     SQL_Params = (data.seriesname, data.seriesdesc)
 
@@ -332,13 +356,40 @@ def fullsearch(data: SearchRequest):
                 listtags.append(rows.get("tags"))
             return {"result": data, "url": listkeys, "tags": listtags}
 
-
-        
     except mysql.connector.DatabaseError as e:
           conn.rollback()
           return {"message": f"The server has experienced an error, please try again later: {e}"}
     finally:
         conn.close()
+
+#Extract tag on linear search. This for on click
+@app.get("/extracttag/")
+def extractingTag(tag: str = ""):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    print(f"Recieved tag: {tag}")
+
+
+    cursor.execute("""
+        SELECT tblSeries.seriesID, seriesName, url FROM tblSeries 
+        INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID 
+        INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
+        WHERE tagName = %s""", (tag,))
+    
+    data = cursor.fetchall()
+
+    if not data:
+        print("something went wrong")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Nothing found")
+    else:
+        listkeys = []
+        for rows in data:
+            s3_key = rows.get("url")
+            listkeys.append( mass_presignedurls(s3_key, 3600) )
+        conn.close()
+
+        return {"url": listkeys}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000, reload=True)

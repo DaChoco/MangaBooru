@@ -14,6 +14,7 @@
     grid-template-rows: max-content max-content auto auto;
     grid-template-columns: 20% auto;
     height: max-content;
+    row-gap: 0.5rem;
  
 }
 
@@ -31,4 +32,8 @@
 
 .postcontent-container{
     grid-area: maincontent;
+}
+
+.footer-container{
+    grid-area: footer;
 }
