@@ -12,6 +12,23 @@ The site will have a tag based searching system, user login, registration, the a
 * **HTML** and **Plain CSS** will be used for all the design/styling
 * **MySQL** will be used for the database
 
+# Things already done
+* Landing page
+* Auto complete
+* Searching
+* Image extraction from S3
+* Database Schema
+* General site design planned
+# Things to do
+* Make return images route only return unique tag names - Done
+* Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version.
+* Style the footer
+* Making an account page (and account menu)
+* All tags page
+* -Further down the line:
+	* Parameterized routing per page/image
+	* Basic authentication and cookies with JWT
+
 # Features
 * Coming soon
 
