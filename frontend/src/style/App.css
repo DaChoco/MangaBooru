@@ -12,10 +12,27 @@
         "sidenav maincontent"
         "footer footer";
     grid-template-rows: max-content max-content auto auto;
-    grid-template-columns: 20% auto;
+    grid-template-columns: 15% auto;
     height: max-content;
     row-gap: 0.5rem;
  
+}
+
+#m-icon{
+   
+    color: #cacac1;
+    width: 100%;
+    height: 4rem;
+    fill: var(--base-color-topnav);
+    border: none;
+    outline: none;
+}
+
+
+#m-icon:focus{
+    border: none;
+    outline: none;
+    
 }
 
 .topnav-container{

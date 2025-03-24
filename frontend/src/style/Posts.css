@@ -2,7 +2,7 @@ ul.topnav-content{
     display: flex;
     flex-direction: row;
     width: 50%;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     margin: 0;
     padding: 0;
     align-self: flex-end;
@@ -31,9 +31,7 @@ li{
     background-color: var(--nav-hover-color)
 }
 
-.menulinks a#m-icon:hover{
-    background-color: #fff;
-}
+
 
 img{
     width: 4rem;
@@ -64,6 +62,40 @@ img{
     fill: white;
 }
 
+#m-icon:hover{
+    cursor: pointer;
+    background-color: var(--base-color-topnav);
+}
+
+/*END OF TOP NAV*/
+
+.sidenav-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 1rem;
+    padding: 1rem;
+    border-right: 2px solid #dcd5d5;
+}
+
+ul.tag-container{
+  padding: 1rem 1rem 1rem 1rem;
+}
+
+li.tagoutput{
+    margin: 0.2rem;
+    cursor: pointer;
+}
+
+.demographic-tag{
+    color: var(--demographic-color-tag);
+}
+
+.generic-tag{
+
+    color: var(--generic-tag);
+}
+
 .postcontent-container{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr ;
@@ -71,11 +103,11 @@ img{
     height: 90%;
     width: 90%;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
 }
 
 .postitem{
-    width: 60%;
+    width: 70%;
     padding: 10px;
     margin: auto;
 }

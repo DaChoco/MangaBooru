@@ -38,7 +38,7 @@ function PostBox(){
 
     
 
-    const seriesPostPics = posts.length > 0 ? posts : seriesImg
+    const seriesPostPics = posts?.length > 0 ? posts : seriesImg
 
     useEffect(()=>{
         const returnBooruPics = async () =>{ //On page load or when page changes, it extracts series
@@ -51,14 +51,12 @@ function PostBox(){
             setLenoutput(data.numpages) //used to calc number of page num boxes needed
             setTags(data.tags)
             sessionStorage.setItem("pagenumber", `${page}`) //set the item regardless
-
-            console.log(data)
         }
 
         returnBooruPics()
 
 
-    },[page, posts])//make tag names unique next.
+    },[page])//make tag names unique next.
     return (
         <> 
         <Sidebar data={tags}></Sidebar>

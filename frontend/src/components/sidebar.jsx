@@ -6,6 +6,7 @@ import PostItemsContext from "../contexts/postItemContext"
 function Sidebar({data}){
     const {setPosts} = useContext(PostItemsContext)
     const searchbar = document.getElementById("SearchInput")
+    const listoftags = document.querySelectorAll(".tagoutput")
 
     const linktotag = async (e) => {
         searchbar.value = e.target.textContent
@@ -13,8 +14,15 @@ function Sidebar({data}){
 
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()
+        console.log(data)
 
-        setPosts(data.url)
+        if (data){
+            setPosts(data.url)
+        }
+        else{
+            console.log("You did not return any data")
+        }
+        
    
 
 
@@ -23,14 +31,22 @@ function Sidebar({data}){
 
 
     return (
-            <div className="sidenav-container">
-               <p>Tags:</p> 
-                    <ul className="tag-container">
-                        {data.map((e, index)=>(<li key={index} onClick={linktotag} className="tagoutput">{data[index]}</li>))}
+            <div className="sidenav-container"> 
+               <h3 className="tag-header">Tags</h3>
+                    <ul className="tag-container">{
+                    data.map((e, index)=>(
+                        data[index].includes("shonen") == true || data[index].includes("seinen")  ?
+                        
+                        (<li key={index} onClick={linktotag} className="tagoutput demographic-tag">{data[index]}</li>):(
+                        <li key={index} onClick={linktotag} className="tagoutput generic-tag">{data[index]}</li>
+                        )
+                        
+                        
+                    ))}
                     </ul>
             </div>
     
-    )
+            )
 }
 
 export default Sidebar

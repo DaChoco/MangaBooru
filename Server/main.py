@@ -368,14 +368,11 @@ def extractingTag(tag: str = ""):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    print(f"Recieved tag: {tag}")
-
-
     cursor.execute("""
-        SELECT tblSeries.seriesID, seriesName, url FROM tblSeries 
+        SELECT tblSeries.seriesID, seriesName, thumbnail FROM tblSeries 
         INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID 
         INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
-        WHERE tagName = %s""", (tag,))
+        WHERE tagName = %s AND thumbnail IS NOT NULL""", (tag,))
     
     data = cursor.fetchall()
 
@@ -383,13 +380,13 @@ def extractingTag(tag: str = ""):
         print("something went wrong")
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Nothing found")
     else:
-        listkeys = []
+        listMALurls = []
         for rows in data:
-            s3_key = rows.get("url")
-            listkeys.append( mass_presignedurls(s3_key, 3600) )
+            MAL_key = rows.get("thumbnail")
+            listMALurls.append( MAL_key)
         conn.close()
 
-        return {"url": listkeys}
+        return {"url": listMALurls}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000, reload=True)

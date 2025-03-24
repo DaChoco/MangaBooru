@@ -33,12 +33,15 @@ html[data-theme=light]{
   --nav-hover-color: #275963;
 
   --page-btn-hover-color: #0cdfa3;
+
+  --demographic-color-tag: #dca80b;
+  --generic-tag: #3d88b3;
 }
 
 
 html[data-theme=dark]{
   --base-color-topnav: #202124;
-  --base-color-dark: #32323D;
+  --base-color-dark: #303037;
   --text-color-topnav: #ffffff;
   --base-text-dark: #FFFFFF;
   --link-text-dark: #edf9f9;
@@ -48,6 +51,8 @@ html[data-theme=dark]{
   --nav-hover-color: #505766;
   --page-btn-hover-color: var(--base-color-topnav);
 
+  --demographic-color-tag: #dca80b;
+  --generic-tag: #3d88b3;
 
 
 }
