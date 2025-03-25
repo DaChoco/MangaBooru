@@ -239,7 +239,7 @@ def seriesExtract(seriesID: str):
 
     cursor.execute(
         """
-        SELECT tblseries.seriesID, thumbnail, url, seriesName, tagName FROM tbltags INNER JOIN 
+        SELECT tblseries.seriesID, thumbnail, url seriesName, tagName FROM tbltags INNER JOIN 
         tbltagseries ON tbltags.tagID = tbltagseries.tagID 
         INNER JOIN tblSeries ON tbltagseries.seriesID = tblseries.seriesID
         WHERE tblSeries.seriesID = %s""", (seriesID,))
@@ -353,6 +353,8 @@ def fullsearch(page: int, datareq: SearchRequest):
     cursor = conn.cursor(dictionary=True)
 
     searchTerms = datareq.inputtxt
+
+    print(searchTerms)
     
     search_append = ""
     searchtuple = []
@@ -360,21 +362,24 @@ def fullsearch(page: int, datareq: SearchRequest):
     for term in searchTerms:
 
         if search_append == "":
-            search_append += "(seriesName LIKE %s OR tagName Like %s)"  
+            search_append += " (seriesName LIKE %s OR GROUP_CONCAT(tagName) LIKE %s) "  
         else:
-            search_append += "AND (seriesName LIKE %s OR tagName Like %s)" 
-        searchtuple.extend([f"%{term}%", f"%{term}%"]) 
+            search_append += " AND (seriesName LIKE %s OR GROUP_CONCAT(tagName) LIKE %s)" 
+        searchtuple.extend([f"{term}%", f"%{term}%"]) 
 
     try:
         listkeys = []
         listtags = []
         GROUP_BY_APPEND = "GROUP BY tblSeries.seriesID, seriesName, url"
         SQL_Query_Base = """
-        SELECT tblSeries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ', ') AS tags FROM tblSeries 
-        INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID 
+        SELECT tblSeries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblSeries 
+        INNER JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID 
         INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
-        WHERE """
-        FinalSQL_Query = f"{SQL_Query_Base} {search_append} {GROUP_BY_APPEND}"
+        """
+        FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append}"
+
+        print (FinalSQL_Query)
+        print()
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
 

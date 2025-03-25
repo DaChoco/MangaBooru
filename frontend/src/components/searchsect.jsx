@@ -63,6 +63,7 @@ function SearchBar({data}){
             setLenoutput(data.numpages)
 
             navigate("/posts")
+            setAuto([])
             }
             else{
                 location.reload()

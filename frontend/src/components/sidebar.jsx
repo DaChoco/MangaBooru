@@ -18,6 +18,7 @@ function Sidebar({data}){
 
         if (data){
             setPosts(data.url)
+            
         }
         else{
             console.log("You did not return any data")

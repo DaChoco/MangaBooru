@@ -52,6 +52,8 @@ function PostPage(){
     return(
         <div className="main-content">
         <Topnav></Topnav>
+
+        
         <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
        
         <Footer></Footer>
