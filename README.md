@@ -18,17 +18,16 @@ The site will have a tag based searching system, user login, registration, the a
 * Searching
 * Image extraction from S3
 * Database Schema
+* Style the footer 
 * General site design planned
-# Things to do
 * Make return images route only return unique tag names - Done
-* Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version.
-* Style the footer
+# Things to do
+* Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version. - In Progress, mostly done besides an actual see full version btn
 * Making an account page (and account menu)
-* All tags page
+* All tags page. Just a list of the tags, not complicated.
 * -Further down the line:
 	* Parameterized routing per page/image
 	* Basic authentication and cookies with JWT
-
 # Features
 * Coming soon
 
