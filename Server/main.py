@@ -159,17 +159,17 @@ def getUrls(Page: int):
 
 #Extracts the image whether it has tags or not, but also gets tags - Cant use outer joins since this is not Post gres. Came up with an alternative
     SQL_PARAM_NO_TAG_INCLUDED = """ 
-SELECT url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
+SELECT tblseries.seriesID as series, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
 LEFT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblSeries.seriesID
 UNION
-SELECT url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
+SELECT tblseries.seriesID as series, url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
 RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail ORDER BY url DESC
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY url DESC
 """
 
     cursor.execute(SQL_PARAM_NO_TAG_INCLUDED) #returns the urls/keys
@@ -182,11 +182,14 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail ORDER BY url DESC
     else:
         listkeys = []
         listtags = []
+        listseriesID = []
    
         for rows in data:
             s3_key = rows["thumbnail"]
             listkeys.append(s3_key)
             tag = rows["tagName"]
+            seriesID = rows["series"]
+            listseriesID.append(seriesID)
             if tag != None:
                 cleaned_tag = tag.split(",")
                 listtags.append(cleaned_tag)    
@@ -195,15 +198,23 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail ORDER BY url DESC
         batch: batched = batched(keysdata, n=9)
         paginated_list = list(batch)
 
+        seriesdata: list[int] = listseriesID
+        batchseries: batched = batched(seriesdata, n=9)
+        seriespaginate = list(batchseries)
+        
+    
         flattened = list(chain(*listtags))
     
 
         cursor.close()
         conn.close()
 
-        return {"urls": paginated_list[Page], "numpages": len(paginated_list), "tags": set(flattened)} #Functional will be used for general browsing
+        return {"urls": paginated_list[Page],
+                 "numpages": len(paginated_list), 
+                 "tags": set(flattened), 
+                 "series": seriespaginate[Page]} #Functional will be used for general browsing
     
-@app.get("/returnMangaInfo") #general info
+@app.get("/returnMangaInfo") #general info #for internal use only
 def extractInfo():
     conn = createConnection()
     cursor = conn.cursor()
@@ -215,25 +226,28 @@ def extractInfo():
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Not found within the database")
         else:
             return {"results": output}
-    #This is used so that when you click on an image, it can be matched to the appropriate info with the below route. 
-    # This will be used on load?
     except mysql.connector.DatabaseError as e:
         return {"message": f"An error has occured {e}"}
     finally:
             cursor.close()
             conn.close()
 
-@app.get("/returnMangaInfo/{seriesname}") #is added to a tag div
-def seriesExtract(seriesname):
+@app.get("/returnMangaInfo/{seriesID}") #is added to a tag div
+def seriesExtract(seriesID: str):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute(
-        """SELECT tagName FROM tbltags INNER JOIN 
-        tblSeries ON tbltags.tagID = tbltagseries.tagID 
-        WHERE tblSeries.seriesName = %s""", (seriesname))
+        """
+        SELECT tblseries.seriesID, thumbnail, url, seriesName, tagName FROM tbltags INNER JOIN 
+        tbltagseries ON tbltags.tagID = tbltagseries.tagID 
+        INNER JOIN tblSeries ON tbltagseries.seriesID = tblseries.seriesID
+        WHERE tblSeries.seriesID = %s""", (seriesID,))
     
     output_tags = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
     return output_tags
 
 #uploads ------------------------------------------------------

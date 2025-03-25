@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useContext } from "react"
 import { PostItemsContext } from "../contexts/postItemContext"
 import { PageNumContext } from "../contexts/pageNumContext"
+import { useNavigate } from "react-router-dom"
 import Sidebar from "./sidebar"
 import SearchBar from "./searchsect"
 
@@ -10,11 +11,15 @@ function PostBox(){
     const [seriesImg, setSeriesImg] = useState([])
     const {posts} = useContext(PostItemsContext)
 
+    const navigate = useNavigate()
+
     const {page} = useContext(PageNumContext)
     const {setPage} = useContext(PageNumContext)
 
     const [lenoutput, setLenoutput] = useState(0)
     const [tags, setTags] = useState([])
+
+    const [seriesID, setSeriesID] = useState([])
 
     const extractNum = (e) =>{
         //extracts the number from the box icon clicked which is used to change the page we are on.
@@ -41,6 +46,11 @@ function PostBox(){
         else{
             return
         }
+    }
+
+     function extractSeriesID(index){
+        const selectedSeries = seriesID[index]
+        navigate(`/posts/${selectedSeries}`)
     }
 
     const promptedPage = () =>{
@@ -73,6 +83,9 @@ function PostBox(){
             setSeriesImg(data.urls)
             setLenoutput(data.numpages) //used to calc number of page num boxes needed
             setTags(data.tags)
+
+            
+            setSeriesID(data.series)
             sessionStorage.setItem("pagenumber", `${page}`) //set the item regardless
         }
 
@@ -86,7 +99,7 @@ function PostBox(){
         <Sidebar data={tags}></Sidebar>
         <div className="postcontent-container">
         {//produces all the posts and their images
-        seriesPostPics.map((e, index) => (<img loading="lazy" onClick={() => console.log(posts)} key={index} src={e} alt="Post" className="postitem"/>))
+        seriesPostPics.map((e, index) => (<img loading="lazy" onClick={() => extractSeriesID(index)} key={index} src={e} alt="Post" className="postitem"/>))
             }
             
         </div>
@@ -123,9 +136,7 @@ function PostBox(){
 
                 </ul>
 
-                <div className="rest-footer">
-                    <h2><a href="">GitHub Repo</a></h2>
-                </div>
+                
             </div>
         </div>
         </>

@@ -91,14 +91,13 @@ function SearchBar({data}){
         try{
            const response = await fetch(url, {method: "GET"})
            const data = await response.json()
-           console.log(data)
            setAuto(data)
         }
         catch (error){
             console.log("An error has occured: ", error)
         }
 
-        }, 400)
+        }, 250)
 
         
         }
@@ -117,7 +116,7 @@ function SearchBar({data}){
 
          
 
-            {auto.length > 0 && (
+            {auto.length > 0 ? (
                 <ul className='dropdown-container'>
                 {auto.map((item, index) => 
                 item.source === "series" ?
@@ -130,7 +129,7 @@ function SearchBar({data}){
             </ul>
 
             
-            )}    
+            ): null}    
             
         </form>
 
