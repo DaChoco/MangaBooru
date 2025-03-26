@@ -73,6 +73,8 @@ function PostBox(){
 
     const seriesPostPics = posts?.length > 0 ? posts : seriesImg
 
+    
+    let info
     useEffect(()=>{
         const returnBooruPics = async () =>{ //On page load or when page changes, it extracts series
             const url = `http://127.0.0.1:8000/returnBooruPics/${page}`
@@ -83,16 +85,21 @@ function PostBox(){
             setSeriesImg(data.urls)
             setLenoutput(data.numpages) //used to calc number of page num boxes needed
             setTags(data.tags)
-
-            
+    
+            info = data
             setSeriesID(data.series)
+            console.log(lenoutput)
             sessionStorage.setItem("pagenumber", `${page}`) //set the item regardless
         }
 
         returnBooruPics()
 
 
-    },[page])//make tag names unique next.
+    },[page, info])//make tag names unique next.
+
+    useEffect(() => {
+        console.log('Updated lenoutput:', lenoutput);
+    }, [lenoutput]);
     return (
         <> 
         <SearchBar data={{lenoutput, setLenoutput}}></SearchBar>
@@ -107,7 +114,7 @@ function PostBox(){
         <div className="footer-container">
             <div className="page-nums-container">
                 <ul className="list-num-page">
-                {lenoutput>1 && (//conditionally prints the previous button
+                {lenoutput>0 && (//conditionally prints the previous button
                     <li className="pageboxes"><svg onClick={()=> decFunction()}  className="next-page-arrow" xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960" >
                         <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/>
                     </svg>

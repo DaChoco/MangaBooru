@@ -60,7 +60,7 @@ html[data-theme=dark]{
 
 body{
   margin: 0;
-  height: 100vh;
+  height: max-content;
   background-color: var(--base-color-dark);
   color: var(--base-text-dark)
 }

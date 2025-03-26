@@ -10,12 +10,23 @@
         "searchbar searchbar"
         "sidenav maincontent"
         "sidenav maincontent"
-        "footer footer";
+        "sidenav comments"
+        "footer footer"
+        "restfooter restfooter";
     grid-template-rows: max-content max-content auto auto;
     grid-template-columns: 15% auto;
     height: max-content;
     row-gap: 0.5rem;
  
+}
+
+.user-comments{
+    grid-area: comments;
+    display: grid;
+    grid-template-areas: "leavecomment leavecomment" "user usersaid";
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    align-self: flex-end;
 }
 
 #m-icon{
@@ -51,6 +62,25 @@
     grid-area: maincontent;
 }
 
+.postpage-itemcontainer{
+    grid-area: maincontent;
+}
+
 .footer-container{
     grid-area: footer;
+}
+
+.rest-footer{
+    grid-area: restfooter;
+}
+
+#textbox{
+    
+    width: 70%;
+    height: 5rem;
+    margin: 0 auto;
+}
+
+.say-comment{
+    grid-area: leavecomment;
 }

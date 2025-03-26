@@ -3,7 +3,7 @@ import "../style/Posts.css"
 import {useState, useContext, createContext} from 'react'
 import PostItemsContext from "../contexts/postItemContext"
 
-function Sidebar({data}){
+function Sidebar({data, children}){
     const {setPosts} = useContext(PostItemsContext)
     const searchbar = document.getElementById("SearchInput")
     const listoftags = document.querySelectorAll(".tagoutput")
@@ -34,9 +34,9 @@ function Sidebar({data}){
     return (
             <div className="sidenav-container"> 
                <h3 className="tag-header">Tags</h3>
+                {children}
                     <ul className="tag-container">{
-                    data.map((e, index)=>(
-data[index].includes("shonen") || data[index].includes("seinen") || data[index].includes("shounen") || data[index].includes("shoujo")  ?
+                    data.map((e, index)=>(data[index].includes("shonen") || data[index].includes("seinen") || data[index].includes("shounen") || data[index].includes("shoujo")  ?
                         
                         (<li key={index} onClick={linktotag} className="tagoutput demographic-tag">{data[index]}</li>):(
                         <li key={index} onClick={linktotag} className="tagoutput generic-tag">{data[index]}</li>

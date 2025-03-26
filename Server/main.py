@@ -204,7 +204,7 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY
         
     
         flattened = list(chain(*listtags))
-    
+        print(len(paginated_list))
 
         cursor.close()
         conn.close()
@@ -239,12 +239,14 @@ def seriesExtract(seriesID: str):
 
     cursor.execute(
         """
-        SELECT tblseries.seriesID, thumbnail, url seriesName, tagName FROM tbltags INNER JOIN 
+        SELECT tblseries.seriesID, thumbnail, url, seriesName, tagName FROM tbltags INNER JOIN 
         tbltagseries ON tbltags.tagID = tbltagseries.tagID 
         INNER JOIN tblSeries ON tbltagseries.seriesID = tblseries.seriesID
         WHERE tblSeries.seriesID = %s""", (seriesID,))
     
     output_tags = cursor.fetchall()
+
+    print(output_tags)
 
     cursor.close()
     conn.close()

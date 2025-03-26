@@ -79,7 +79,7 @@ img{
 }
 
 ul.tag-container{
-  padding: 1rem 1rem 1rem 1rem;
+  padding: 0rem 1rem 1rem 1rem;
 }
 
 li.tagoutput{
@@ -114,6 +114,34 @@ li.tagoutput{
     padding: 1rem;
 }
 
+.postpage-itemcontainer{
+    display: flex;
+    height: max-content;
+    width: 60%;
+    margin: 0 auto;
+    padding: 1rem;
+    
+}
+
+.postpage-itemcontainer img{
+    
+    height: 50%;
+    width: 50%;
+    margin: 0 auto;
+    padding: 1rem;
+    
+}
+
+.seriestitle{
+    text-align: center;
+    font-size: 1rem;
+}
+
+.footer-container{
+    display: flex;
+    flex-direction: column;
+}
+
 .postitem{
     width: 70%;
     padding: 10px;
@@ -137,6 +165,7 @@ ul.list-num-page{
     width: 50%;
     padding: 0;
     margin: 1rem auto;
+    position: relative;
 
 }
 
@@ -160,5 +189,6 @@ ul.list-num-page{
     background-color: var(--base-color-topnav);
     padding: 1rem 0;
     width: 100vw;
+    
 }
 
