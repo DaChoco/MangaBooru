@@ -3,8 +3,9 @@ import { useEffect, useState } from "react"
 
 
 function PostPage(){
+    const mangaimage = document.getElementById("mangaimage")
 
-    const [seriesImage, setSeriesImage] = useState("")
+    const [thumbnail, setThumbnail] = useState("")
     const [tags, setTags] = useState([])
     const [bigseriesImage, setBigseriesImage] = useState("") //higher res option if available
     const [mangaName, setMangaName] = useState("")
@@ -12,7 +13,20 @@ function PostPage(){
     const [highres, setHighres] = useState(false)
 
     const seeFullnewTab = () => {
-        window.open(seriesImage)
+
+        if (bigseriesImage != ""){
+            window.open(bigseriesImage)
+        }
+        else{
+            window.open(thumbnail)
+        }
+        
+    }
+
+    const toBig = () =>{
+        mangaimage.setAttribute("src", bigseriesImage)
+        
+
     }
     useEffect(()=>{
         const FULL_URL = new URL(window.location.href)
@@ -27,7 +41,7 @@ function PostPage(){
             try{
                 const response = await fetch(url, {method: "GET"})
                 const data = await response.json()
-                console.log(data)
+  
 
                 
                 for (let i = 0; i<data.length; i++){
@@ -38,8 +52,8 @@ function PostPage(){
                     console.log("Apologies. But this series does not have further information. Since this page is a stub. Your assitance would be appreciated")
                     return
                 }
-                console.log(data)
-                setSeriesImage(data[0].thumbnail)
+
+                setThumbnail(data[0].thumbnail)
                 setTags(tagarray)
                 setBigseriesImage(data[0].url)
                 setMangaName(data[0].seriesName)
@@ -54,7 +68,7 @@ function PostPage(){
          returnMangaInfo(url_ID)
     
 
-    }, [mangaName])
+    }, [])
 
 
 
@@ -62,23 +76,24 @@ function PostPage(){
     return(
         <div className="main-content">
         <Topnav></Topnav>
-
-        <div className="postpage-itemcontainer">
-            {highres == false && bigseriesImage != false && (
+        {highres == false && bigseriesImage != false && (
                 <div className="high-res-question">
-
+                    <p onClick={toBig}>Click here to see original size</p>
                 </div>
             )}
-            <img src={seriesImage} alt={mangaName} />
+        <div className="postpage-itemcontainer">
+            
+            <img id="mangaimage" src={thumbnail} alt={mangaName} />
 
         </div>
         <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
         <article>
             
-            <Sidebar data={tags}><h2 className="seriestitle">Copyright: {mangaName}</h2></Sidebar>
+            <Sidebar data={tags}><h2 className="seriestitle">{mangaName.replace(/_/g, " ")}</h2></Sidebar>
             <h2 className="seriestitle">Options:</h2>
             <ul>
                 <li>Add to Favorites</li>
+                <li>Add tags</li>
                 <li>Flag for Deletion</li>
                 <strong><li className="tagoutput" onClick={seeFullnewTab}>See original</li></strong>
             </ul>

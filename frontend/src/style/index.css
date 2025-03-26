@@ -49,7 +49,7 @@ html[data-theme=dark]{
   --dropdown-color: #ebe6e6;
 
   --nav-hover-color: #505766;
-  --page-btn-hover-color: var(--base-color-topnav);
+  --page-btn-hover-color: #101e30;
 
   --demographic-color-tag: #dca80b;
   --generic-tag: #3d88b3;

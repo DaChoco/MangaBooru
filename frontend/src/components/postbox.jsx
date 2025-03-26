@@ -95,11 +95,7 @@ function PostBox(){
         returnBooruPics()
 
 
-    },[page, info])//make tag names unique next.
-
-    useEffect(() => {
-        console.log('Updated lenoutput:', lenoutput);
-    }, [lenoutput]);
+    },[page])//make tag names unique next.
     return (
         <> 
         <SearchBar data={{lenoutput, setLenoutput}}></SearchBar>
@@ -127,8 +123,10 @@ function PostBox(){
                     ): 
                     (<>
                         {Array.apply(null, Array(4)).map((e, index) => 
-                        (<li onClick={extractNum} className="pageboxes" key={index}>{index + 1}</li>
-                        ))}
+                        (
+                        page -1 == index ? (<li onClick={extractNum} className="pageboxes highlight" key={index}>{index + 1}</li>):(<li onClick={extractNum} className="pageboxes" key={index}>{index + 1}</li>)
+                        ))
+                        }
                         <li className="pageboxes" onClick={promptedPage}>...</li>
                         <li className="pageboxes">{lenoutput}</li>
                         </>

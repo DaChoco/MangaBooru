@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import "../style/Posts.css"
 
 
@@ -8,13 +8,35 @@ function Topnav({children}){
     const [toggledark, setToggledark] = useState(false)
     const htmlElement = document.documentElement;
 
+    useEffect( ()=>{
+        let oldtheme = localStorage.getItem("darkmode?")
+        if (oldtheme === "dark"){
+            console.log(oldtheme)
+            htmlElement.setAttribute("data-theme", oldtheme)
+            setToggledark(true)
+            
+        }
+        else if (oldtheme === "light"){
+            console.log(oldtheme)
+            htmlElement.setAttribute("data-theme", oldtheme)
+            setToggledark(false)
+        }
+
+        }
+    , [])
+
 
     const darkMode = () =>{
+   
+
+     
         if (toggledark === false){ //to light
             let currentTheme = htmlElement.getAttribute("data-theme")
             let newTheme = currentTheme === "dark" ? "light": "dark"
             
             htmlElement.setAttribute("data-theme", newTheme)
+
+            localStorage.setItem("darkmode?", newTheme)
             
             setToggledark(true)
             
@@ -25,16 +47,14 @@ function Topnav({children}){
             let newTheme = currentTheme === "light" ? "dark": "light"
             
             htmlElement.setAttribute("data-theme", newTheme)
+            localStorage.setItem("darkmode?", newTheme)
 
             setToggledark(false)
             
         }
     }
     
-    const reloadPage = (e) =>{
-        console.log(e.target.textContent)
-        location.reload()
-    }
+
     return(
     <div className="topnav-container">
         <div className="total-top">
@@ -52,8 +72,8 @@ function Topnav({children}){
                 
                 <li className="menulinks"><Link to="/profile">My account</Link></li>
                 <li className="menulinks"><Link to="/favorites">My Favorites </Link></li>
-                <li className="menulinks"><Link to="/Posts" onClick={reloadPage}>Posts</Link></li>
-                <li className="menulinks"><Link to="/Posts">All Tags</Link></li>
+                <li className="menulinks"><Link to="/posts">Posts</Link></li>
+                <li className="menulinks"><Link to="/tags">All Tags</Link></li>
             </ul>
 
             <div className="lightordark-container"> 

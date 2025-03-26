@@ -204,7 +204,6 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY
         
     
         flattened = list(chain(*listtags))
-        print(len(paginated_list))
 
         cursor.close()
         conn.close()
@@ -245,8 +244,8 @@ def seriesExtract(seriesID: str):
         WHERE tblSeries.seriesID = %s""", (seriesID,))
     
     output_tags = cursor.fetchall()
-
-    print(output_tags)
+    s3_key = output_tags[0]["url"]
+    output_tags[0]["url"] = mass_presignedurls(s3_key, 360)
 
     cursor.close()
     conn.close()

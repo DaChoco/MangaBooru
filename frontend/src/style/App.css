@@ -14,7 +14,7 @@
         "footer footer"
         "restfooter restfooter";
     grid-template-rows: max-content max-content auto auto;
-    grid-template-columns: 15% auto;
+    grid-template-columns: 20% auto;
     height: max-content;
     row-gap: 0.5rem;
  

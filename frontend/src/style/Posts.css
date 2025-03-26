@@ -82,6 +82,25 @@ ul.tag-container{
   padding: 0rem 1rem 1rem 1rem;
 }
 
+.highres-question{
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-around;
+    align-items: center;
+    
+}
+
+.highlight{
+    background-color: var(--page-btn-hover-color);
+}
+
+.big-pic{
+    padding: 0;
+    height: auto;
+    width: auto;
+    position: absolute;
+}
+
 li.tagoutput{
     margin: 0.2rem;
     cursor: pointer;
