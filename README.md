@@ -11,6 +11,7 @@ The site will have a tag based searching system, user login, registration, the a
   * **EC2** will be used to host my database. 
 * **HTML** and **Plain CSS** will be used for all the design/styling
 * **MySQL** will be used for the database
+* 
 
 # Things already done
 * Landing page
@@ -20,13 +21,14 @@ The site will have a tag based searching system, user login, registration, the a
 * Database Schema
 * Style the footer 
 * General site design planned
-* Make return images route only return unique tag names - Done
+* Make return images route only return unique tag names
+* Parameterized routing per page/image
+* * Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version.
 # Things to do
-* Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version. - In Progress, mostly done besides an actual see full version btn
+* Update tags on parameterized query calls so that initial load is not the only time when IDs correctly correspond with images
 * Making an account page (and account menu)
 * All tags page. Just a list of the tags, not complicated.
 * -Further down the line:
-	* Parameterized routing per page/image
 	* Basic authentication and cookies with JWT
 # Features
 * Coming soon
