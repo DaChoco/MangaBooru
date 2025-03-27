@@ -11,7 +11,7 @@ import jwt
 import uvicorn
 from fastapi import FastAPI, HTTPException, Body, Request, Response, status, Query
 from fastapi.middleware.cors import CORSMiddleware
-from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest
+from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest, FavoritesRequest
 
 #AWS
 from aws import mass_presignedurls
@@ -180,16 +180,13 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
     else:
-        listkeys = []
         listtags = []
         listseriesID = []
-   
+
+        listkeys = [rows["thumbnail"] for rows in data]
+        listseriesID = [rows["series"] for rows in data]
         for rows in data:
-            s3_key = rows["thumbnail"]
-            listkeys.append(s3_key)
             tag = rows["tagName"]
-            seriesID = rows["series"]
-            listseriesID.append(seriesID)
             if tag != None:
                 cleaned_tag = tag.split(",")
                 listtags.append(cleaned_tag)    
@@ -399,7 +396,11 @@ def fullsearch(page: int, datareq: SearchRequest):
             paginated_list = list(batch)
 
      
-            return {"result": datareq, "url": paginated_list[page], "tags": listtags, "numpages": len(paginated_list), "Success": True}
+            return {"result": datareq, 
+                    "url": paginated_list[page], 
+                    "tags": listtags, 
+                    "numpages": len(paginated_list), 
+                    "Success": True}
 
     except mysql.connector.DatabaseError as e:
           conn.rollback()
@@ -425,13 +426,28 @@ def extractingTag(tag: str = ""):
         print("something went wrong")
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Nothing found")
     else:
-        listMALurls = []
-        for rows in data:
-            MAL_key = rows.get("thumbnail")
-            listMALurls.append( MAL_key)
+        listMALurls = [rows["thumbnail"] for rows in data]
         conn.close()
 
         return {"url": listMALurls}
+    
+@app.post("/returnFavorites")
+def returnFavorites(data: FavoritesRequest):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+    list_favorites = data.arrFavorites
+
+    print(list_favorites)
+    paraquery = ",".join(["%s"]*len(list_favorites))
+    SQL_QUERY = f"SELECT thumbnail, url, seriesName, seriesID from tblseries where seriesID IN ({paraquery}) "
+    
+    cursor.execute(SQL_QUERY, tuple(list_favorites))
+
+    output = cursor.fetchall()
+
+    conn.close()
+
+    return (output)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000, reload=True)

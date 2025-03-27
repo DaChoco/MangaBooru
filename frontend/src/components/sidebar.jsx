@@ -36,7 +36,7 @@ function Sidebar({data, children}){
                <h3 className="tag-header">Tags</h3>
                 {children}
                     <ul className="tag-container">{
-                    data.map((e, index)=>(data[index].includes("shonen") || data[index].includes("seinen") || data[index].includes("shounen") || data[index].includes("shoujo")  ?
+                    data.map((e, index)=>(e.includes("shonen") || e.includes("seinen") || e.includes("shounen") || e.includes("shoujo")  ?
                         
                         (<li key={index} onClick={linktotag} className="tagoutput demographic-tag">{data[index]}</li>):(
                         <li key={index} onClick={linktotag} className="tagoutput generic-tag">{data[index]}</li>
@@ -45,6 +45,7 @@ function Sidebar({data, children}){
                         
                     ))}
                     </ul>
+
             </div>
     
             )

@@ -34,7 +34,7 @@ li{
 
 
 img{
-    width: 4rem;
+    width: 80%;
 }
 
 .lightordark-container{ /*Container of light or dark mode*/
@@ -82,12 +82,23 @@ ul.tag-container{
   padding: 0rem 1rem 1rem 1rem;
 }
 
-.highres-question{
+.high-res-question{
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-around;
     align-items: center;
+    border: 1px solid var(--generic-tag)
     
+}
+
+.high-res-question:hover{
+    background-color: var(--base-color-topnav);
+    color: var(--text-color-topnav);
+    border: 2px solid var(--generic-tag)
+}
+
+.other-tag{
+    justify-content: space-around;
 }
 
 .highlight{
@@ -104,6 +115,7 @@ ul.tag-container{
 li.tagoutput{
     margin: 0.2rem;
     cursor: pointer;
+    justify-content: space-around;
 }
 
 .demographic-tag{
@@ -154,6 +166,7 @@ li.tagoutput{
 .seriestitle{
     text-align: center;
     font-size: 1rem;
+    margin-top: 0.5rem;
 }
 
 .footer-container{
@@ -162,9 +175,10 @@ li.tagoutput{
 }
 
 .postitem{
-    width: 70%;
+    width: 90%;
     padding: 10px;
     margin: auto;
+    position: block;
 }
 
 .next-page-arrow{
@@ -210,4 +224,20 @@ ul.list-num-page{
     width: 100vw;
     
 }
+
+.favorite-btn{
+    position: absolute;
+    top: 1rem;
+    right: 5rem;
+    fill: #D16D6A;
+    height: 2rem;
+    width: 2rem;
+}
+
+.imgwrap{
+    position: relative;
+
+}
+
+
 

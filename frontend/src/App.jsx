@@ -3,6 +3,7 @@ import {Routes, Route} from "react-router-dom"
 import {Favorites, Home, SavedSearch, Profile, Posts, PostPage} from "./pages"
 import PostContext from './contexts/postContext'
 import PageContext from './contexts/pageContext'
+import { FavContext } from './contexts/favoritesContext'
 import { useEffect } from 'react'
 
 
@@ -17,8 +18,10 @@ function App() {
 
 
   return (
+
 <PageContext>
-  <PostContext>
+  <FavContext>
+    <PostContext>
       <Routes>
         <Route path="/" element={<Home></Home>}></Route>
         
@@ -29,7 +32,8 @@ function App() {
         <Route path="/favorites" element={<Favorites></Favorites>} ></Route>
         <Route path="/savedsearch" element={<SavedSearch></SavedSearch>} ></Route>  
       </Routes>
-  </PostContext>
+    </PostContext>
+  </FavContext>
 </PageContext>
 
   )

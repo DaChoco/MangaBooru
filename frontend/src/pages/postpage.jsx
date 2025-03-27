@@ -1,5 +1,6 @@
 import { SearchBar, Topnav, Footer, Sidebar } from "../components"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
+import { favoritesitems } from "../contexts/favoritesContext"
 
 
 function PostPage(){
@@ -11,6 +12,31 @@ function PostPage(){
     const [mangaName, setMangaName] = useState("")
 
     const [highres, setHighres] = useState(false)
+    const {favorited} = useContext(favoritesitems)
+    const {setFavorited} = useContext(favoritesitems)
+
+    const FULL_URL = new URL(window.location.href)
+    const url_path = FULL_URL.pathname
+    const url_ID = url_path.substring(7, url_path.length)
+
+    const addedbox = document.getElementById("ADDFAV")
+
+    const addtofavorites = () =>{
+        if (favorited.indexOf(url_ID) !== -1){
+            console.log("This is already in your favorites")
+            return
+        }
+
+        setFavorited(url_ID)
+        localStorage.setItem("favorites", JSON.stringify(favorited))
+
+        addedbox.style.display = "block"
+        setTimeout(function(){
+            addedbox.style.display = "none"
+       
+        }, 1000)
+    }
+    
 
     const seeFullnewTab = () => {
 
@@ -23,15 +49,16 @@ function PostPage(){
         
     }
 
+
+
     const toBig = () =>{
         mangaimage.setAttribute("src", bigseriesImage)
+        setHighres(true)
         
 
     }
     useEffect(()=>{
-        const FULL_URL = new URL(window.location.href)
-        const url_path = FULL_URL.pathname
-        const url_ID = url_path.substring(7, url_path.length)
+
 
         const returnMangaInfo = async (urlID) =>{
             let url = `http://127.0.0.1:8000/returnMangaInfo/${urlID}`
@@ -89,19 +116,25 @@ function PostPage(){
         <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
         <article>
             
-            <Sidebar data={tags}><h2 className="seriestitle">{mangaName.replace(/_/g, " ")}</h2></Sidebar>
+            <Sidebar data={tags}>
+                <h2 className="seriestitle">{mangaName.replace(/_/g, " ")}</h2>
+
+                
+            </Sidebar>
             <h2 className="seriestitle">Options:</h2>
-            <ul>
-                <li>Add to Favorites</li>
-                <li>Add tags</li>
-                <li>Flag for Deletion</li>
-                <strong><li className="tagoutput" onClick={seeFullnewTab}>See original</li></strong>
+
+            <div id="ADDFAV">Manga series has been added to your favorites!</div>
+            <ul className="tag-container">
+                <li className="other-tag" onClick={addtofavorites}>Add to Favorites</li>
+                <li className="other-tag">Add tags</li>
+                <li className="other-tag">Flag for Deletion</li>
+                <strong><li className="tagoutput other-tag" onClick={seeFullnewTab}>See original</li></strong>
             </ul>
 
             <h2 className="seriestitle">Statistics</h2>
-            <ul>
-                <li>Year First Published: </li>
-                <li>Image Resolution: </li>
+            <ul className="tag-container">
+                <li className="other-tag">Year First Published: </li>
+                <li className="other-tag">Image Resolution: </li>
             </ul>
         </article>
 

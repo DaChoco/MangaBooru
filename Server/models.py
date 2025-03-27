@@ -20,3 +20,6 @@ class CreateTag(BaseModel):
 
 class SearchRequest(BaseModel):
     inputtxt: list | None
+
+class FavoritesRequest(BaseModel):
+    arrFavorites: list
