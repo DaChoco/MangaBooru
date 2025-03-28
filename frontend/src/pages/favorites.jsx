@@ -15,6 +15,8 @@ function Favorites(){
 
     const [seriesID, setSeriesID] = useState([])
 
+    const [tags, setTags] = useState([])
+
     function extractSeriesID(index){
         const selectedSeries = seriesID[index]
         navigate(`/posts/${selectedSeries}`)
@@ -78,7 +80,55 @@ function Favorites(){
             }
         }
 
+        const extractFavTags = async () => {
+            const url = `http://127.0.0.1:8000/returnFavoriteTagList`
+
+            if (favorited.length <= 0){
+                console.log("The user does not have favorites")
+                return
+            }
+
+            try{
+                let arrtags = []
+                const response = await fetch(url, 
+                    {method: "POST",
+                    headers: {"content-type": "application/json",
+                            "Access-Control-Allow-Origin": "*",
+                            'Access-Control-Allow-Headers': "*",
+                            'Access-Control-Allow-Methods': "*"},
+                    body: JSON.stringify({arrFavorites: favorited})
+                        }
+                    )
+
+                const data = await response.json()
+
+                if (data.length<=0){
+                    console.log("Nothing was returned")
+                    return
+                }
+                else{
+                    
+                    
+                    console.log(data[0])
+                    console.log(arrtags)
+                    for (let i = 0; i<data.length; i++){
+                        arrtags.push(data[i].tagName)
+                    }
+
+                    setTags(arrtags)
+                }
+
+            }
+            catch(error){
+                console.log("Something has gone wrong: ", error)
+            }
+
+
+        }
+
         extractFavorites()
+
+        extractFavTags()
 
     },[])
 
@@ -89,6 +139,7 @@ function Favorites(){
             <div className="main-content">
             <Topnav></Topnav>
             <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
+            <Sidebar data={tags}></Sidebar>
 
 
             <div className="postcontent-container">

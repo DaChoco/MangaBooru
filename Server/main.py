@@ -9,7 +9,8 @@ import jwt
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, Body, Request, Response, status, Query
+from fastapi import FastAPI, HTTPException, status, Query
+
 from fastapi.middleware.cors import CORSMiddleware
 from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest, FavoritesRequest
 
@@ -439,7 +440,7 @@ def returnFavorites(data: FavoritesRequest):
 
     print(list_favorites)
     paraquery = ",".join(["%s"]*len(list_favorites))
-    SQL_QUERY = f"SELECT thumbnail, url, seriesName, seriesID from tblseries where seriesID IN ({paraquery}) "
+    SQL_QUERY = f"""SELECT thumbnail, url, seriesName, tblseries.seriesID from tblseries where seriesID IN ({paraquery}) """
     
     cursor.execute(SQL_QUERY, tuple(list_favorites))
 
@@ -448,6 +449,43 @@ def returnFavorites(data: FavoritesRequest):
     conn.close()
 
     return (output)
+
+@app.post("/returnFavoriteTagList")
+def returnFavoriteTags(data: FavoritesRequest):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+    list_favorites = data.arrFavorites
+
+    paraquery = ",".join(['%s']*len(list_favorites))
+
+    SQL_QUERY = f"""
+    SELECT Distinct(tagName) from tbltags 
+        INNER JOIN tbltagseries ON tbltags.tagID = tbltagseries.tagID 
+        INNER JOIN tblseries    ON tbltagseries.seriesID = tblseries.seriesID 
+    WHERE tblseries.seriesID IN ({paraquery}) """
+
+    cursor.execute(SQL_QUERY, tuple(list_favorites))
+
+    output = cursor.fetchall()
+
+    if not output:
+        return {"Message": "No tags were returned"}
+    
+    conn.close()
+    return output
+
+@app.get("/everytag")
+def AllTags(page: int = Query(1, ge=1)):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    SQL_QUERY = """SELECT DISTINCT(tagName), tagDesc from tbltags LIMIT 10 OFFSET %s"""
+    offsetval = (page-1)*20
+    cursor.execute(SQL_QUERY, (offsetval,))
+    output = cursor.fetchall()
+    
+    conn.close()
+    return output
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000, reload=True)

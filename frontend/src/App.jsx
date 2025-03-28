@@ -5,6 +5,7 @@ import PostContext from './contexts/postContext'
 import PageContext from './contexts/pageContext'
 import { FavContext } from './contexts/favoritesContext'
 import { useEffect } from 'react'
+import AllTags from './pages/alltag'
 
 
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/profile" element={<Profile></Profile>} ></Route>
         <Route path="/favorites" element={<Favorites></Favorites>} ></Route>
         <Route path="/savedsearch" element={<SavedSearch></SavedSearch>} ></Route>  
+        <Route path='/tags' element={<AllTags></AllTags>}></Route>
       </Routes>
     </PostContext>
   </FavContext>

@@ -15,7 +15,6 @@
   --tag-text-color: rgb(133, 13, 13);
   --series-text-color: rgb(2, 146, 146);
 
-
   transition: 0.5s;
 
 
@@ -27,6 +26,8 @@ html[data-theme=light]{
   --text-color-topnav: #ffffff;
   --base-text-dark: #1f1f20;
   --link-text-dark: #d9f1f6;
+
+  --tablebg: #d8dee2;
 
   --dropdown-color: #ebe6e6;
 
@@ -45,6 +46,8 @@ html[data-theme=dark]{
   --text-color-topnav: #ffffff;
   --base-text-dark: #FFFFFF;
   --link-text-dark: #edf9f9;
+
+  --tablebg: #1e2128;
 
   --dropdown-color: #ebe6e6;
 

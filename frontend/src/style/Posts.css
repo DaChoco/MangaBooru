@@ -239,5 +239,10 @@ ul.list-num-page{
 
 }
 
+#ADDFAV{
+    display: none;
+    position: absolute;
+}
+
 
 

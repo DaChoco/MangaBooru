@@ -6,7 +6,7 @@ import { favoritesitems } from "../contexts/favoritesContext"
 function PostPage(){
     const mangaimage = document.getElementById("mangaimage")
 
-    const [thumbnail, setThumbnail] = useState("")
+    const [thumbnail, setThumbnail] = useState(null)
     const [tags, setTags] = useState([])
     const [bigseriesImage, setBigseriesImage] = useState("") //higher res option if available
     const [mangaName, setMangaName] = useState("")

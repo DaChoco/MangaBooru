@@ -27,6 +27,7 @@ function PostBox(){
 
     function assignfav(index){
         setFavorited([...favorited, seriesID[index]])
+        console.log(favorited)
         localStorage.setItem("favorites", JSON.stringify(favorited))
     }
 

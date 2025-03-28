@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import {SearchBar} from "../components"
 import {Link} from "react-router-dom"
+import { PageNumContext } from '../contexts/pageNumContext'
 import "../style/Home.css"
 function Home(){
     const [isLoading, setIsLoading] = useState(true)
     const [progressbar, setProgressBar] = useState(0) //will use later
     const htmlpage = document.documentElement;
 
+    const {setPage} = useContext(PageNumContext)
+
     useEffect(()=>{
         setIsLoading(false)
+        setPage(1)
         console.log("Page loaded")
 
     }, [])
