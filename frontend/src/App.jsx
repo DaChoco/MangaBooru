@@ -6,6 +6,7 @@ import PageContext from './contexts/pageContext'
 import { FavContext } from './contexts/favoritesContext'
 import { useEffect } from 'react'
 import AllTags from './pages/alltag'
+import { LoggedInContext } from './contexts/loggedinContext'
 
 
 
@@ -19,7 +20,7 @@ function App() {
 
 
   return (
-
+<LoggedInContext>
 <PageContext>
   <FavContext>
     <PostContext>
@@ -37,6 +38,7 @@ function App() {
     </PostContext>
   </FavContext>
 </PageContext>
+</LoggedInContext>
 
   )
 }

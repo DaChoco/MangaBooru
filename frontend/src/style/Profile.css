@@ -1,0 +1,13 @@
+.profile-page-container{
+    grid-area: sidenav;
+    margin-left: 0.5rem;
+    padding: 1rem;
+}
+
+.islogged-container{
+    padding: 0;
+}
+
+.anouncement.ppage{
+    position: absolute;
+}
