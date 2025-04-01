@@ -27,6 +27,8 @@ html[data-theme=light]{
   --base-text-dark: #1f1f20;
   --link-text-dark: #d9f1f6;
 
+  --auth-box-bg-color: #c8d8cf;
+
   --tablebg: #d8dee2;
 
   --dropdown-color: #ebe6e6;
@@ -56,6 +58,8 @@ html[data-theme=dark]{
 
   --demographic-color-tag: #dca80b;
   --generic-tag: #3d88b3;
+
+  --auth-box-bg-color: #191e1f;
 
 
 }
