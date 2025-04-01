@@ -11,3 +11,105 @@
 .anouncement.ppage{
     position: absolute;
 }
+
+.profile-info-container{
+    grid-area: maincontent;
+    width: 90%;
+    
+    margin: 0 auto;
+}
+
+.profile-user-display{
+    position: relative;
+
+}
+
+.banner-container{
+    width: 100%;
+    height: 25rem;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.profile-icon{
+    border-radius: 10rem;
+    
+    color: #FFF;
+    border: solid #FFF 0.25rem;
+    width: 10rem;
+    height: 10rem;
+
+
+    background-size: contain;
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+}
+
+.user-sig{
+    margin: 0 auto;
+    width: max-content;
+    display: block;
+
+    font-size: 1.25rem;
+}
+
+.user-title{
+    background-color: var(--base-color-topnav);
+    color: var(--text-color-topnav);
+
+    font-size: 22px;
+
+    padding: 0.5rem 0;
+    margin: 0.5rem 0;
+    text-align: center;
+    width: 100%;
+    height: max-content;
+    display: block;
+}
+
+.header-section{
+    justify-content: left;
+}
+
+section{
+    width: 100%;
+    max-width: 70vw;
+}
+
+.show-my-favs-container{
+    display: flex;
+    flex-direction: row;
+
+    overflow-x: auto;
+    padding: 1rem;
+    margin: 0 0.25rem;
+
+    white-space: nowrap;
+
+    width: 100%;
+
+    scroll-behavior: smooth;
+
+}
+
+.show-my-favs-container::-webkit-scrollbar{
+    height: 10px;
+    width: 10px;
+}
+
+.show-my-favs-container::-webkit-scrollbar-track {
+    background: var(--base-color-dark); /* background color */
+    border-radius: 10px;
+}
+
+.show-my-favs-container::-webkit-scrollbar-thumb {
+    background: var(--base-color-topnav); /* The Scrollbar color */
+    border-radius: 10px;
+}
+
+.img-unit-favs{
+    width: 15rem;
+    height: auto;
+    margin: auto 0.5rem;
+}
