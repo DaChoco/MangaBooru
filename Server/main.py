@@ -65,6 +65,24 @@ app.add_middleware(CORSMiddleware,
 
 #MY API ROUTES - THE ROUTES THEMSELVES :
 
+#------------WHEN LOGGED IN / PROFILE PAGE
+@app.get("/returnUserInfo/{userID}")
+def login(userID):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    SQL_STRING = """
+    SELECT tblusers.userID, userName, seriesUploaded, DateCreated, role, userabout, userIcon, userBanner, signature FROM tblusers 
+    INNER JOIN tbluserinfo ON 
+    tblusers.userID = tbluserinfo.userID
+    WHERE tblusers.userID = %s"""
+
+    cursor.execute(SQL_STRING, (userID,))
+    result = cursor.fetchone()
+    conn.close()
+
+    return result
+
 
 #------------------------------------------------ CRITICAL! IMPLEMENT JWT!
 @app.post("/login")

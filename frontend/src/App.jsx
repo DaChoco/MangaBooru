@@ -31,6 +31,9 @@ function App() {
         <Route path="/posts/:seriesID" element={<PostPage></PostPage>} ></Route>
        
         <Route path="/profile" element={<Profile></Profile>} ></Route>
+        <Route path="/profile/:userID" element={<Profile></Profile>} ></Route>
+        <Route path="/profile/:userID/update" element={<Profile></Profile>} ></Route>
+
         <Route path="/favorites" element={<Favorites></Favorites>} ></Route>
         <Route path="/savedsearch" element={<SavedSearch></SavedSearch>} ></Route>  
         <Route path='/tags' element={<AllTags></AllTags>}></Route>

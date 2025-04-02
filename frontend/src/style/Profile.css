@@ -3,6 +3,8 @@
     grid-area: sidenav;
     margin-left: 0.5rem;
     padding: 1rem;
+
+    border-right: solid var(--base-color-topnav) 5px;
 }
 
 /*START OF SIDEBAR*/
@@ -14,6 +16,8 @@
 .anouncement.ppage{
     position: absolute;
 }
+
+
 
 /*END OF SIDEBAR*/
 
@@ -34,7 +38,7 @@
 .banner-container{
     width: 100%;
     height: 25rem;
-    background-size: cover;
+    background-size: 100% auto;
     overflow: hidden;
 }
 
@@ -74,6 +78,27 @@
     height: max-content;
     display: block;
 }
+
+#btnsection{
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+#btnsection button{
+    width: 20%;
+    margin: 0 0.5rem;
+    padding: 0.75rem;
+    background-color: var(--auth-box-bg-color);
+    color: var(--base-text-dark);
+    border: solid 4.5px #4286ad;
+    border-radius: 0.75rem;
+    transition: 0.5s;
+}
+
+    #btnsection button:hover{
+        background-color: #27ccd5;
+    }
 
 .header-section{
     justify-content: left;

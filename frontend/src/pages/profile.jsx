@@ -1,23 +1,47 @@
 import { useState, useEffect, useContext } from 'react'
 import { SearchBar, Topnav, Footer } from "../components"
 import { loggedIn } from '../contexts/loggedinContext'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import "../style/Posts.css"
 import "../style/Profile.css"
 
 
 function Profile(){
+    const acceptedBanners = 
+    [
+    "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/8acc4628408cb4ecf0a1bc6c225f85b2.jpg",
+    "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/d3ff89457850e066d28f7eb84179d583.jpg",
+    "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/image_2025-04-01_193059632.png",
+
+    "https://i.pinimg.com/1200x/57/39/b8/5739b85cb9aa3362a879f5c67f27a845.jpg",
+    "https://i.pinimg.com/1200x/63/1f/18/631f18d68cee0131c9cf3d63b0516fec.jpg",
+    "https://i.pinimg.com/1200x/ff/79/98/ff79982de230500555c1e886c7320853.jpg"
+    ]
+//HOOKS -----------------------------------------------------------------
+const navigate = useNavigate()
+
 
     const {logged, setLogged} = useContext(loggedIn)
-
-
+    const {userID, setUserID} = useContext(loggedIn)
     const {showLoginBox, setShowLoginBox} = useContext(loggedIn)
     const {showRegisterBox, setShowRegisterBox} = useContext(loggedIn)
 
     const [emailquery, setEmailquery] = useState("")
     const [usernamequery, setUsernamequery] = useState("")
     const [passwordquery, setPasswordquery] = useState("")
+    const [showstats, setShowstats] = useState(false)
 
+    const [userData, setUserData] = useState({})
+
+    useEffect(()=>{
+        userInfoData("cdbaf1d8-044d-11f0-9458-b48c9d5f0a08")
+    }, [])
+
+
+
+//FUNCTIONS ---------------------------------------------------------------
+
+    //WHEN LOGGED OUT
     function showLogin(){
         if (showRegisterBox === true){
             setShowRegisterBox(!showRegisterBox)
@@ -36,24 +60,70 @@ function Profile(){
         setShowRegisterBox(!showRegisterBox)
         console.log(showRegisterBox)
     }
+    //API CALLS
+
+    async function userInfoData(userID){
+
+        //Extracts user info for the profile page
+        const url = `http://127.0.0.1:8000/returnUserInfo/${userID}`
+    try{
+        const response = await fetch(url, {method: "GET"})
+        const data = await response.json()
+
+        console.log("Data: ", data)
+        setUserData(data)
+
+        setUserData((prevdata) =>({...prevdata, DateCreated: new Date(prevdata.DateCreated).toLocaleDateString()}))
+
+
+
+
+        
+    }
+    catch (error){
+        console.log("An unforseen error has occured")
+    }
+        
+    }
+
+    //WHEN LOGGED IN
+
+    const updateBannerPic = (e)=>{
+        let randnum = Math.floor(Math.random() * 6)
+        e.target.style.backgroundImage = `url(${acceptedBanners[randnum]})`
+
+    }
+
+    const togglestats = ()=>{
+        setShowstats(!showstats)
+    }
+
+    const logout = async () =>{
+        setLogged(!logged)
+        console.log("Thank you for using the service. Bye!")
+    }
+//JSX ---------------------------------------------------
+
+if (!userData){ return (<div>LOADING...</div>)}
     return(
 
         <div className="main-content" style={{position: "relative"}}>
             <Topnav></Topnav> 
 
-            {logged === false ?
+            {logged === true ?
              (
              
             <> 
-             <div className='profile-page-container'>
+             <div className='profile-page-container' style={{height: "65vh", width: "auto"}}>
                 <div className="anouncement-ppage">
                     <h2>You are not currently logged in.</h2>
 
                     <ul className="islogged-container">
-                        <li onClick={()=> showLogin()}><h3>Login</h3></li>
-                        <li onClick={()=> showRegister()}><h3>Register</h3></li>
+                        <li onClick={()=> showLogin()} style={{cursor: "pointer"}}><h3>Login</h3></li>
+                        <li onClick={()=> showRegister()} style={{cursor: "pointer"}}><h3>Register</h3></li>
                     </ul>
                 </div>
+
              </div>
 
              {showLoginBox === true && (
@@ -98,38 +168,52 @@ function Profile(){
 
              </form>)}
             </>
-             ):
-
-             (
+             ):(
             <>
              <div className='profile-page-container'>
                 <div className="anouncement-ppage">
                     <h3>My Profile Information and Settings</h3>
 
                     <ul className="islogged-container">
-                        <li><h3>Show My Profile</h3></li>
+                        <li><h3>Options</h3></li>
                         <li><h3><Link to={"/favorites"} style={{color: "var(--base-text-dark)"}}>Show My Favorites</Link></h3></li>
-                        <li><h3>Logout</h3></li>
+                        <li><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
                     </ul>
+
+{showstats && ( <div id="statswrapper">
+                        <h3>Statistics Summarized:</h3>
+                    <ul className="islogged-container">
+                        <li><h3>Date Joined: <p style={{color: "var(--generic-tag)", margin: 0, width: "max-content"}}>{userData.DateCreated}</p></h3></li>
+                        <li><h3>Series Uploaded:<p style={{color: "var(--generic-tag)", margin: 0, width: "max-content"}}>{userData.seriesUploaded}</p></h3></li>
+                    </ul>
+                </div>)
+}
+         
                 </div>
-             </div>
+            </div>
 
              <div className="profile-info-container">
                 {/*Currently dummy data. Will have dynamic data later */}
                 
-                <div className="banner-container" style={{backgroundImage: "url(https://i.pinimg.com/1200x/b1/f0/1a/b1f01a2af62782c2468978d2e783713d.jpg)"}}></div>
+                <div onClick={updateBannerPic} className="banner-container" style={{backgroundImage: `url(${userData.userBanner})`}}></div>
         
                 <div className="profile-user-display">
-                    <div className="profile-icon" style={{backgroundImage: "url(https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/539c003cfb334c2501084cbc58fb297b.jpg)"}}></div>
-                    <span className='user-title'><strong>RonaldRappa</strong> - Member</span>
+                    <div className="profile-icon" style={{backgroundImage: `url(${userData.userIcon})`}}></div>
+                    <span className='user-title'><strong>{userData.userName}</strong> - {userData.role}</span>
                 </div>
 
                 <div className="profile-content">
 
                 <section id="mysig"> 
                     <span className='user-sig' style={{fontFamily: "Verdana, Arial"}}>
-                        ~<strong>Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque, ducimus!</strong>~
+                        ~<strong>{userData.signature}</strong>~
                     </span>
+                </section>
+
+                <section id="btnsection">
+                    <button type='button' onClick={()=> {navigate(`/profile/${userData.userID}/update`)}}>Edit Profile</button>
+                    <button type='button'>View Saved Searches</button>
+                    <button type='button' onClick={()=> setShowstats(!showstats)}>Toggle Statistics</button>
                 </section>
 
           
@@ -162,10 +246,7 @@ function Profile(){
 
                 <section id="myself">
                     <h1 className="header-section" style={{fontSize: "2rem"}}>About Myself:</h1>
-                    <p> Lorem ipsum dolor, sit amet consectetur adipisicing elit. 
-                        Ducimus quia nihil voluptatibus facilis aperiam placeat totam vero cumque est fugiat, quod rem ullam aspernatur.
-                        Sed, ex incidunt. Maxime, amet debitis fuga at ipsam magnam reiciendis minus autem quia voluptatem, cumque velit corrupti odio. Similique soluta tempore vitae tenetur recusandae, molestiae facere quidem sunt natus quia dolores facilis eaque officiis quibusdam quo quaerat perspiciatis dolore corrupti nostrum officia obcaecati perferendis quos! Eos impedit suscipit ea fugit! 
-                        Repellat a nulla ex veniam!
+                    <p> {userData.userabout}
                     </p>
                 </section>
                 
@@ -177,15 +258,9 @@ function Profile(){
              
             </> 
            
-            ) 
-             
-             
-             }
+            )}
 
             <Footer></Footer>
-        
-
-       
         </div>
         
         
