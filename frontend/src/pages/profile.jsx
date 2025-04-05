@@ -45,14 +45,10 @@ const navigate = useNavigate()
     const [userData, setUserData] = useState({})
 
     useEffect(()=>{
-        userInfoData(userID)
-    }, [])
 
-    useEffect(()=>{
+        //ONCE the user ID has been set, we can now render this thingy
         if (userID.length>0){
-            
-            console.log(userID)
-            console.log("Haha")
+            userInfoData(userID)
         }
     }, [userID])
 
@@ -184,11 +180,14 @@ const navigate = useNavigate()
 
     const logout = async () =>{
         setLogged(!logged)
+        setUserID("")
         console.log("Thank you for using the service. Bye!")
     }
 //JSX ---------------------------------------------------
 
 if (!userData){ return (<div>LOADING...</div>)}
+
+
     return(
 
         <div className="main-content" style={{position: "relative"}}>
@@ -196,7 +195,6 @@ if (!userData){ return (<div>LOADING...</div>)}
 
             {logged === false ?
              (
-             
             <> 
              <div className='profile-page-container' style={{height: "65vh", width: "auto"}}>
                 <div className="anouncement-ppage">

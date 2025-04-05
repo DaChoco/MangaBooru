@@ -33,13 +33,12 @@ def get_public_s3(object_key):
 
 
 
-def uploadImage():
-    UUID_Name = str(uuid.uuid4())
-    OBJECT_NAME = f"TestingFiles/{UUID_Name}.png"
-    IMAGE_PATH = r""
+def uploadImage(image_file, item_name):
+
     try:
         print("Uploading...")
-        s3.upload_file(IMAGE_PATH, BUCKET_NAME, OBJECT_NAME)
+        with open(image_file, "rb"):
+            s3.Bucket("publicboorufiles-01").upload_fileobj(image_file, f"userIcons/{item_name}")
         print("Upload complete!")
     
     except Exception as e:

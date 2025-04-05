@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from fastapi import File
 #Models used to extract jsons
 
 class LoginRequest(BaseModel):

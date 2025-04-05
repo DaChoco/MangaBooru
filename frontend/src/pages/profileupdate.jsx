@@ -6,7 +6,23 @@ import "../style/Posts.css"
 import "../style/Profile.css"
 import { useNavigate } from "react-router-dom";
 
+
+
 function ProfileUpdate(){
+
+    const navigate = useNavigate()
+    const updatepromptref = useRef(null)
+
+    const [mountedref, setMountref] = useState(false)
+    const [file, setFile] = useState(null)
+
+    const handleref = (node)=>{
+        updatepromptref.current = node;
+        setMountref(!!node)
+    }
+
+    const [showupdatepic, setShowupdatepic] = useState(false)
+
     const normal_banners_urls = [
         "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/8acc4628408cb4ecf0a1bc6c225f85b2.jpg",
         "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/d3ff89457850e066d28f7eb84179d583.jpg",
@@ -25,21 +41,33 @@ function ProfileUpdate(){
 
     const admin_banner_url = "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/GoofyKiana.JPG"
 
-   const updatepromptref = useRef(null)
-
-    //ADMIN BANNERS
-
-    //ADMIN + PATREONS
-
-    const [showupdatepic, setShowupdatepic] = useState(false)
+    
     
     const { userID } = useContext(loggedIn)
-    const { userIcon } = useContext(loggedIn)
+    const { userIcon, setUserIcon } = useContext(loggedIn)
 
-    const navigate = useNavigate()
+    const handleupload = async (e)=>{
+        e.preventDefault()
+
+        const url = `http://127.0.0.1:8000/updatemypage/${userID}/uploads`
+
+        const formdata = new FormData()
+        formdata.append("file")
+
+        const response = await fetch(url, {method: "POST", body: formdata})
+        const data = await response.json()
+
+        if (data.message === true){
+            console.log("Upload success")
+            setUserIcon(data.publicurl)
+
+            
+        }
+
+    }
 
     async function updateProfile(username, signature, banner, aboutsection){
-        const url = `http://127.0.0.1:8000/updatemyprofile/${userID}`
+        const url = `http://127.0.0.1:8000/updatemypage/${userID}`
 
 
         //come up with the backend body structure later
@@ -71,21 +99,24 @@ function ProfileUpdate(){
 
     useEffect(()=>{
 
-        const handleclickoutside = (e)=>{
-            console.log(updatepromptref)
-            if (updatepromptref.current && !updatepromptref.current.contains(e.target))
-            {
-                console.log("Hmm")
-                setShowupdatepic(!showupdatepic)
-                console.log(showupdatepic)
-            }
-
+        if (mountedref === false){
+          return  
         }
 
-        document.addEventListener("click", handleclickoutside);
-        return () => {document.removeEventListener("click", handleclickoutside)};
+        const handleclickoutside = (event) => {
+            
+            if (updatepromptref.current && !updatepromptref.current.contains(event.target)) {
+            console.log(updatepromptref)
+            setShowupdatepic(false);
+            }
+          };
+        
+          document.addEventListener("mousedown", handleclickoutside);
+          return () => {
+            document.removeEventListener("mousedown", handleclickoutside);
+          };
 
-    }, [])
+    }, [mountedref])
 
 
     return (
@@ -94,11 +125,11 @@ function ProfileUpdate(){
 
             <div className="update-profile-container">
                 <h1>Update Profile</h1>
-                <p style={{maxWidth: "60%", margin: "1rem auto", fontSize: "1.15rem"}}>Keep all your personal details to yourself. As information seen here can be seen to anyone who visits your profile. Thus, no effort will be made by us to secure said info</p>
+                <p style={{maxWidth: "60%", margin: "1rem auto", fontSize: "1.15rem"}}>Keep all your personal details to yourself. As information seen here can be seen to anyone who visits your profile. Another note. To avoid distortion. Keep your icon images around a 1:1 ratio</p>
 
                 <div className="photo-update-container">
                     <div className="profile-icon" style={{position: "static", backgroundImage: `url(${userIcon})`}}></div>
-                    <button className='profile-button' onClick={()=> setShowupdatepic(!showupdatepic)}>Update your Profile Pic</button>
+                    <button className='profile-button' onClick={()=> setShowupdatepic(true)}>Update your Profile Pic</button>
                 </div>
 
                 <form className="other-update-container">
@@ -139,19 +170,25 @@ function ProfileUpdate(){
                     </div>
 
                     <div className="btn-container-updates" style={{display: "flex", flexDirection: "row"}}>
-                        <button className="profile-button" onClick={()=> navigate(`/profile/${userID}`)}>Cancel</button>
-                        <button className="profile-button">Submit</button>
+                        <button className="profile-button" onClick={()=> navigate(`/profile`)}>Cancel</button>
+                        <button className="profile-button" type="submit">Submit</button>
                     </div>
                 </form>
 
                
+                
+
+               
             </div>
 
-            {showupdatepic === true && (
-                <div className="new-pic-container" id="updatebox" ref={updatepromptref}>
+            {showupdatepic && (
+                <div className="new-pic-container" id="updatebox" ref={handleref}>
                 <h1 style={{fontSize: "2rem"}}>Select a New Icon! </h1>
                 <input style={{margin: "0 auto",}} type="file" placeholder="Input a new file" />
-            </div>)}
+            </div>
+            )}
+
+           
             
 
             <Footer></Footer>

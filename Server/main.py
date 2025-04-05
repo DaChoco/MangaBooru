@@ -1,7 +1,8 @@
-#MYSQL
+#MYSQL - RELATIONAL DB
 import mysql.connector
 
 from itertools import batched, chain
+import datetime
 
 #SECURITY
 import bcrypt
@@ -9,16 +10,21 @@ import jwt
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Query
+from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile
 
 from fastapi.middleware.cors import CORSMiddleware
-from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest, FavoritesRequest, UpdateProfileRequest
+
+#splitting it up cause it was getting too long
+from models import LoginRequest, RegisterRequest 
+from models import CreateSeries, CreateTag, SearchRequest, FavoritesRequest
+from models import UpdateProfileRequest, FileUpdateRequest
 
 #AWS
-from aws import mass_presignedurls
+from aws import mass_presignedurls, uploadImage
 
 #Getting ENV files
-from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX
+from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET
+
 
 #MYSQL CONNECTING FUNCTION
 def createConnection():
@@ -130,6 +136,36 @@ def updatingprofile(data: UpdateProfileRequest, userID: str):
         conn.close()
 
     return {"message": True, "elaborate": "The update went through, thank you for your time"}
+
+@app.post("/updatemypage/{userID}/uploads")
+async def uploadimages(userID: str, file: UploadFile = File(...)):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    if file.size > 10:
+        return {"message": "Apologies, but your file is too big"}
+
+    aws_prefix = "userIcons/"
+
+    aws_url_base = f"https://{PUBLIC_BUCKET}/{aws_prefix}"
+    aws_item_name = f"/{file.filename}{datetime.datetime.now()}"
+
+    final_url = aws_url_base + aws_item_name
+
+    try:
+        uploadImage(file.file, f"{file.filename}{datetime.datetime.now()}")
+        cursor.execute("UPDATE tbluserinfo set userIcon = %s WHERE userID = %s", (final_url, userID))
+        
+        cursor.execute("SELECT userIcon FROM tbluserinfo WHERE userID = %s ", (userID,))
+        output = cursor.fetchone()
+
+        return {"publicurl": output["userIcon"], "message": True}
+    except mysql.connector.DatabaseError as e:
+        return {"message": f"An error has occurred for the following reason: {e}"}
+    except Exception:
+        return {"message": "No"}
+    finally:
+        conn.close()
 
 
 #------------------------------------------------ CRITICAL! IMPLEMENT JWT!

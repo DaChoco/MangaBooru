@@ -12,6 +12,7 @@ hostplace = os.getenv("host")
 BUCKET_NAME = os.getenv("bucket")
 AMAZON_USERNAME = os.getenv("AMAZON_USERNAME")
 BUCKET_PREFIX = os.getenv("BUCKET_PREFIX")
+PUBLIC_BUCKET = os.getenv("PUBLIC_BUCKET")
 
 PERSONAL_IP = os.getenv("PERSONAL_IP")
 
