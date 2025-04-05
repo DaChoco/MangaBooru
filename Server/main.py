@@ -12,7 +12,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, status, Query
 
 from fastapi.middleware.cors import CORSMiddleware
-from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest, FavoritesRequest
+from models import LoginRequest, RegisterRequest, CreateSeries, CreateTag, SearchRequest, FavoritesRequest, UpdateProfileRequest
 
 #AWS
 from aws import mass_presignedurls
@@ -82,6 +82,54 @@ def login(userID):
     conn.close()
 
     return result
+
+@app.post("/updatemypage/{userID}")
+def updatingprofile(data: UpdateProfileRequest, userID: str):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    SELECT_UNAME = " userName = %s"
+    SELECT_UBANNER = " userBanner = %s"
+    SELECT_SIG = " signature = %s" 
+    SELECT_UABOUT = " userabout = %s"
+
+    list_of_vals = []
+    set_clauses = []
+
+    #example output with the join process [apple, urlyap, i like water, users yap] -> "apple, urlyap, i like water, users yap" (z,z,z,z)
+    if data.uname:
+        set_clauses.append(SELECT_UNAME) 
+        list_of_vals.append(data.uname)
+
+    if data.ubanner:
+        set_clauses.append(SELECT_UBANNER)
+        list_of_vals.append(data.ubanner)
+
+    if data.sig:
+        set_clauses(SELECT_SIG)
+        list_of_vals.append(data.sig)
+
+    if data.aboutthem:
+        set_clauses(SELECT_UABOUT)
+        list_of_vals.append(data.aboutthem)
+    
+    if set_clauses == []:
+        return {"message": False, "elaborate": f"The update has failed due to no data being sent"}
+    
+    list_of_vals.append(userID)
+
+
+    try:
+        cursor.execute(f"UPDATE tblusers SET {",".join(set_clauses)} WHERE userID = %s", tuple(list_of_vals))
+        print("Success confirmation. Server side")
+    except mysql.connector.DatabaseError as e:
+        print("Something has gone wrong")
+        conn.rollback()
+        return {"message": False, "elaborate": f"The update has failed for the followiing reason: {e}"}
+    finally:
+        conn.close()
+
+    return {"message": True, "elaborate": "The update went through, thank you for your time"}
 
 
 #------------------------------------------------ CRITICAL! IMPLEMENT JWT!

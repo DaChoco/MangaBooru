@@ -23,3 +23,9 @@ class SearchRequest(BaseModel):
 
 class FavoritesRequest(BaseModel):
     arrFavorites: list
+
+class UpdateProfileRequest(BaseModel):
+    uname: str
+    sig: str
+    ubanner: str
+    aboutthem: str

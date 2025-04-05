@@ -23,6 +23,7 @@ const navigate = useNavigate()
 
     const {logged, setLogged} = useContext(loggedIn)
     const {userID, setUserID} = useContext(loggedIn)
+    const {userIcon, setUserIcon} = useContext(loggedIn)
     const {showLoginBox, setShowLoginBox} = useContext(loggedIn)
     const {showRegisterBox, setShowRegisterBox} = useContext(loggedIn)
 
@@ -72,6 +73,7 @@ const navigate = useNavigate()
 
         console.log("Data: ", data)
         setUserData(data)
+        setUserIcon(data.userIcon)
 
         setUserData((prevdata) =>({...prevdata, DateCreated: new Date(prevdata.DateCreated).toLocaleDateString()}))
 
@@ -180,7 +182,7 @@ if (!userData){ return (<div>LOADING...</div>)}
                         <li><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
                     </ul>
 
-{showstats && ( <div id="statswrapper">
+{showstats && (<div id="statswrapper">
                         <h3>Statistics Summarized:</h3>
                     <ul className="islogged-container">
                         <li><h3>Date Joined: <p style={{color: "var(--generic-tag)", margin: 0, width: "max-content"}}>{userData.DateCreated}</p></h3></li>
@@ -198,7 +200,7 @@ if (!userData){ return (<div>LOADING...</div>)}
                 <div onClick={updateBannerPic} className="banner-container" style={{backgroundImage: `url(${userData.userBanner})`}}></div>
         
                 <div className="profile-user-display">
-                    <div className="profile-icon" style={{backgroundImage: `url(${userData.userIcon})`}}></div>
+                    <img className="profile-icon" src={userData.userIcon} alt='user profile picture'/>
                     <span className='user-title'><strong>{userData.userName}</strong> - {userData.role}</span>
                 </div>
 
@@ -211,9 +213,9 @@ if (!userData){ return (<div>LOADING...</div>)}
                 </section>
 
                 <section id="btnsection">
-                    <button type='button' onClick={()=> {navigate(`/profile/${userData.userID}/update`)}}>Edit Profile</button>
-                    <button type='button'>View Saved Searches</button>
-                    <button type='button' onClick={()=> setShowstats(!showstats)}>Toggle Statistics</button>
+                    <button type='button' className='profile-button' onClick={()=> {navigate(`/profile/${userData.userID}/update`)}}>Edit Profile</button>
+                    <button type='button' className='profile-button'>View Saved Searches</button>
+                    <button type='button' className='profile-button' onClick={()=> setShowstats(!showstats)}>Toggle Statistics</button>
                 </section>
 
           
