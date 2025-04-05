@@ -139,6 +139,7 @@ def login(data: LoginRequest):
     cursor = conn.cursor(dictionary=True)
 
     hashed_password = hashPassword(data.passwd)
+    print(hashed_password, data.email, data.passwd)
 
     SQLParams = (data.email,)
 
@@ -147,12 +148,12 @@ def login(data: LoginRequest):
         output = cursor.fetchone()
         if output:
             if verifyPassword(data.passwd, hashed_password) == True:
-                return {"message": "Success, you are successfully logged in!", "username": output["userName"]}
+                return {"message": True, "username": output["userName"], "elaborate": "Success, you are successfully logged in!", "userID": output["userID"]}
             else:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password.")
+                return {"message": False, "elaborate": "Wrong Password"}
 
         else:
-            return {"message": "Incorrect username or password."}
+            return {"message": False, "elaborate": "Incorrect username or password"}
           
     except mysql.connector.Error:
         return {"message": "Apologies, an new error has occured. Please try again later"}
@@ -168,13 +169,13 @@ def register(data: RegisterRequest):
         conn = createConnection()
         cursor = conn.cursor(dictionary=True)
 
-        exist_user = cursor.execute("SELECT userName FROM tblUsers where email = %s or userName = %s", (data.email, data.username))
-
+        cursor.execute("SELECT userName FROM tblUsers where email = %s or userName = %s", (data.email, data.username))
+        exist_user = cursor.fetchone()
         if exist_user:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Username or email already taken, please take another one")
 
+        
         hashed_password = hashPassword(data.passwd)
-
         SQL_Params = (data.username, 0, data.username, hashed_password)
 
         try:

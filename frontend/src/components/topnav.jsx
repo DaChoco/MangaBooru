@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
-import {useState, useEffect} from "react"
+import {useState, useEffect, useContext} from "react"
+import {loggedIn} from "../contexts/loggedinContext"
 import "../style/Posts.css"
 
 
@@ -7,6 +8,9 @@ import "../style/Posts.css"
 function Topnav({children}){
     const [toggledark, setToggledark] = useState(false)
     const htmlElement = document.documentElement;
+
+    const {userID} = useContext(loggedIn)
+
 
     useEffect( ()=>{
         let oldtheme = localStorage.getItem("darkmode?")

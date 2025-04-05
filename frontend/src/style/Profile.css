@@ -153,7 +153,9 @@ section{
     z-index: 1000;
     position: absolute;
     
-    top: 20%;
+    top: 50%;
+    left: 50%;
+
     width: 35%;
     height: auto;
     transition: transform 1s ease-in-out;
@@ -164,13 +166,7 @@ section{
     background-color: var(--auth-box-bg-color);
 }
 
-#register{
-    right: -50%;
-}
 
-#login{
-    left: -50%;
-}
 
 
 .userinputs{
@@ -281,4 +277,25 @@ section{
 .btn-container-updates .profile-button{
     width: auto;
     margin: 0 2rem
+}
+
+.new-pic-container{
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 800px);
+    height: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    border-radius: 1rem;
+    padding: 1.25rem;
+
+    background-color: var(--auth-box-bg-color);
+}
+
+.new-pic-container input{
+    font-size: 1rem;
+    padding: 1rem;
 }

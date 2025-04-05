@@ -5,8 +5,18 @@ import { Link, useNavigate } from 'react-router-dom'
 import "../style/Posts.css"
 import "../style/Profile.css"
 
+import applelogo from "../assets/apple-logo.png"
+import googlelogo from "../assets/google.png"
+
 
 function Profile(){
+    //elements
+    const emaillogininput = document.getElementById("emaillogin")
+    const passwdlogininput = document.getElementById("passwdlogin")
+
+    const emailregisterinput = document.getElementById("emailregister")
+    const passwdregisterinput = document.getElementById("passwdregister")
+
     const acceptedBanners = 
     [
     "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/8acc4628408cb4ecf0a1bc6c225f85b2.jpg",
@@ -35,12 +45,20 @@ const navigate = useNavigate()
     const [userData, setUserData] = useState({})
 
     useEffect(()=>{
-        userInfoData("cdbaf1d8-044d-11f0-9458-b48c9d5f0a08")
+        userInfoData(userID)
     }, [])
 
+    useEffect(()=>{
+        if (userID.length>0){
+            
+            console.log(userID)
+            console.log("Haha")
+        }
+    }, [userID])
 
 
-//FUNCTIONS ---------------------------------------------------------------
+
+//FUNCTIONS --------------------------------------------------------------
 
     //WHEN LOGGED OUT
     function showLogin(){
@@ -61,6 +79,70 @@ const navigate = useNavigate()
         setShowRegisterBox(!showRegisterBox)
         console.log(showRegisterBox)
     }
+
+    //LOGIN AND REGISTER
+    const userLogin = async (e)=>{
+        e.preventDefault()
+        const url = `http://127.0.0.1:8000/login`
+
+        let uemail = emaillogininput.value
+        let upasswd = passwdlogininput.value
+
+
+        try{
+        const response = await fetch(url, 
+            {method: "POST",
+                headers: {
+                    "content-type": "application/json",
+
+                    "Access-Control-Allow-Origin": "*",
+                    'Access-Control-Allow-Headers': "*",
+                    'Access-Control-Allow-Methods': "*"},
+            body: JSON.stringify({email: uemail, passwd: upasswd})
+            }
+            
+        )
+
+        const data = await response.json()
+        console.log(data)
+
+        if (data.message === true){
+            setUserID(data.userID)
+            setLogged(true)
+            
+        }
+        else{
+            console.log("Sorry, something has gone wrong. This is the reason: ", data.elaborate)
+        }
+        }
+        catch (error){
+            console.log("Something has gone wrong: ", error)
+        }
+
+    }
+
+    const userRegister = async(e)=>{
+        const url = "http://127.0.0.1:8000/register"
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+
+                "Access-Control-Allow-Origin": "*",
+                'Access-Control-Allow-Headers': "*",
+                'Access-Control-Allow-Methods': "*"}
+            })
+
+        const data = await response.json()
+
+        if (data.message === true){
+            setLogged(true)
+        }
+    }
+    //END OF LOGIN AND REGISTER
+
+
     //API CALLS
 
     async function userInfoData(userID){
@@ -112,7 +194,7 @@ if (!userData){ return (<div>LOADING...</div>)}
         <div className="main-content" style={{position: "relative"}}>
             <Topnav></Topnav> 
 
-            {logged === true ?
+            {logged === false ?
              (
              
             <> 
@@ -127,15 +209,16 @@ if (!userData){ return (<div>LOADING...</div>)}
                 </div>
 
              </div>
+             
 
              {showLoginBox === true && (
-                <form className="userauthbox" id='login' style={{transform: "translateX(200%)"}}> {/*Swoops in from the left - Login */}
+                <form className="userauthbox" id='login' style={{transform: "translate(-50%, -50%)"}} onSubmit={userLogin}> {/*Swoops in from the left - Login */}
 
                 <span>Login with</span> 
                 <div className="userinputs" >
                 
-                    <input type="text" value={emailquery} onChange={(e) => setEmailquery(e.target.value)} placeholder='Type your email or username'/>
-                    <input type="text"  value={passwordquery} onChange={(e) => setPasswordquery(e.target.value)} placeholder='Type your password'/>
+                    <input type="text" id='emaillogin' value={emailquery} onChange={(e) => setEmailquery(e.target.value)} placeholder='Type your email or username'/>
+                    <input type="text" id='passwdlogin'  value={passwordquery} onChange={(e) => setPasswordquery(e.target.value)} placeholder='Type your password'/>
                     
                     <div style={{display: "flex", flexDirection: "row", margin: "0 auto 0 3rem", width: "75%"}}>
                     
@@ -143,6 +226,13 @@ if (!userData){ return (<div>LOADING...</div>)}
                     <label htmlFor="plsremember">Remember Me</label>
                     </div>
                     <button type="submit">Login</button>
+
+                    <span style={{margin: "0 auto"}}>--------OR----------</span>
+                    <div className="logoauth-box" style={{margin: "0 auto"}}>
+                        <img src={applelogo} alt="apple" style={{width: "40px", margin: "0 1rem"}}/>
+                        <img src={googlelogo} alt="google" style={{width: "40px", margin: "0 1rem"}}/>
+                    </div>
+                
                     <span className='not-txt' onClick={()=> showRegister()}>Not a user yet? Then Register!</span>
                   
                 </div>
@@ -151,7 +241,7 @@ if (!userData){ return (<div>LOADING...</div>)}
             )}
             
             {showRegisterBox === true && (
-            <form className="userauthbox" id='register' style={{transform: "translateX(-200%)"}} > {/*Swoops in from the right - Register*/}
+            <form className="userauthbox" id='register' style={{transform: "translate(-50%, -50%)"}} > {/*Swoops in from the right - Register*/}
                 <span>Register With</span>
 
             <div className="userinputs">
@@ -164,6 +254,12 @@ if (!userData){ return (<div>LOADING...</div>)}
                     <label htmlFor="plsremember">Remember Me</label>
                 </div>
                 <button type="submit">Register</button>
+
+                <span style={{margin: "0 auto"}}>--------OR----------</span>
+                    <div className="logoauth-box" style={{margin: "0 auto"}}>
+                        <img src={applelogo} alt="apple" style={{width: "40px", margin: "0 1rem"}}/>
+                        <img src={googlelogo} alt="google" style={{width: "40px", margin: "0 1rem"}}/>
+                    </div>
                 <span className='not-txt' onClick={()=> showLogin()}>Already a user? Then login!</span>
             </div>
 

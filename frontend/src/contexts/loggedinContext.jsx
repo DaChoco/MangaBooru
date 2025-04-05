@@ -9,7 +9,7 @@ export function LoggedInContext({children}){
 
     //design your useState to extract log in status later
     const [logged, setLogged] = useState(false)
-    const [userID, setUserID] = useState("cdbaf1d8-044d-11f0-9458-b48c9d5f0a08") //set this in tandem with a get user esque api call on load with a use effect
+    const [userID, setUserID] = useState("") //set this in tandem with a get user esque api call on load with a use effect
     const [userIcon, setUserIcon] = useState("")
     const [userBanner, setUserBanner] = useState("")
     return (
