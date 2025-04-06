@@ -307,7 +307,7 @@ if (!userData){ return (<div>LOADING...</div>)}
                     <h3>My Profile Information and Settings</h3>
 
                     <ul className="islogged-container">
-                        <li><Link to={`/profile/${userID}/uploads`}></Link><h3>Upload</h3></li>
+                        <li><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer", color: "var(--base-text-dark)"}}>Upload</h3></Link></li>
                         <li><h3><Link to={"/favorites"} style={{color: "var(--base-text-dark)"}}>Show My Favorites</Link></h3></li>
                         <li><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
                     </ul>
@@ -351,8 +351,6 @@ if (!userData){ return (<div>LOADING...</div>)}
           
                 <section id='myfavorites'>
                     <h1 className='header-section' style={{fontSize: "2rem"}}>Favorites:</h1>
-
-                    <h3 className="header-section">Mangas:</h3>
                     <ul className="show-my-favs-container">
                         {favoritesData.length >0 && (favoritesData.map((e, index)=>(<li key={index}><img className='img-unit-favs' src={e.thumbnail} alt="" /></li>)))}
                     </ul>

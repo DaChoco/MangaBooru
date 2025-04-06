@@ -1,5 +1,6 @@
 #AWS
 import boto3 as aws
+from mypy_boto3_s3 import S3Client
 import botocore.exceptions
 from botocore.client import Config
 from urllib.parse import urlparse
@@ -9,7 +10,7 @@ import uuid
 from vars import AMAZON_USERNAME, BUCKET_NAME, BUCKET_PREFIX
 session = aws.Session(profile_name=AMAZON_USERNAME)
 
-s3 = session.client("s3",
+s3: S3Client = session.client("s3",
                     config=Config(signature_version='s3v4'),
                     region_name="af-south-1",
                     endpoint_url="https://s3.af-south-1.amazonaws.com")

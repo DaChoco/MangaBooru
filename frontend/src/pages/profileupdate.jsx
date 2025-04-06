@@ -15,6 +15,7 @@ function ProfileUpdate(){
     const [mountedref, setMountref] = useState(false)
 
     const [file, setFile] = useState(null)
+    const [fileurl, setFileurl] = useState(null)
     const [forminfo, setForminfo] = useState({uname: "", sig: "", ubanner: "", aboutthem: ""})
 
     const handleref = (node)=>{
@@ -50,11 +51,19 @@ function ProfileUpdate(){
 
     const handleFilechange = (event)=>{
         setFile(event.target.files[0])
-        console.log(event.target.files[0])
+
+        const fileread = new FileReader()
+        fileread.addEventListener("load", ()=>{
+            setFileurl(fileread.result)
+        }, false,)
+
+        fileread.readAsDataURL(event.target.files[0])
+        
+        
 
     }
 
-    const handleupload = async ()=>{
+    const handleImageupload = async ()=>{
         if (!file){
             console.log("NO FILE SELECTED!")
             return
@@ -71,6 +80,7 @@ function ProfileUpdate(){
         if (data.message === true){
             console.log("Upload success: ", data)
             setUserIcon(data.publicurl)
+            setFileurl(null)
 
             
         }
@@ -87,6 +97,11 @@ function ProfileUpdate(){
     const  updateProfile = async(e)=>{
         e.preventDefault()
         const url = `http://127.0.0.1:8000/updatemypage/${userID}`
+
+        if (forminfo.sig.split(" ").length > 12){
+            alert("Use 10 words as your benchmark, that current string of yours is too long.")
+            return
+        }
 
 
         //come up with the backend body structure later
@@ -129,6 +144,7 @@ function ProfileUpdate(){
             if (updatepromptref.current && !updatepromptref.current.contains(event.target)) {
             console.log(userRole)
             setShowupdatepic(false);
+            setFileurl(null)
             }
           };
         
@@ -160,7 +176,7 @@ function ProfileUpdate(){
                     <input type="text" name="" id="updatename" placeholder="New Username..." value={forminfo.uname} onChange={(e)=>{setForminfo(prev=>({...prev, uname: e.target.value}))}}/>
 
                     <label htmlFor="updatesig">Signature</label>
-                    <input type="text" name="" id="updatesig" placeholder="New Signature... Should be less than 10 words" value={forminfo.sig} onChange={(e)=>{setForminfo(prev=>({...prev, sig: e.target.value}))}}/>
+                    <input type="text" name="" id="updatesig" placeholder="New Signature... Should be one phrase" value={forminfo.sig} onChange={(e)=>{setForminfo(prev=>({...prev, sig: e.target.value}))}}/>
 
                     <label htmlFor="updatebanner">Banner</label>
                     <select name="" id="updatebanner" className="dropbox-select" onChange={handleoptionchange}>
@@ -208,8 +224,9 @@ function ProfileUpdate(){
             {showupdatepic && (
             <div className="new-pic-container" id="updatebox" ref={handleref}>
                 <h1 style={{fontSize: "2rem"}}>Select a New Icon! </h1>
-                <input style={{margin: "0 auto"}} type="file" placeholder="Input a new file" onChange={handleFilechange} />
-                <button className="profile-button" style={{margin: "0 auto", width: "70%"}} onClick={handleupload}>Upload</button>
+                <input type="file" placeholder="Input a new file" onChange={handleFilechange} />
+                {fileurl && (<img src={fileurl} alt="Preview" className="preview-small" />)}
+                <button className="profile-button" style={{margin: "0 auto", width: "70%"}} onClick={handleImageupload}>Upload</button>
             </div>
             )}
 

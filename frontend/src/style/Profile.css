@@ -99,6 +99,9 @@
     #btnsection button:hover{
         background-color: #27ccd5;
     }
+    .profile-button:hover{
+        background-color: #21c3cb;
+    }
 
 .header-section{
     justify-content: left;
@@ -263,7 +266,10 @@ section{
 #aboutmeInput{
     border: none;
     outline: none;
-    width: 80%;
+    width: 90%;
+    padding: 2rem 0;
+    font-size: 1rem;
+    margin: 0 auto;
     
     
 }
@@ -296,6 +302,62 @@ section{
 }
 
 .new-pic-container input{
+    margin: 0 auto 1rem auto;
     font-size: 1rem;
     padding: 1rem;
+    width: 50%;
+
+    border: 1px solid var(--base-color-topnav);
+    background-color: var(--auth-box-bg-color);
+}
+
+.preview-small{
+    min-width: 20%;
+    max-width: 50%;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+}
+
+/*Upload Styling*/
+
+.upload-container{
+    margin: 2rem auto;
+    width: min(100%, 800px);
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.upload-container button{
+    margin: 1rem 0;
+}
+
+.upload-container input{
+    padding: 0.5rem;
+}
+
+.upload-container .about-me-text{
+    width: 95%;
+}
+
+.upload-container input:focus-within{
+    outline: var(--generic-tag) solid 3px;
+}
+
+.preview-container{
+    height: auto;
+    margin: 1rem auto;
+    max-width: 500px;
+    min-width: 160px;
+}
+
+#series-desc{
+    border: none;
+    outline: none;
+    padding: 1rem 0;
+    height: 4rem;
+}
+
+.terms{
+    list-style:circle;
 }

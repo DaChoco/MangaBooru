@@ -7,6 +7,7 @@ import datetime
 #SECURITY
 import bcrypt
 import jwt
+import uuid
 
 #FASTAPI
 import uvicorn
@@ -151,27 +152,24 @@ async def uploadimages(userID: str, file: UploadFile = File(...)):
     cursor.execute("SELECT userIcon from tbluserinfo where userID = %s", (userID,))
     old_response = cursor.fetchone()
     old_icon = str(old_response["userIcon"])
-
     deleteImage(old_icon)
 
     if file.size > 3000000:
         return {"message": "Apologies, but your file is too big", "status_code": 400}
 
-    aws_url_base = f"https://{PUBLIC_BUCKET}"
-    aws_item_name = f"/{datetime.datetime.now().strftime("%Y-%m-%d")}{file.filename}"
+    aws_url_base = f"https://{PUBLIC_BUCKET}/"
+    aws_item_name = f"{datetime.datetime.now().strftime("%Y-%m-%d")}-{uuid.uuid4().hex[:12]}-{file.filename}"
     #Ensuring that the name will always be unique
 
     final_url = aws_url_base + aws_item_name
-    print(final_url)
 
     try:
-        uploadImage(file.file, f"{datetime.datetime.now().strftime("%Y-%m-%d")}{file.filename}")
+        uploadImage(file.file, aws_item_name)
         cursor.execute("UPDATE tbluserinfo set userIcon = %s WHERE userID = %s", (final_url, userID))
         conn.commit()
         
         cursor.execute("SELECT userIcon FROM tbluserinfo WHERE userID = %s ", (userID,))
         output = cursor.fetchone()
-        print(output["userIcon"])
 
         return {"publicurl": output["userIcon"], "message": True}
     except mysql.connector.DatabaseError as e:
@@ -389,11 +387,10 @@ def tagInsert(data: CreateTag):
         conn.close()
 
 @app.post("/uploadSeries") #Adds a new manga series. Will need JWT in future. For now just prototyping
-def seriesInsert(data: CreateSeries):
-    SQL_Params = (data.seriesname, data.seriesdesc)
-
+def seriesInsert(data: CreateSeries, file: UploadFile = File(...)):
     conn = createConnection()
     cursor = conn.cursor()
+    SQL_Params = (data.seriesname, data.seriesdesc)
     try:
         cursor.execute("INSERT INTO tblSeries (seriesName, seriesDesc) VALUES (%s, %s)", SQL_Params)
         conn.commit()

@@ -1,6 +1,6 @@
 import './style/App.css'
 import {Routes, Route} from "react-router-dom"
-import {Favorites, Home, SavedSearch, Profile, Posts, PostPage, ProfilePage} from "./pages"
+import {Favorites, Home, SavedSearch, Profile, Posts, PostPage, ProfilePage, UploadPosts} from "./pages"
 import PostContext from './contexts/postContext'
 import PageContext from './contexts/pageContext'
 import { FavContext } from './contexts/favoritesContext'
@@ -32,7 +32,7 @@ function App() {
        
         <Route path="/profile" element={<Profile></Profile>}></Route>
         <Route path="/profile/:userID/update" element={<ProfilePage></ProfilePage>} ></Route>
-        <Route path='/profile/:userID/uploads'></Route>
+        <Route path='/profile/:userID/uploads' element={<UploadPosts></UploadPosts>}></Route>
 
         <Route path="/favorites" element={<Favorites></Favorites>} ></Route>
         <Route path="/savedsearch" element={<SavedSearch></SavedSearch>} ></Route>  
