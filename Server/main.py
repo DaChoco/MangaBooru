@@ -10,17 +10,17 @@ import jwt
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile
+from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses
 
 from fastapi.middleware.cors import CORSMiddleware
 
 #splitting it up cause it was getting too long
 from models import LoginRequest, RegisterRequest 
 from models import CreateSeries, CreateTag, SearchRequest, FavoritesRequest
-from models import UpdateProfileRequest, FileUpdateRequest
+from models import UpdateProfileRequest
 
 #AWS
-from aws import mass_presignedurls, uploadImage
+from aws import mass_presignedurls, uploadImage, deleteImage
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET
@@ -58,7 +58,8 @@ app = FastAPI()
 
 ORIGINS = ["http://localhost:80",
            "https://localhost:443", 
-           "http://localhost:5173", 
+           "http://localhost:5173",
+           "http://127.0.0.1:5173",
            "http://localhost:3306",
            PERSONAL_IP] 
 
@@ -112,57 +113,72 @@ def updatingprofile(data: UpdateProfileRequest, userID: str):
         list_of_vals.append(data.ubanner)
 
     if data.sig:
-        set_clauses(SELECT_SIG)
+        set_clauses.append(SELECT_SIG)
         list_of_vals.append(data.sig)
 
     if data.aboutthem:
-        set_clauses(SELECT_UABOUT)
+        set_clauses.append(SELECT_UABOUT)
         list_of_vals.append(data.aboutthem)
     
     if set_clauses == []:
         return {"message": False, "elaborate": f"The update has failed due to no data being sent"}
     
     list_of_vals.append(userID)
+    print(set_clauses)
+    print(f"UPDATE tbluserinfo JOIN tblusers ON tbluserinfo.userID = tblusers.userID SET {", ".join(set_clauses)} WHERE tbluserinfo.userID = %s")
 
 
     try:
-        cursor.execute(f"UPDATE tblusers SET {",".join(set_clauses)} WHERE userID = %s", tuple(list_of_vals))
+        cursor.execute(f"UPDATE tbluserinfo JOIN tblusers ON tbluserinfo.userID = tblusers.userID SET {", ".join(set_clauses)} WHERE tbluserinfo.userID = %s", tuple(list_of_vals))
+        conn.commit()
         print("Success confirmation. Server side")
+        return {"message": True, "elaborate": "The update went through, thank you for your time"}
     except mysql.connector.DatabaseError as e:
-        print("Something has gone wrong")
+        print(f"Something has gone wrong with MySQL: {e}")
         conn.rollback()
         return {"message": False, "elaborate": f"The update has failed for the followiing reason: {e}"}
     finally:
         conn.close()
 
-    return {"message": True, "elaborate": "The update went through, thank you for your time"}
+    
 
 @app.post("/updatemypage/{userID}/uploads")
+#updates the user icon on S3. We dont accept beyond 3MB
 async def uploadimages(userID: str, file: UploadFile = File(...)):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    if file.size > 10:
-        return {"message": "Apologies, but your file is too big"}
+    cursor.execute("SELECT userIcon from tbluserinfo where userID = %s", (userID,))
+    old_response = cursor.fetchone()
+    old_icon = str(old_response["userIcon"])
 
-    aws_prefix = "userIcons/"
+    deleteImage(old_icon)
 
-    aws_url_base = f"https://{PUBLIC_BUCKET}/{aws_prefix}"
-    aws_item_name = f"/{file.filename}{datetime.datetime.now()}"
+    if file.size > 3000000:
+        return {"message": "Apologies, but your file is too big", "status_code": 400}
+
+    aws_url_base = f"https://{PUBLIC_BUCKET}"
+    aws_item_name = f"/{datetime.datetime.now().strftime("%Y-%m-%d")}{file.filename}"
+    #Ensuring that the name will always be unique
 
     final_url = aws_url_base + aws_item_name
+    print(final_url)
 
     try:
-        uploadImage(file.file, f"{file.filename}{datetime.datetime.now()}")
+        uploadImage(file.file, f"{datetime.datetime.now().strftime("%Y-%m-%d")}{file.filename}")
         cursor.execute("UPDATE tbluserinfo set userIcon = %s WHERE userID = %s", (final_url, userID))
+        conn.commit()
         
         cursor.execute("SELECT userIcon FROM tbluserinfo WHERE userID = %s ", (userID,))
         output = cursor.fetchone()
+        print(output["userIcon"])
 
         return {"publicurl": output["userIcon"], "message": True}
     except mysql.connector.DatabaseError as e:
+        conn.rollback()
         return {"message": f"An error has occurred for the following reason: {e}"}
     except Exception:
+        conn.rollback()
         return {"message": "No"}
     finally:
         conn.close()
@@ -541,7 +557,6 @@ def returnFavorites(data: FavoritesRequest):
     cursor = conn.cursor(dictionary=True)
     list_favorites = data.arrFavorites
 
-    print(list_favorites)
     paraquery = ",".join(["%s"]*len(list_favorites))
     SQL_QUERY = f"""SELECT thumbnail, url, seriesName, tblseries.seriesID from tblseries where seriesID IN ({paraquery}) """
     

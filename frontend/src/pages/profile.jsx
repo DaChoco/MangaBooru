@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext } from 'react'
 import { SearchBar, Topnav, Footer } from "../components"
+import { favoritesitems } from '../contexts/favoritesContext'
 import { loggedIn } from '../contexts/loggedinContext'
+
 import { Link, useNavigate } from 'react-router-dom'
 import "../style/Posts.css"
 import "../style/Profile.css"
@@ -36,11 +38,15 @@ const navigate = useNavigate()
     const {userIcon, setUserIcon} = useContext(loggedIn)
     const {showLoginBox, setShowLoginBox} = useContext(loggedIn)
     const {showRegisterBox, setShowRegisterBox} = useContext(loggedIn)
+    const {setUserRole} = useContext(loggedIn)
+
+    const {favorited} = useContext(favoritesitems)
 
     const [emailquery, setEmailquery] = useState("")
     const [usernamequery, setUsernamequery] = useState("")
     const [passwordquery, setPasswordquery] = useState("")
     const [showstats, setShowstats] = useState(false)
+    const [favoritesData, setFavoritesData] = useState({})
 
     const [userData, setUserData] = useState({})
 
@@ -50,6 +56,35 @@ const navigate = useNavigate()
         if (userID.length>0){
             userInfoData(userID)
         }
+
+        const extractFavorites = async () =>{
+            const url = `http://127.0.0.1:8000/returnFavorites`
+
+            if (favorited.length <= 0){
+                console.log("The user does not have favorites")
+                return
+            }
+    
+            try{
+                console.log(favorited)
+                const response = await fetch(url, 
+                {method: "POST",
+                headers: {"content-type": "application/json",
+
+                        'Access-Control-Allow-Headers': "*",
+                        'Access-Control-Allow-Methods': "*"},
+                body: JSON.stringify({arrFavorites: favorited})
+                    }
+                )
+
+                const data = await response.json()
+                console.log(data)
+                setFavoritesData(data)
+            }
+                catch (error) {console.log(error)}
+            
+            }
+            extractFavorites()
     }, [userID])
 
 
@@ -152,6 +187,7 @@ const navigate = useNavigate()
         console.log("Data: ", data)
         setUserData(data)
         setUserIcon(data.userIcon)
+        setUserRole(data.role)
 
         setUserData((prevdata) =>({...prevdata, DateCreated: new Date(prevdata.DateCreated).toLocaleDateString()}))
 
@@ -271,7 +307,7 @@ if (!userData){ return (<div>LOADING...</div>)}
                     <h3>My Profile Information and Settings</h3>
 
                     <ul className="islogged-container">
-                        <li><h3>Options</h3></li>
+                        <li><Link to={`/profile/${userID}/uploads`}></Link><h3>Upload</h3></li>
                         <li><h3><Link to={"/favorites"} style={{color: "var(--base-text-dark)"}}>Show My Favorites</Link></h3></li>
                         <li><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
                     </ul>
@@ -318,26 +354,10 @@ if (!userData){ return (<div>LOADING...</div>)}
 
                     <h3 className="header-section">Mangas:</h3>
                     <ul className="show-my-favs-container">
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/3a/db/5f/3adb5fb6defd1bfe9cd9a5b3632d7e7a.jpg" alt="" /></li>
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/3a/db/5f/3adb5fb6defd1bfe9cd9a5b3632d7e7a.jpg" alt="" /></li>
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/3a/db/5f/3adb5fb6defd1bfe9cd9a5b3632d7e7a.jpg" alt="" /></li>
-
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/88/47/61/8847610bf60a59b60a9bda353f06a219.jpg" alt="" /></li>
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/88/47/61/8847610bf60a59b60a9bda353f06a219.jpg" alt="" /></li>
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/88/47/61/8847610bf60a59b60a9bda353f06a219.jpg" alt="" /></li>
-
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/55/c9/44/55c944c15483988c8985f0cc7c529c73.jpg" alt="" /></li>
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/55/c9/44/55c944c15483988c8985f0cc7c529c73.jpg" alt="" /></li>
-                        <li><img className='img-unit-favs' src="https://i.pinimg.com/1200x/55/c9/44/55c944c15483988c8985f0cc7c529c73.jpg" alt="" /></li>
-                   
+                        {favoritesData.length >0 && (favoritesData.map((e, index)=>(<li key={index}><img className='img-unit-favs' src={e.thumbnail} alt="" /></li>)))}
                     </ul>
 
-                    <h3 className="header-section">Tags:</h3>
 
-                    <ul className="fav-taglist">
-                        <li className="tag-unit-favs">weekly_shonen_jump</li>
-                        <li className="tag-unit-favs">romance</li>
-                    </ul>
                 </section>
 
                 <section id="myself">

@@ -32,6 +32,7 @@ function App() {
        
         <Route path="/profile" element={<Profile></Profile>}></Route>
         <Route path="/profile/:userID/update" element={<ProfilePage></ProfilePage>} ></Route>
+        <Route path='/profile/:userID/uploads'></Route>
 
         <Route path="/favorites" element={<Favorites></Favorites>} ></Route>
         <Route path="/savedsearch" element={<SavedSearch></SavedSearch>} ></Route>  
