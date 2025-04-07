@@ -204,11 +204,7 @@ const navigate = useNavigate()
 
     //WHEN LOGGED IN
 
-    const updateBannerPic = (e)=>{
-        let randnum = Math.floor(Math.random() * 6)
-        e.target.style.backgroundImage = `url(${acceptedBanners[randnum]})`
 
-    }
 
     const togglestats = ()=>{
         setShowstats(!showstats)
@@ -226,7 +222,7 @@ if (!userData){ return (<div>LOADING...</div>)}
 
     return(
 
-        <div className="main-content" style={{position: "relative"}}>
+        <div className="main-content profile-page-area" style={{position: "relative"}}>
             <Topnav></Topnav> 
 
             {logged === false ?
@@ -327,7 +323,7 @@ if (!userData){ return (<div>LOADING...</div>)}
              <div className="profile-info-container">
                 {/*Currently dummy data. Will have dynamic data later */}
                 
-                <div onClick={updateBannerPic} className="banner-container" style={{backgroundImage: `url(${userData.userBanner})`}}></div>
+                <div  className="banner-container" style={{backgroundImage: `url(${userData.userBanner})`}}></div>
         
                 <div className="profile-user-display">
                     <img className="profile-icon" src={userData.userIcon} alt='user profile picture'/>

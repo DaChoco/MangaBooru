@@ -1,7 +1,6 @@
 ul.topnav-content{
     display: flex;
     flex-direction: row;
-    width: 50%;
     font-size: 1.25rem;
     margin: 0;
     padding: 0;
@@ -48,6 +47,7 @@ img{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    position: relative;
     margin-bottom: 1rem;
     background-color: var(--base-color-topnav);
     color: var(--text-color-topnav);
@@ -242,6 +242,16 @@ ul.list-num-page{
 #ADDFAV{
     display: none;
     position: absolute;
+}
+
+.topnav-content-smallscreen{
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 3rem;
+    background-color: var(--base-color-topnav);
+    z-index: 900;
+
 }
 
 

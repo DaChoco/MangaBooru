@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import {useState, useEffect, useContext} from "react"
+import {useState, useEffect, useContext, useRef} from "react"
 import {loggedIn} from "../contexts/loggedinContext"
 import "../style/Posts.css"
 
@@ -7,9 +7,27 @@ import "../style/Posts.css"
 
 function Topnav({children}){
     const [toggledark, setToggledark] = useState(false)
+    const [width, setWidth] = useState(window.innerWidth)
     const htmlElement = document.documentElement;
 
+    const menusidebar = useRef(null)
+
     const {userID} = useContext(loggedIn)
+
+    useEffect(()=>{
+        const handlescreenresize = ()=>setWidth(window.innerWidth)
+
+        window.addEventListener("resize", handlescreenresize)
+
+        return ()=> window.removeEventListener("resize", handlescreenresize)
+    },[width])
+
+    useEffect(()=>{
+        if (menusidebar.current){
+            console.log("With the wind")
+        }
+
+    }, [])
 
 
     useEffect( ()=>{
@@ -57,11 +75,40 @@ function Topnav({children}){
             
         }
     }
+
+    const showMenu = ()=>{
+        if (menusidebar.current){
+            const currentDisplay = getComputedStyle(menusidebar.current).display;
+            menusidebar.current.style.display = (currentDisplay === "none") ? "flex" : "none";
+        }
+
+    }
     
 
     return(
     <div className="topnav-container">
         <div className="total-top">
+
+        {width < 450 && (
+            <>
+            <svg style={{zIndex: "1000"}} onClick={showMenu} xmlns="http://www.w3.org/2000/svg" className="svglightdark" viewBox="0 -960 960 960">
+            <path d="M120-240v-66.67h720V-240H120Zm0-206.67v-66.66h720v66.66H120Zm0-206.66V-720h720v66.67H120Z"/>
+            </svg>
+            
+            <ul className="topnav-content-smallscreen" ref={menusidebar}>
+                
+                
+                
+                
+                
+                <li className="menulinks"><Link to="/profile">My account</Link></li>
+                <li className="menulinks"><Link to="/favorites">My Favorites </Link></li>
+                <li className="menulinks"><Link to="/posts">Posts</Link></li>
+                <li className="menulinks"><Link to="/tags">All Tags</Link></li>
+            </ul>
+            
+        
+        </>)}
 
             <ul className="topnav-content">
                 <li className="menulinks">

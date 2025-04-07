@@ -1,7 +1,7 @@
 
 
 .home-container{
-    width: min(1100px, 80%);
+    width: min(1100px, 90%);
     margin: auto auto;
 }
 
@@ -88,4 +88,35 @@ h1{
 }
 .series-auto{
     color: var(--series-text-color);
+}
+
+@media only screen and (max-width: 430px){
+    .home-container > p, a{
+        font-size: 0.75rem;
+    }
+    .search-container{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+
+    .search-btn{
+        width: max-content;
+    }
+    .searchbar{
+        border: 1px;
+        margin: 0 auto;
+    }
+    ul.optionslist{
+        padding: 0;
+        width: 70%;
+    }
+    ul.optionslist li{
+        display: flex;
+        align-items: center;
+        padding: 0 0.5rem;
+        width: 4rem;
+        text-align: center;
+    }
 }

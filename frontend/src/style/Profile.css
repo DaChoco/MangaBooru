@@ -38,7 +38,8 @@
 .banner-container{
     width: 100%;
     height: 25rem;
-    background-size: 100% auto;
+    background-size: cover;
+    background-repeat: no-repeat;
     overflow: hidden;
 }
 
@@ -202,7 +203,7 @@ section{
 /*Update Profile Details*/
 
 .update-profile-container{
-    width: min(70%, 1100px);
+    width: min(85%, 1100px);
     margin: 0 auto;
     
 }
@@ -289,7 +290,7 @@ section{
 .new-pic-container{
     display: flex;
     flex-direction: column;
-    width: min(100%, 800px);
+    width: min(80%, 800px);
     height: auto;
     position: fixed;
     top: 50%;
@@ -330,7 +331,7 @@ section{
 
 .upload-container{
     margin: 2rem auto;
-    width: min(100%, 800px);
+    width: min(80%, 800px);
     min-height: 60vh;
     display: flex;
     flex-direction: column;
@@ -368,4 +369,82 @@ section{
 
 .terms{
     list-style:circle;
+}
+
+
+
+/*Media*/
+
+@media only screen and (max-width: 768px){
+    .profile-page-container{
+        display: none;
+    }
+
+    .main-content.profile-page-area{
+        display: block;
+    }
+
+    section{
+        max-width: none;
+    }
+
+    .show-my-favs-container{
+        margin: 0;
+        padding: 0.25rem;
+    }
+}
+
+@media only screen and (max-width: 430px){
+
+    .main-content.profile-page-area > *{
+        font-size: 0.75rem;
+    }
+
+    button{
+        font-size: 0.75rem;
+    }
+    h1{
+        font-size: 2.5rem;
+    }
+
+    .banner-container {
+        height: 10rem;
+    }
+
+    .profile-icon{
+        width: 5rem;
+        height: 5rem;
+        bottom: 2rem;
+        border-color: var(--base-color-dark)
+    }
+
+    .profile-button{
+        width: auto;
+    }
+
+    .img-unit-favs{
+        width: 10rem;
+    }
+
+    .other-update-container input{
+        width: 80%;
+    }
+    .about-me-text{
+        width: 80%;
+    }
+    .dropbox-select{
+        width: 100%;
+    }
+
+    ul.topnav-content{
+        display: none;
+
+        
+    }
+    /*The Upload Page*/
+    .new-pic-container input{
+        width: 60%;
+    }
+
+  
 }
