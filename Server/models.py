@@ -14,6 +14,8 @@ class RegisterRequest(BaseModel):
 class CreateSeries(BaseModel): #will use the upload series function
     seriesname: str
     seriesdesc: str
+    userID: str
+    tags: list
 
 class CreateTag(BaseModel):
     tagname: str

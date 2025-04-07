@@ -34,6 +34,9 @@ function UploadPosts(){
         formData.append("seriesdesc", forminfo.seriesdescription)
 
         const response = await fetch(url, {method: "POST", body: formData})
+        const data = await response.json()
+
+        console.log(data)
     }
 
 

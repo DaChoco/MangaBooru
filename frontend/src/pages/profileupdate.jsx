@@ -15,8 +15,11 @@ function ProfileUpdate(){
     const [mountedref, setMountref] = useState(false)
 
     const [file, setFile] = useState(null)
+    const [loading, setLoading] = useState(false)
     const [fileurl, setFileurl] = useState(null)
     const [forminfo, setForminfo] = useState({uname: "", sig: "", ubanner: "", aboutthem: ""})
+
+    const previewimg = document.getElementById("img-preview")
 
     const handleref = (node)=>{
         updatepromptref.current = node;
@@ -24,6 +27,11 @@ function ProfileUpdate(){
     }
 
     const [showupdatepic, setShowupdatepic] = useState(false)
+
+    
+
+
+
 
     const normal_banners_urls = [
         "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/8acc4628408cb4ecf0a1bc6c225f85b2.jpg",
@@ -69,23 +77,30 @@ function ProfileUpdate(){
             return
         }
 
+        previewimg.style.opacity = 0.5
         const url = `http://127.0.0.1:8000/updatemypage/${userID}/uploads`
 
         const formdata = new FormData()
         formdata.append("file", file)
-
+        setLoading(true)
         const response = await fetch(url, {method: "POST", body: formdata})
+        
         const data = await response.json()
 
         if (data.message === true){
             console.log("Upload success: ", data)
             setUserIcon(data.publicurl)
             setFileurl(null)
+            setLoading(false)
+            previewimg.style.opacity = 1
+
 
             
         }
         else{
+            setLoading(false) 
             console.log("Upload Failed: ", data)
+            previewimg.style.opacity = 1
         }
 
     }
@@ -222,12 +237,17 @@ function ProfileUpdate(){
             </div>
 
             {showupdatepic && (
+            <>
+               
+
             <div className="new-pic-container" id="updatebox" ref={handleref}>
+                
                 <h1 style={{fontSize: "2rem"}}>Select a New Icon! </h1>
                 <input type="file" placeholder="Input a new file" onChange={handleFilechange} />
-                {fileurl && (<img src={fileurl} alt="Preview" className="preview-small" />)}
+                {fileurl && (<img src={fileurl} id="img-preview" alt="Preview" className="preview-small" />)}
                 <button className="profile-button" style={{margin: "0 auto", width: "70%"}} onClick={handleImageupload}>Upload</button>
             </div>
+            </>
             )}
 
            

@@ -152,7 +152,7 @@ async def uploadimages(userID: str, file: UploadFile = File(...)):
     cursor.execute("SELECT userIcon from tbluserinfo where userID = %s", (userID,))
     old_response = cursor.fetchone()
     old_icon = str(old_response["userIcon"])
-    deleteImage(old_icon)
+    deleteImage(old_icon, "publicboorufiles-01")
 
     if file.size > 3000000:
         return {"message": "Apologies, but your file is too big", "status_code": 400}
@@ -164,7 +164,7 @@ async def uploadimages(userID: str, file: UploadFile = File(...)):
     final_url = aws_url_base + aws_item_name
 
     try:
-        uploadImage(file.file, aws_item_name)
+        uploadImage(file.file, aws_item_name, "publicboorufiles-01")
         cursor.execute("UPDATE tbluserinfo set userIcon = %s WHERE userID = %s", (final_url, userID))
         conn.commit()
         
@@ -390,15 +390,36 @@ def tagInsert(data: CreateTag):
 def seriesInsert(data: CreateSeries, file: UploadFile = File(...)):
     conn = createConnection()
     cursor = conn.cursor()
+    conn.autocommit = False
     SQL_Params = (data.seriesname, data.seriesdesc)
+
+    SQL_STRING_JUNCTION_TABLE = """
+INSERT INTO tbltagseries (tagID, seriesID)
+    SELECT t.tagID, s.seriesID
+    FROM tbltags t, tblseries s
+WHERE t.tagName = %s
+AND s.seriesName = %s
+AND NOT EXISTS (
+    SELECT 1 FROM tbltagseries ts WHERE ts.tagID = t.tagID AND ts.seriesID = s.seriesID
+)
+"""
+    set_of_params = []
+
+    for i in data.tags:
+        set_of_params.append((i, data.seriesname))
+    
     try:
         cursor.execute("INSERT INTO tblSeries (seriesName, seriesDesc) VALUES (%s, %s)", SQL_Params)
+        cursor.execute("UPDATE tblusers SET seriesUploaded = seriesUploaded + 1 WHERE userID = %s", (data.userID,))
+        cursor.executemany(SQL_STRING_JUNCTION_TABLE, set_of_params)
+
         conn.commit()
         return {"message": "Series successfully added. Thank you!"}
     except mysql.connector.DatabaseError as e:
         conn.rollback()
         return {"message": f"The server has experienced an error: {e}"}
     except TypeError:
+        conn.rollback()
         return {"message": "The server has experienced an error, please try again later"}
     finally:
         conn.close()

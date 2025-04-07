@@ -36,23 +36,23 @@ def get_public_s3(object_key):
 
 
 
-def uploadImage(image_file, item_name):
+def uploadImage(image_file, item_name, bucket_name: str):
 #uploads images to S3. Will be profile pictures for the site
     try:
         print("Uploading...")
-        s3.upload_fileobj(image_file, "publicboorufiles-01", f"userIcons/{item_name}")
+        s3.upload_fileobj(image_file, bucket_name, f"userIcons/{item_name}")
         print("Upload complete!")
     
     except Exception as e:
         print(str(e))
        
-def deleteImage(url:str):
+def deleteImage(url:str, bucket_txt:str):
     parsed_url = urlparse(url)
     object_key = parsed_url.path.lstrip("/")
 
     try:
         print("Deleting...")
-        s3.delete_object(Bucket="publicboorufiles-01", Key=object_key)
+        s3.delete_object(Bucket=bucket_txt, Key=object_key)
         print(f"Deletion complete! Object: {object_key}")
     except botocore.exceptions as e:
         print("Deletion failed")
