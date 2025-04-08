@@ -7,6 +7,11 @@
     border-right: solid var(--base-color-topnav) 5px;
 }
 
+.menulinks.sidebar-to-topnav{
+    font-size: 0.75rem;
+
+}
+
 /*START OF SIDEBAR*/
 
 .islogged-container{
@@ -48,8 +53,8 @@
     
     color: #FFF;
     border: solid #FFF 0.25rem;
-    width: 10rem;
-    height: 10rem;
+    width: 12rem;
+    height: 12rem;
 
 
     background-size: 100% 100%;
@@ -375,6 +380,23 @@ section{
 
 /*Media*/
 
+@media only screen and (max-width: 2560px) and (min-width: 1500px) {
+    .banner-container{
+        height: 40rem;
+    }
+    .profile-icon{
+        width: 20rem;
+        height: 20rem;
+    }
+
+    .main-content.profile-page-area > *{
+        font-size: 2rem;
+    }
+    .user-title{
+        font-size: 2rem;
+    }
+}
+
 @media only screen and (max-width: 768px){
     .profile-page-container{
         display: none;
@@ -405,6 +427,10 @@ section{
     }
     h1{
         font-size: 2.5rem;
+    }
+
+    h3{
+        font-size: 0.80rem;
     }
 
     .banner-container {
@@ -440,6 +466,9 @@ section{
         display: none;
 
         
+    }
+    .menulinks{
+        padding: 1rem 0.75rem;
     }
     /*The Upload Page*/
     .new-pic-container input{

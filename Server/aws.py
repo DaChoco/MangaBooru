@@ -36,11 +36,11 @@ def get_public_s3(object_key):
 
 
 
-def uploadImage(image_file, item_name, bucket_name: str):
+def uploadImage(image_file, item_name, bucket_name: str, directory: str):
 #uploads images to S3. Will be profile pictures for the site
     try:
         print("Uploading...")
-        s3.upload_fileobj(image_file, bucket_name, f"userIcons/{item_name}")
+        s3.upload_fileobj(image_file, bucket_name, f"{directory}/{item_name}")
         print("Upload complete!")
     
     except Exception as e:

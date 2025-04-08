@@ -15,7 +15,7 @@ class CreateSeries(BaseModel): #will use the upload series function
     seriesname: str
     seriesdesc: str
     userID: str
-    tags: list
+    tags: list[str]
 
 class CreateTag(BaseModel):
     tagname: str

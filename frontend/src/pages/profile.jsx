@@ -39,6 +39,7 @@ const navigate = useNavigate()
     const {showLoginBox, setShowLoginBox} = useContext(loggedIn)
     const {showRegisterBox, setShowRegisterBox} = useContext(loggedIn)
     const {setUserRole} = useContext(loggedIn)
+    const {userRole} = useContext(loggedIn)
 
     const {favorited} = useContext(favoritesitems)
 
@@ -223,7 +224,12 @@ if (!userData){ return (<div>LOADING...</div>)}
     return(
 
         <div className="main-content profile-page-area" style={{position: "relative"}}>
-            <Topnav></Topnav> 
+            <Topnav>
+                <li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer"}}>Upload</h3></Link></li>
+                {userRole === "ADMIN" && (<li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/ADMIN/Delete`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></Link></li>)}
+                <li className='menulinks sidebar-to-topnav'><h3><Link to={"/favorites"} >Show My Favorites</Link></h3></li>
+                <li className='menulinks sidebar-to-topnav'><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
+            </Topnav> 
 
             {logged === false ?
              (
@@ -304,6 +310,7 @@ if (!userData){ return (<div>LOADING...</div>)}
 
                     <ul className="islogged-container">
                         <li><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer", color: "var(--base-text-dark)"}}>Upload</h3></Link></li>
+                        {userRole === "ADMIN" && (<li><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></li>)}
                         <li><h3><Link to={"/favorites"} style={{color: "var(--base-text-dark)"}}>Show My Favorites</Link></h3></li>
                         <li><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
                     </ul>

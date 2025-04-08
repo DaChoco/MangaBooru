@@ -251,7 +251,39 @@ ul.list-num-page{
     top: 3rem;
     background-color: var(--base-color-topnav);
     z-index: 900;
+    width: 50vw;
 
+}
+
+@media only screen and (max-width: 430px){
+    .imgwrap{
+        max-width: 100px;
+    }
+
+    .post-item{
+        width: 100%;
+    }
+
+    .main-content.post-box{
+        display: block;
+    }
+
+    .page-nums-container{
+        display: flex;
+        
+    }
+
+
+    ul.list-num-page{
+        position: static;
+        width: auto;
+    }
+
+    .pageboxes{
+        font-size: 1rem;
+        padding: 0.5rem;
+        margin: 0 0.25rem;
+    }
 }
 
 

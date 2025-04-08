@@ -6,7 +6,7 @@ function Posts(){
 
     return (
         
-    <div className="main-content">
+    <div className="main-content post-box">
  
             <Topnav></Topnav> 
             <PostBox></PostBox>

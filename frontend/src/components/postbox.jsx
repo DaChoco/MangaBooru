@@ -120,7 +120,7 @@ function PostBox(){
     return (
         <> 
         <SearchBar data={{lenoutput, setLenoutput}}></SearchBar>
-        <Sidebar data={tags}></Sidebar>
+        
         <div className="postcontent-container">
         {//produces all the posts and their images
         seriesPostPics.map((e, index) => (
@@ -152,6 +152,8 @@ function PostBox(){
             } 
             
         </div>
+
+        <Sidebar data={tags}></Sidebar>
 
         <div className="footer-container">
             <div className="page-nums-container">

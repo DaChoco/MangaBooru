@@ -13,6 +13,7 @@ function Topnav({children}){
     const menusidebar = useRef(null)
 
     const {userID} = useContext(loggedIn)
+    const {logged} = useContext(loggedIn)
 
     useEffect(()=>{
         const handlescreenresize = ()=>setWidth(window.innerWidth)
@@ -89,7 +90,7 @@ function Topnav({children}){
     <div className="topnav-container">
         <div className="total-top">
 
-        {width < 450 && (
+        {width < 450 && logged === true ? (
             <>
             <svg style={{zIndex: "1000"}} onClick={showMenu} xmlns="http://www.w3.org/2000/svg" className="svglightdark" viewBox="0 -960 960 960">
             <path d="M120-240v-66.67h720V-240H120Zm0-206.67v-66.66h720v66.66H120Zm0-206.66V-720h720v66.67H120Z"/>
@@ -97,18 +98,18 @@ function Topnav({children}){
             
             <ul className="topnav-content-smallscreen" ref={menusidebar}>
                 
-                
-                
-                
-                
                 <li className="menulinks"><Link to="/profile">My account</Link></li>
                 <li className="menulinks"><Link to="/favorites">My Favorites </Link></li>
                 <li className="menulinks"><Link to="/posts">Posts</Link></li>
                 <li className="menulinks"><Link to="/tags">All Tags</Link></li>
+
+                {children}
             </ul>
             
         
-        </>)}
+        </>): (null)}
+
+        
 
             <ul className="topnav-content">
                 <li className="menulinks">
@@ -151,7 +152,7 @@ function Topnav({children}){
         </div>
         
 
-        {children}
+        
     </div>
     )
 

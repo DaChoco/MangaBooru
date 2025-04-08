@@ -11,7 +11,7 @@ import uuid
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses
+from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -36,8 +36,9 @@ def createConnection():
                                password=passwd,
                                user=username,
                                auth_plugin='mysql_native_password')
+        print(hostplace)
         return conn
-    except mysql.ConnectionRefusedError as e:
+    except mysql.connector.Error as e:
         print(f"This connection was refused: {e}")
 #END OF CONNECTIONS - Further MYSQL shall be handled within the APIs
 
@@ -83,7 +84,7 @@ def login(userID):
     SELECT tblusers.userID, userName, seriesUploaded, DateCreated, role, userabout, userIcon, userBanner, signature FROM tblusers 
     INNER JOIN tbluserinfo ON 
     tblusers.userID = tbluserinfo.userID
-    WHERE tblusers.userID = %s"""
+    WHERE tblusers.userID = %s;"""
 
     cursor.execute(SQL_STRING, (userID,))
     result = cursor.fetchone()
@@ -145,7 +146,7 @@ def updatingprofile(data: UpdateProfileRequest, userID: str):
 
 @app.post("/updatemypage/{userID}/uploads")
 #updates the user icon on S3. We dont accept beyond 3MB
-async def uploadimages(userID: str, file: UploadFile = File(...)):
+async def uploadImageIcons(userID: str, file: UploadFile = File(...)):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
@@ -164,7 +165,7 @@ async def uploadimages(userID: str, file: UploadFile = File(...)):
     final_url = aws_url_base + aws_item_name
 
     try:
-        uploadImage(file.file, aws_item_name, "publicboorufiles-01")
+        uploadImage(file.file, aws_item_name, "publicboorufiles-01", "userIcons")
         cursor.execute("UPDATE tbluserinfo set userIcon = %s WHERE userID = %s", (final_url, userID))
         conn.commit()
         
@@ -194,10 +195,10 @@ def login(data: LoginRequest):
     SQLParams = (data.email,)
 
     try:
-        cursor.execute("SELECT userID, userName, password FROM tblUsers WHERE email = %s", SQLParams)
+        cursor.execute("SELECT userID, userName, password FROM tblusers WHERE email = %s;", SQLParams)
         output = cursor.fetchone()
         if output:
-            if verifyPassword(data.passwd, hashed_password) == True:
+            if verifyPassword(data.passwd, output["password"]) == True:
                 return {"message": True, "username": output["userName"], "elaborate": "Success, you are successfully logged in!", "userID": output["userID"]}
             else:
                 return {"message": False, "elaborate": "Wrong Password"}
@@ -205,8 +206,8 @@ def login(data: LoginRequest):
         else:
             return {"message": False, "elaborate": "Incorrect username or password"}
           
-    except mysql.connector.Error:
-        return {"message": "Apologies, an new error has occured. Please try again later"}
+    except mysql.connector.Error as e:
+        return {"message": f"Apologies, an new error has occured. Please try again later: {e}"}
     except TypeError:
         return {"message": "Please type something for the email or the password"}
     finally: 
@@ -219,7 +220,7 @@ def register(data: RegisterRequest):
         conn = createConnection()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT userName FROM tblUsers where email = %s or userName = %s", (data.email, data.username))
+        cursor.execute("SELECT userName FROM tblusers where email = %s or userName = %s", (data.email, data.username))
         exist_user = cursor.fetchone()
         if exist_user:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Username or email already taken, please take another one")
@@ -229,7 +230,7 @@ def register(data: RegisterRequest):
         SQL_Params = (data.username, 0, data.username, hashed_password)
 
         try:
-            cursor.execute("""INSERT INTO tblUsers 
+            cursor.execute("""INSERT INTO tblusers 
                            (userName, seriesUploaded, email, password) VALUES
                            (%s, %s, %s, %s)""", SQL_Params)
             
@@ -256,7 +257,7 @@ def getUser():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("SELECT userID, userName FROM tblUsers WHERE userID = %s")
+        cursor.execute("SELECT userID, userName FROM tblusers WHERE userID = %s")
         output = cursor.fetchone()
 
         return {"message": "Success, you are successfully registered!", 
@@ -279,13 +280,13 @@ def getUrls(Page: int):
     SQL_PARAM_NO_TAG_INCLUDED = """ 
 SELECT tblseries.seriesID as series, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
-LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
+LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 LEFT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblSeries.seriesID
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID
 UNION
 SELECT tblseries.seriesID as series, url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
-RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID
+RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
 WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY url DESC
 """
@@ -333,7 +334,7 @@ def extractInfo():
     conn = createConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute("""SELECT tblSeries.seriesID, seriesName, url FROM tblSeries WHERE url is not null""") 
+        cursor.execute("""SELECT tblseries.seriesID, seriesName, url FROM tblseries WHERE url is not null""") 
         output = cursor.fetchall()
 
         if not output:
@@ -355,8 +356,8 @@ def seriesExtract(seriesID: str):
         """
         SELECT tblseries.seriesID, thumbnail, url, seriesName, tagName FROM tbltags INNER JOIN 
         tbltagseries ON tbltags.tagID = tbltagseries.tagID 
-        INNER JOIN tblSeries ON tbltagseries.seriesID = tblseries.seriesID
-        WHERE tblSeries.seriesID = %s""", (seriesID,))
+        INNER JOIN tblseries ON tbltagseries.seriesID = tblseries.seriesID
+        WHERE tblseries.seriesID = %s""", (seriesID,))
     
     output_tags = cursor.fetchall()
     s3_key = output_tags[0]["url"]
@@ -387,11 +388,18 @@ def tagInsert(data: CreateTag):
         conn.close()
 
 @app.post("/uploadSeries") #Adds a new manga series. Will need JWT in future. For now just prototyping
-def seriesInsert(data: CreateSeries, file: UploadFile = File(...)):
+def seriesInsert(seriesname: str = Form(...), seriesdesc: str = Form(...), userID: str  = Form(...), tags: list[str] = Form(...), file: UploadFile = File(...)):
+    if not seriesname:
+        print("something is wrong")
+        return {"message": "no_input"}
     conn = createConnection()
     cursor = conn.cursor()
     conn.autocommit = False
-    SQL_Params = (data.seriesname, data.seriesdesc)
+
+    cursor.execute("SELECT seriesName FROM tblseries where seriesName = %s", (seriesname,))
+    if cursor.fetchone():
+        return {"message": "This series already exists, it does not need to be added. Thank you"} 
+    
 
     SQL_STRING_JUNCTION_TABLE = """
 INSERT INTO tbltagseries (tagID, seriesID)
@@ -405,15 +413,33 @@ AND NOT EXISTS (
 """
     set_of_params = []
 
-    for i in data.tags:
-        set_of_params.append((i, data.seriesname))
+    for i in tags:
+        set_of_params.append((i, seriesname))
     
     try:
-        cursor.execute("INSERT INTO tblSeries (seriesName, seriesDesc) VALUES (%s, %s)", SQL_Params)
-        cursor.execute("UPDATE tblusers SET seriesUploaded = seriesUploaded + 1 WHERE userID = %s", (data.userID,))
+        print("Creating series...")
+        item_name_aws = f"{datetime.datetime.now().strftime("%Y-%m-%d")}-{uuid.uuid4().hex[:12]}-{file.filename}"
+
+        aws_url_base = f"https://{PUBLIC_BUCKET}/"
+        final_aws_url = aws_url_base + "downscaledFiles/resized/" + item_name_aws
+
+        uploadImage(file.file, item_name_aws, "publicboorufiles-01", "downscaledFiles/resized")
+
+        SQL_Params = (seriesname, seriesdesc, final_aws_url)
+        #SQL - TRANSACTION BEGINS
+        cursor.execute("INSERT INTO tblseries (seriesName, seriesDesc, thumbnail) VALUES (%s, %s, %s)", SQL_Params)
+        cursor.execute("UPDATE tblusers SET seriesUploaded = seriesUploaded + 1 WHERE userID = %s", (userID,))
+        
         cursor.executemany(SQL_STRING_JUNCTION_TABLE, set_of_params)
 
+        cursor.execute("SELECT seriesName FROM tblseries where seriesName = %s", (seriesname,))
+
+        find_name = cursor.fetchone()
+        if find_name:
+            print("Success!")
+    
         conn.commit()
+        #SQL - END TRANSACTION
         return {"message": "Series successfully added. Thank you!"}
     except mysql.connector.DatabaseError as e:
         conn.rollback()
@@ -453,7 +479,7 @@ def autocomplete(query: str = Query(..., min_length=2)):
     try:
         SQL_QUERY = """
         (SELECT seriesName AS result, 'series' AS source 
-        FROM tblSeries 
+        FROM tblseries 
         WHERE MATCH(seriesName) AGAINST ("%s*" IN BOOLEAN MODE))
 
 UNION ALL
@@ -506,10 +532,10 @@ def fullsearch(page: int, datareq: SearchRequest):
     try:
         listkeys = []
         listtags = []
-        GROUP_BY_APPEND = "GROUP BY tblSeries.seriesID, seriesName, url"
+        GROUP_BY_APPEND = "GROUP BY tblseries.seriesID, seriesName, url"
         SQL_Query_Base = """
-        SELECT tblSeries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblSeries 
-        INNER JOIN tbltagseries ON tbltagseries.seriesID = tblSeries.seriesID 
+        SELECT tblseries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblseries 
+        INNER JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID 
         INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
         """
         FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append}"
@@ -553,8 +579,8 @@ def extractingTag(tag: str = ""):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT tblSeries.seriesID, seriesName, thumbnail FROM tblSeries 
-        INNER JOIN tbltagseries ON tblSeries.seriesID = tbltagseries.seriesID 
+        SELECT tblseries.seriesID, seriesName, thumbnail FROM tblseries 
+        INNER JOIN tbltagseries ON tblseries.seriesID = tbltagseries.seriesID 
         INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
         WHERE tagName = %s AND thumbnail IS NOT NULL""", (tag,))
     

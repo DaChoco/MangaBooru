@@ -43,7 +43,7 @@ html[data-theme=light]{
 
 
 html[data-theme=dark]{
-  --base-color-topnav: #202124;
+  --base-color-topnav: #19191a;
   --base-color-dark: #303037;
   --text-color-topnav: #ffffff;
   --base-text-dark: #FFFFFF;
