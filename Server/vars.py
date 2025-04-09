@@ -20,3 +20,5 @@ PERSONAL_IP = os.getenv("PERSONAL_IP")
 
 API_KEY_TAGS = os.getenv("API_KEY_TAGS")
 BASE_URL = os.getenv("BASE_URL")
+
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")

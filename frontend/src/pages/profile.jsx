@@ -51,7 +51,42 @@ const navigate = useNavigate()
     const [showstats, setShowstats] = useState(false)
     const [favoritesData, setFavoritesData] = useState({})
 
+    const [ticked, setTicked] = useState(false)
+
     const [userData, setUserData] = useState({})
+
+    useEffect(()=>{
+        const getLoginCreds = async () =>{
+            const token = localStorage.getItem("access_token")
+
+            if (!token) {
+                console.log("No token found");
+                setLogged(false);
+                return;
+            }
+            const url = "http://127.0.0.1:8000/getuser"
+
+            const response = await fetch(url, {"method": "GET", headers: {"Authorization": `Bearer ${token}`}})
+
+            if (!response.ok) {
+                console.warn("Token is invalid or expired");
+                localStorage.removeItem("access_token"); 
+                setLogged(false);
+                return;
+            } else{
+                const data = await response.json()
+                console.log("USER DATA: ", data)
+                setUserID(data.userID)
+                setLogged(true)
+                userInfoData(data.userID)
+            }
+     
+               
+            
+
+        }
+        getLoginCreds()
+    }, [])
 
     useEffect(()=>{
 
@@ -132,7 +167,7 @@ const navigate = useNavigate()
                     "Access-Control-Allow-Origin": "*",
                     'Access-Control-Allow-Headers': "*",
                     'Access-Control-Allow-Methods': "*"},
-            body: JSON.stringify({email: uemail, passwd: upasswd})
+            body: JSON.stringify({email: uemail, passwd: upasswd, ticked: ticked})
             }
             
         )
@@ -143,6 +178,8 @@ const navigate = useNavigate()
         if (data.message === true){
             setUserID(data.userID)
             setLogged(true)
+
+            localStorage.setItem("access_token", data.access_token)
             
         }
         else{
@@ -165,7 +202,7 @@ const navigate = useNavigate()
                 "content-type": "application/json",
                 'Access-Control-Allow-Headers': "*",
                 'Access-Control-Allow-Methods': "*"},
-            body: JSON.stringify({email: emailquery, passwd: passwordquery, username: usernamequery})
+            body: JSON.stringify({email: emailquery, passwd: passwordquery, username: usernamequery, ticked: ticked})
             })
 
         const data = await response.json()
@@ -174,6 +211,8 @@ const navigate = useNavigate()
             alert(data.elaborate)
             setUserID(data.userID)
             setLogged(true)
+
+            localStorage.setItem("access_token", data.access_token)
         }
     }
     //END OF LOGIN AND REGISTER
@@ -262,7 +301,7 @@ if (!userData){ return (<div>LOADING...</div>)}
                     
                     <div style={{display: "flex", flexDirection: "row", margin: "0 auto 0 3rem", width: "75%"}}>
                     
-                    <input type="checkbox" id='plsremember' value={"Remember me"}/>
+                    <input type="checkbox" id='plsremember' onClick={()=> setTicked(!ticked)} value={"Remember me"}/>
                     <label htmlFor="plsremember">Remember Me</label>
                     </div>
                     <button type="submit">Login</button>

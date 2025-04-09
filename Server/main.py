@@ -4,14 +4,19 @@ import mysql.connector
 from itertools import batched, chain
 import datetime
 
+
 #SECURITY
 import bcrypt
 import jwt
+from jwt.exceptions import InvalidTokenError, InvalidKeyError
+from fastapi.security import OAuth2PasswordBearer
 import uuid
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form
+from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form, Depends
+
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,7 +29,7 @@ from models import UpdateProfileRequest
 from aws import mass_presignedurls, uploadImage, deleteImage
 
 #Getting ENV files
-from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB
+from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
 
 
 #MYSQL CONNECTING FUNCTION
@@ -41,7 +46,20 @@ def createConnection():
         print(f"This connection was refused: {e}")
 #END OF CONNECTIONS - Further MYSQL shall be handled within the APIs
 
-#Security - Hashing password function
+#Security
+
+ALGORITHM = "HS256"
+TOKEN_EXPIRES_IN_MINUTES = 60
+
+oauth2_scheme_login = OAuth2PasswordBearer(tokenUrl="login")
+
+def get_current_user(token: str = Depends(oauth2_scheme_login)):
+    payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
+    if not payload:
+        return {"reply": False}
+    return {"userID": payload.get("sub"), "userName": payload.get("username")}
+
+
 def hashPassword(passwd:str):
     password_bytes = passwd.encode('utf-8')
     hashed_bytes = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
@@ -49,6 +67,15 @@ def hashPassword(passwd:str):
 
 def verifyPassword(normalpasswd: str, hashedpasswd: str):
     return bcrypt.checkpw(normalpasswd.encode("utf-8"), hashedpasswd.encode("utf-8"))
+
+
+
+def create_access_token(data: dict, expiring_delta: datetime.timedelta | None = None):
+    to_encode = data.copy()
+    expire = datetime.datetime.now(tz=datetime.timezone.utc) + (expiring_delta or datetime.timedelta(minutes=TOKEN_EXPIRES_IN_MINUTES))
+    to_encode.update({"expire": expire.timestamp()})
+    return jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
+
 #Will be used in a register and login function
 
 
@@ -75,7 +102,7 @@ app.add_middleware(CORSMiddleware,
 
 #------------WHEN LOGGED IN / PROFILE PAGE
 @app.get("/returnUserInfo/{userID}")
-def login(userID):
+def extractuserdetails(userID):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
@@ -198,17 +225,33 @@ def login(data: LoginRequest):
         output = cursor.fetchone()
         if output:
             if verifyPassword(data.passwd, output["password"]) == True:
-                return {"message": True, "username": output["userName"], "elaborate": "Success, you are successfully logged in!", "userID": output["userID"]}
+
+                if data.ticked == True: #if they tick remember me
+                    token_data = {"sub": str(output["userID"]),
+                                "username": output["userName"]
+                                }
+                    access_token = create_access_token(token_data)
+                else:
+                    token_data = None
+                    access_token = None
+
+                return {"message": True, 
+                        "username": output["userName"], 
+                        "token_type": "bearer",
+                        "access_token": access_token,
+                        "elaborate": "Success, you are successfully logged in!",
+                        "userID": output["userID"]
+                        }
             else:
-                return {"message": False, "elaborate": "Wrong Password"}
+                return {"message": False, "elaborate": "Incorrect Password, Please try again"}
 
         else:
             return {"message": False, "elaborate": "Incorrect username or password"}
           
     except mysql.connector.Error as e:
         return {"message": f"Apologies, an new error has occured. Please try again later: {e}"}
-    except TypeError:
-        return {"message": "Please type something for the email or the password"}
+    except TypeError as e:
+        return {"message": f"Please type something for the email or the password {e}"}
     finally: 
         cursor.close()
         conn.close()
@@ -240,7 +283,19 @@ def register(data: RegisterRequest):
 
             cursor.execute("INSERT INTO tbluserinfo (userID) VALUES (%s)", (new_uuid,))
             conn.commit()
-            return {"message": True, "elaborate": "Congrats, you've been registered. Thank you!", "userID": new_uuid}
+
+            cursor.execute("SELECT userID, userName FROM tblusers WHERE userID = %s", (new_uuid,))
+            output = cursor.fetchone()
+            if data.ticked == True: #if they tick remember me
+                    token_data = {"sub": str(output["userID"]),
+                                "username": output["userName"]
+                                }
+                    access_token = create_access_token(token_data)
+            else:
+                token_data = None
+                access_token = None
+
+            return {"message": True, "elaborate": "Congrats, you've been registered. Thank you!", "userID": new_uuid, "access_token": access_token, "token_type": "bearer"}
         except TypeError as e:
             conn.rollback()
             return {"message": f"Apologies, you have entered an invalid input: {e}"}
@@ -258,23 +313,11 @@ def index():
     return {"message": "Welcome to Mangabooru, hope you enjoy your stay"}
 
 @app.get("/getuser") #Will be used to extract JWT Tokens later
-def getUser():
-    conn = createConnection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
-        cursor.execute("SELECT userID, userName FROM tblusers WHERE userID = %s")
-        output = cursor.fetchone()
-
-        return {"message": "Success, you are successfully registered!", 
-                "userID": output["userID"],
-                "userName": output["userName"]} #is used on reload if signed in
-    except mysql.connector.DatabaseError as e:
-        conn.rollback()
-        return {"message": "Apologies, but you do not appear to be logged in to do this action"}
-    finally:
-        cursor.close()
-        conn.close()
+def getUser(user: dict = Depends(get_current_user)):
+    if not user:
+        {"reply": False, "instruction": "The user will sign in normally"}
+    return {"reply": True, "userID": user["userID"], "userName": user["userName"]} #is used on reload if signed in
+ 
 
 @app.get("/returnBooruPics/{Page}")
 def getUrls(Page: int):

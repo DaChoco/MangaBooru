@@ -5,11 +5,13 @@ from fastapi import File
 class LoginRequest(BaseModel):
     email: str
     passwd: str
+    ticked: bool
 
 class RegisterRequest(BaseModel):
     email: str
     passwd: str
     username: str
+    ticked: bool
 
 class CreateSeries(BaseModel): #will use the upload series function
     seriesname: str
