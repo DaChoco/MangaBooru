@@ -46,7 +46,7 @@ function Topnav({children}){
         }
 
         }
-    , [])
+    , [toggledark])
 
 
     const darkMode = () =>{

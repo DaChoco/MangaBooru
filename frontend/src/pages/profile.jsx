@@ -57,6 +57,7 @@ const navigate = useNavigate()
 
     useEffect(()=>{
         const getLoginCreds = async () =>{
+            //before the user ID is even set we can see if the end user has the tokens to log in automatically. Skipping the filler
             const token = localStorage.getItem("access_token")
 
             if (!token) {
@@ -257,6 +258,7 @@ const navigate = useNavigate()
     const logout = async () =>{
         setLogged(!logged)
         setUserID("")
+        localStorage.removeItem("access_token")
         console.log("Thank you for using the service. Bye!")
     }
 //JSX ---------------------------------------------------

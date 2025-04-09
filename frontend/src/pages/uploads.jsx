@@ -1,9 +1,11 @@
 import { Topnav, Footer } from "../components"
 import { useState, useContext } from "react"
 import { loggedIn } from "../contexts/loggedinContext"
+import { useNavigate } from "react-router-dom"
 
 import "../style/Profile.css"
 function UploadPosts(){
+    const navigate = useNavigate()
     const [file, setFile] = useState(null)
     const [fileurl, setFileUrl] = useState(null)
 
@@ -49,6 +51,9 @@ function UploadPosts(){
         const data = await response.json()
 
         console.log(data)
+        alert(data.message)
+        navigate("/profile")
+      
     }
 
 

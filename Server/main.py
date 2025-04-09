@@ -35,7 +35,7 @@ from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PU
 #MYSQL CONNECTING FUNCTION
 def createConnection():
     try:
-        conn = mysql.connector.connect(host=hostplace,
+        conn = mysql.connector.connect(host=HOSTWEB,
                                port=3306,
                                database=db,
                                password=passwd,
@@ -73,6 +73,7 @@ def verifyPassword(normalpasswd: str, hashedpasswd: str):
 def create_access_token(data: dict, expiring_delta: datetime.timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.datetime.now(tz=datetime.timezone.utc) + (expiring_delta or datetime.timedelta(minutes=TOKEN_EXPIRES_IN_MINUTES))
+    print(expire)
     to_encode.update({"expire": expire.timestamp()})
     return jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
@@ -184,11 +185,11 @@ async def uploadImageIcons(userID: str, file: UploadFile = File(...)):
     if file.size > 3000000:
         return {"message": "Apologies, but your file is too big", "status_code": 400}
 
-    aws_url_base = f"https://{PUBLIC_BUCKET}/"
+    aws_url_base = f"https://{PUBLIC_BUCKET}/userIcons/"
     aws_item_name = f"{datetime.datetime.now().strftime("%Y-%m-%d")}-{uuid.uuid4().hex[:12]}-{file.filename}"
     #Ensuring that the name will always be unique
 
-    final_url = aws_url_base + aws_item_name
+    final_url = aws_url_base  + aws_item_name
 
     try:
         uploadImage(file.file, aws_item_name, "publicboorufiles-01", "userIcons")
@@ -218,10 +219,10 @@ def login(data: LoginRequest):
     hashed_password = hashPassword(data.passwd)
     print(hashed_password, data.email, data.passwd)
 
-    SQLParams = (data.email,)
+    SQLParams = (data.email, data.email)
 
     try:
-        cursor.execute("SELECT userID, userName, password FROM tblusers WHERE email = %s;", SQLParams)
+        cursor.execute("SELECT userID, userName, password FROM tblusers WHERE email = %s or userName = %s;", SQLParams)
         output = cursor.fetchone()
         if output:
             if verifyPassword(data.passwd, output["password"]) == True:
@@ -534,7 +535,7 @@ def autocomplete(query: str = Query(..., min_length=2)):
 UNION ALL
 
         (SELECT tagName AS result, 'tags' AS source  
-        FROM tblTags 
+        FROM tbltags 
         WHERE MATCH(tagName) AGAINST ("%s*" IN BOOLEAN MODE))
 
 LIMIT 10;""" 

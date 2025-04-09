@@ -114,6 +114,7 @@ function SearchBar({data}){
            const response = await fetch(url, {method: "GET"})
            const data = await response.json()
            setAuto(data)
+           
         }
         catch (error){
             console.log("An error has occured: ", error)
@@ -138,16 +139,14 @@ function SearchBar({data}){
         <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"  className='svglightdark' style={{padding: 0, marginRight: "0.25rem", fill: "var(--base-text-dark)", width: "4rem", cursor: "pointer"}}>
             <path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"/>
         </svg>
+        <div className="autowrap">
             <input type="text" onKeyUp={autocomplete}
             id='SearchInput'
             className="searchbar" 
             placeholder="Eg. weekly_shonen_jump kohei_horikoshi"
             value={query.toLowerCase()} onChange={(e) => setQuery(e.target.value)}/>
-            <button className="search-btn" type="submit">Search</button>
 
-         
-
-            {auto.length > 0 ? (
+{auto.length > 0 ? (
                 <ul className='dropdown-container'>
                 {auto.map((item, index) => 
                 item.source === "series" ?
@@ -160,7 +159,14 @@ function SearchBar({data}){
             </ul>
 
             
-            ): null}    
+            ): (null)} 
+        </div>
+
+            <button className="search-btn" type="submit">Search</button>
+
+         
+
+               
             
         </form>
 
