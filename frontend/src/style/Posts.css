@@ -254,6 +254,11 @@ ul.list-num-page{
     width: 50vw;
 
 }
+@media only screen and (max-width: 1920px) and (min-width: 1440px) {
+    .tagoutput{
+        font-size: 1.5rem;
+    }
+}
 
 @media only screen and (max-width: 430px){
     .imgwrap{

@@ -12,6 +12,8 @@ function SearchBar({data}){
     const [auto, setAuto] = useState([])
     
     const [splitTerms, setSplitTerms] = useState([])
+    const {seriesID, setSeriesID} = useContext(PostItemsContext)
+    const {tags, setTags} = useContext(PostItemsContext)
 
     const {setPage} = useContext(PageNumContext)
     const {page} = useContext(PageNumContext)
@@ -60,9 +62,26 @@ function SearchBar({data}){
             })
 
             const data = await response.json()  
+            console.log(data)
+            if (data.communication === false){
+                alert(data.message)
+                setQuery("")
+                return
+            }
             setPosts(data.url)
-
+            setSeriesID(data.seriesID)
             setLenoutput(data.numpages)
+
+            let noncleanArr = []
+
+            data.tags.forEach((item)=>{
+                noncleanArr.push(item.split(",")) 
+            })
+
+            const uniqueArr = [... new Set(noncleanArr.flat())]
+            
+            setTags(uniqueArr)
+            
 
             navigate("/posts")
             setAuto([])

@@ -16,8 +16,10 @@ function Profile(){
     const emaillogininput = document.getElementById("emaillogin")
     const passwdlogininput = document.getElementById("passwdlogin")
 
-    const emailregisterinput = document.getElementById("emailregister")
-    const passwdregisterinput = document.getElementById("passwdregister")
+    const [logininfo, setLogininfo] = useState({emailregister: "", passwdregister: ""})
+    const [registerinfo, setRegisterinfo] = useState({emailregister: "", passwdregister: ""})
+
+
 
     const acceptedBanners = 
     [
@@ -154,21 +156,23 @@ const navigate = useNavigate()
     }
 
     const userRegister = async(e)=>{
+        e.preventDefault()
         const url = "http://127.0.0.1:8000/register"
-
+ 
         const response = await fetch(url, {
             method: "POST",
             headers: {
                 "content-type": "application/json",
-
-                "Access-Control-Allow-Origin": "*",
                 'Access-Control-Allow-Headers': "*",
-                'Access-Control-Allow-Methods': "*"}
+                'Access-Control-Allow-Methods': "*"},
+            body: JSON.stringify({email: emailquery, passwd: passwordquery, username: usernamequery})
             })
 
         const data = await response.json()
 
         if (data.message === true){
+            alert(data.elaborate)
+            setUserID(data.userID)
             setLogged(true)
         }
     }
@@ -277,7 +281,7 @@ if (!userData){ return (<div>LOADING...</div>)}
             )}
             
             {showRegisterBox === true && (
-            <form className="userauthbox" id='register' style={{transform: "translate(-50%, -50%)"}} > {/*Swoops in from the right - Register*/}
+            <form onSubmit={userRegister} className="userauthbox" id='register' style={{transform: "translate(-50%, -50%)"}} > {/*Swoops in from the right - Register*/}
                 <span>Register With</span>
 
             <div className="userinputs">

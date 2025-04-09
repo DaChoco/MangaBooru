@@ -25,13 +25,13 @@ The site will have a tag based searching system, user login, registration, the a
 * Make return images route only return unique tag names
 * Parameterized routing per page/image
   * Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version.
+* Tags correspond with the search results
 # Things currently doing
 * Styling of and customizing the profile and updating user info pages
 * Creating user uploads for profile pictures
 * Role based allocation of access to features. Such as certain banners being blocked from thise below Patreon rank. Aka regular members
 * A page for users to make posts. Under the route /uploads
 # Things to do
-* Update tags on parameterized query calls so that initial load is not the only time when IDs correctly correspond with images
 * Further down the line/End Goal:
 	* Basic authentication and cookies with JWT
 * BONUS - Only for after the rest of prodiction is done

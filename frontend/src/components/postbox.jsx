@@ -18,9 +18,9 @@ function PostBox(){
     const {setPage} = useContext(PageNumContext)
 
     const [lenoutput, setLenoutput] = useState(0)
-    const [tags, setTags] = useState([])
+    const {tags, setTags} = useContext(PostItemsContext)
 
-    const [seriesID, setSeriesID] = useState([])
+    const {seriesID, setSeriesID} = useContext(PostItemsContext)
 
     const {favorited} = useContext(favoritesitems)
     const {setFavorited} = useContext(favoritesitems)

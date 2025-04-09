@@ -24,7 +24,7 @@ from models import UpdateProfileRequest
 from aws import mass_presignedurls, uploadImage, deleteImage
 
 #Getting ENV files
-from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET
+from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB
 
 
 #MYSQL CONNECTING FUNCTION
@@ -36,7 +36,6 @@ def createConnection():
                                password=passwd,
                                user=username,
                                auth_plugin='mysql_native_password')
-        print(hostplace)
         return conn
     except mysql.connector.Error as e:
         print(f"This connection was refused: {e}")
@@ -216,8 +215,11 @@ def login(data: LoginRequest):
     
 @app.post("/register")
 def register(data: RegisterRequest):
+        if not data:
+            return {"message": False, "elaborate": "You did not submit any information. Sorry"}
         
         conn = createConnection()
+        conn.autocommit = False
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("SELECT userName FROM tblusers where email = %s or userName = %s", (data.email, data.username))
@@ -225,16 +227,20 @@ def register(data: RegisterRequest):
         if exist_user:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Username or email already taken, please take another one")
 
+        new_uuid = str(uuid.uuid4())
         
         hashed_password = hashPassword(data.passwd)
-        SQL_Params = (data.username, 0, data.username, hashed_password)
+        SQL_Params = (new_uuid, data.username, 0, data.email, hashed_password)
 
         try:
+            #SQL TRANSACTION
             cursor.execute("""INSERT INTO tblusers 
-                           (userName, seriesUploaded, email, password) VALUES
-                           (%s, %s, %s, %s)""", SQL_Params)
-            
-            return {"message": "User successfully registered."}
+                           (userID, userName, seriesUploaded, email, password) VALUES
+                           (%s, %s, %s, %s, %s)""", SQL_Params)
+
+            cursor.execute("INSERT INTO tbluserinfo (userID) VALUES (%s)", (new_uuid,))
+            conn.commit()
+            return {"message": True, "elaborate": "Congrats, you've been registered. Thank you!", "userID": new_uuid}
         except TypeError as e:
             conn.rollback()
             return {"message": f"Apologies, you have entered an invalid input: {e}"}
@@ -425,9 +431,9 @@ AND NOT EXISTS (
 
         uploadImage(file.file, item_name_aws, "publicboorufiles-01", "downscaledFiles/resized")
 
-        SQL_Params = (seriesname, seriesdesc, final_aws_url)
+        SQL_Params = (seriesname, seriesdesc, final_aws_url, f"downscaledFiles/resized/{item_name_aws}")
         #SQL - TRANSACTION BEGINS
-        cursor.execute("INSERT INTO tblseries (seriesName, seriesDesc, thumbnail) VALUES (%s, %s, %s)", SQL_Params)
+        cursor.execute("INSERT INTO tblseries (seriesName, seriesDesc, thumbnail, url) VALUES (%s, %s, %s, %s)", SQL_Params)
         cursor.execute("UPDATE tblusers SET seriesUploaded = seriesUploaded + 1 WHERE userID = %s", (userID,))
         
         cursor.executemany(SQL_STRING_JUNCTION_TABLE, set_of_params)
@@ -532,6 +538,7 @@ def fullsearch(page: int, datareq: SearchRequest):
     try:
         listkeys = []
         listtags = []
+        listseriesID = []
         GROUP_BY_APPEND = "GROUP BY tblseries.seriesID, seriesName, url"
         SQL_Query_Base = """
         SELECT tblseries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblseries 
@@ -540,20 +547,20 @@ def fullsearch(page: int, datareq: SearchRequest):
         """
         FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append}"
 
-        print (FinalSQL_Query)
-        print()
+        
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
 
         datareq = cursor.fetchall()
         if not datareq or datareq == None:
-            return {"message": "Nothing here except us chickens"}
+            return {"message": "Nothing here except us chickens", "communication": False}
         else:
             for rows in datareq:
                 s3_key = rows.get("url")
                 if s3_key:
+                    listseriesID.append(rows.get("seriesID"))
                     listkeys.append( mass_presignedurls(s3_key, 3600) )
-                    listtags.append(rows.get("tags"))
+                    listtags.append(rows.get("tagName"))
             
             keysdata: list[int] = listkeys
             batch: batched = batched(keysdata, n=9)
@@ -564,6 +571,7 @@ def fullsearch(page: int, datareq: SearchRequest):
                     "url": paginated_list[page], 
                     "tags": listtags, 
                     "numpages": len(paginated_list), 
+                    "seriesID": listseriesID,
                     "Success": True}
 
     except mysql.connector.DatabaseError as e:
@@ -642,7 +650,7 @@ def AllTags(page: int = Query(1, ge=1)):
     cursor = conn.cursor(dictionary=True)
 
     SQL_QUERY = """SELECT DISTINCT(tagName), tagDesc from tbltags LIMIT 10 OFFSET %s"""
-    offsetval = (page-1)*20
+    offsetval = (page-1)*10
     cursor.execute(SQL_QUERY, (offsetval,))
     output = cursor.fetchall()
     

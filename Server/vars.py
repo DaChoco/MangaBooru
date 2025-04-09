@@ -2,14 +2,14 @@
 from dotenv import load_dotenv
 import os
 
-
-
 load_dotenv(override=True)
 
 passwd = os.getenv("passwd")
 username = os.getenv("username")
 db = os.getenv("db")
-hostplace = os.getenv("host")
+hostplace = os.getenv("host_local")
+
+HOSTWEB = os.getenv("host_web")
 
 BUCKET_NAME = os.getenv("bucket")
 AMAZON_USERNAME = os.getenv("AMAZON_USERNAME")
