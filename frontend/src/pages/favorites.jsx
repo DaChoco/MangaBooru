@@ -136,12 +136,9 @@ function Favorites(){
 
         return(
 
-            <div className="main-content">
+            <div className="main-content favs-page">
             <Topnav></Topnav>
             <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
-            <Sidebar data={tags}></Sidebar>
-
-
             <div className="postcontent-container">
         {//produces all the posts and their images
         thumbnails.map((e, index) => (
@@ -159,7 +156,7 @@ function Favorites(){
 	            C444.388,186.754,455,159.124,455,129.013C455,59.745,398.847,3.592,329.579,3.592z"/>
             </svg>
         
-        )}
+            )}
            
         
         </div>
@@ -169,6 +166,10 @@ function Favorites(){
             } 
             
         </div>
+            <Sidebar data={tags}></Sidebar>
+
+
+            
 
             <Footer></Footer>
             

@@ -37,7 +37,7 @@ from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PU
 #MYSQL CONNECTING FUNCTION
 def createConnection():
     try:
-        conn = mysql.connector.connect(host=HOSTWEB,
+        conn = mysql.connector.connect(host=hostplace,
                                port=3306,
                                database=db,
                                password=passwd,
@@ -56,6 +56,8 @@ TOKEN_EXPIRES_IN_MINUTES = 60
 oauth2_scheme_login = OAuth2PasswordBearer(tokenUrl="login")
 
 def get_current_user(token: str = Depends(oauth2_scheme_login)):
+    if not token:
+        return {"reply": "Apologies, youre not signed in"}
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
     if not payload:
         return {"reply": False}
@@ -705,7 +707,7 @@ def AllTags(page: int = Query(1, ge=1)):
     return output
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000, reload=False)
+    uvicorn.run(app, host="localhost", port=8000, reload=True)
 
 #MY JS app, will be commnicating from port 5173 specifically
 

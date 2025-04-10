@@ -271,7 +271,7 @@ if (!userData){ return (<div>LOADING...</div>)}
         <div className="main-content profile-page-area" style={{position: "relative"}}>
             <Topnav>
                 <li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer"}}>Upload</h3></Link></li>
-                {userRole === "ADMIN" && (<li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/ADMIN/Delete`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></Link></li>)}
+                {userRole === "ADMIN" && (<Link to={`/profile/${userID}/${userRole}/deletions`}><li className='menulinks sidebar-to-topnav'><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></li></Link>)}
                 <li className='menulinks sidebar-to-topnav'><h3><Link to={"/favorites"} >Show My Favorites</Link></h3></li>
                 <li className='menulinks sidebar-to-topnav'><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
             </Topnav> 

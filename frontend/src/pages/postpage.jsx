@@ -101,8 +101,9 @@ function PostPage(){
 
     
     return(
-        <div className="main-content">
+        <div className="main-content series-page">
         <Topnav></Topnav>
+        <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
         {highres == false && bigseriesImage != false && (
                 <div className="high-res-question">
                     <p onClick={toBig}>Click here to see original size</p>
@@ -113,7 +114,7 @@ function PostPage(){
             <img id="mangaimage" src={thumbnail} alt={mangaName} />
 
         </div>
-        <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
+        
         <article>
             
             <Sidebar data={tags}>
@@ -145,8 +146,12 @@ function PostPage(){
             </div>
             <ul className="comment-list">
                 <li className="comment">
-                    <div className="user-spoke"></div>
-                    <div className="user-said"></div>
+                    <div className="user-spoke-icon for-small-screens"></div>
+                    <div className="user-spoke-content">
+                        <span>Anonymous commented at TIME #THECOMMENTID</span>
+                        <p>The user's comment</p>
+                        <p>Upvotes: Downvotes: </p>
+                    </div>
                 </li>
             </ul>
         </div>

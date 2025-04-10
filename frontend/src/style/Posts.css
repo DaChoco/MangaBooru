@@ -254,6 +254,29 @@ ul.list-num-page{
     width: 50vw;
 
 }
+
+.comment-list{
+    display: flex;
+    padding: 0;
+    width: 100%;
+    
+}
+
+.user-spoke-icon{
+    width: 7.5rem;
+    height: 7.5rem;
+    background-image: url("https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/2025-04-07-6d2975d13027-1acadc7acb3bed2aab06b06e533fdab7.jpg");
+    background-size: cover;
+    border-radius: 5rem;
+    border: 5px solid #FFF;
+}
+
+.user-spoke-content{
+    margin-left: 1rem;
+    background-color: var(--comment-boxes);
+    padding: 0.5rem;
+
+}
 @media only screen and (max-width: 1920px) and (min-width: 1440px) {
     .tagoutput{
         font-size: 1.5rem;
@@ -261,6 +284,12 @@ ul.list-num-page{
 }
 
 @media only screen and (max-width: 430px){
+    .user-spoke-icon.for-small-screens{
+        display: none;
+    }
+    .user-spoke-content{
+        margin: 0;
+    }
     .imgwrap{
         max-width: 100px;
     }
@@ -270,6 +299,14 @@ ul.list-num-page{
     }
 
     .main-content.post-box{
+        display: block;
+    }
+
+    .main-content.favs-page{
+        display: block;
+    }
+
+    .main-content.series-page{
         display: block;
     }
 
@@ -288,6 +325,23 @@ ul.list-num-page{
         font-size: 1rem;
         padding: 0.5rem;
         margin: 0 0.25rem;
+    }
+
+    .postpage-itemcontainer img{
+        width: 100%;
+        padding: 0;
+    }
+
+    .postpage-itemcontainer{
+        width: 90%;
+    }
+
+    .svglightdark.star{
+        display: none;
+    }
+
+    .say-comment{
+        padding-left: 1rem;
     }
 }
 

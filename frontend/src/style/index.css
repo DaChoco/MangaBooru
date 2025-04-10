@@ -39,6 +39,8 @@ html[data-theme=light]{
 
   --demographic-color-tag: #dca80b;
   --generic-tag: #3d88b3;
+
+  --comment-boxes: #dff0ed;
 }
 
 
@@ -60,6 +62,7 @@ html[data-theme=dark]{
   --generic-tag: #3d88b3;
 
   --auth-box-bg-color: #191e1f;
+  --comment-boxes: #becbc9;
 
 
 }
