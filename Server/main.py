@@ -3,6 +3,7 @@ import mysql.connector
 
 from itertools import batched, chain
 import datetime
+from datetime import timedelta
 
 
 #SECURITY
@@ -15,6 +16,7 @@ import uuid
 #FASTAPI
 import uvicorn
 from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form, Depends
+from mangum import Mangum
 
 
 
@@ -70,11 +72,11 @@ def verifyPassword(normalpasswd: str, hashedpasswd: str):
 
 
 
-def create_access_token(data: dict, expiring_delta: datetime.timedelta | None = None):
+def create_access_token(data: dict, expiring_delta: timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.datetime.now(tz=datetime.timezone.utc) + (expiring_delta or datetime.timedelta(minutes=TOKEN_EXPIRES_IN_MINUTES))
     print(expire)
-    to_encode.update({"expire": expire.timestamp()})
+    to_encode.update({"expire": int(expire.timestamp())})
     return jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
 #Will be used in a register and login function
@@ -84,6 +86,7 @@ def create_access_token(data: dict, expiring_delta: datetime.timedelta | None = 
 #MY API ROUTES - SETUP
 
 app = FastAPI()
+
 
 ORIGINS = ["http://localhost:80",
            "https://localhost:443", 
@@ -702,7 +705,7 @@ def AllTags(page: int = Query(1, ge=1)):
     return output
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000, reload=True)
+    uvicorn.run(app, host="localhost", port=8000, reload=False)
 
 #MY JS app, will be commnicating from port 5173 specifically
 

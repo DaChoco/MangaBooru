@@ -26,16 +26,16 @@ The site will have a tag based searching system, user login, registration, the a
 * Parameterized routing per page/image
   * Make thumbnails column in database so that presigned urls can be called less often. Lets only call them for when the end user wants the high res version.
 * Tags correspond with the search results
-# Things currently doing
+* EC2 Database hosting with MySQL
 * Styling of and customizing the profile and updating user info pages
 * Creating user uploads for profile pictures
-* Role based allocation of access to features. Such as certain banners being blocked from thise below Patreon rank. Aka regular members
-* A page for users to make posts. Under the route /uploads
+# Things currently doing
+* Create the ability to flag for deletion
+* Deletions page
+* Checking why JWT Tokens are not expiring, or why my code is not recognizing they are expired.
 # Things to do
-* Further down the line/End Goal:
-	* Basic authentication and cookies with JWT
 * BONUS - Only for after the rest of prodiction is done
-  * Try implementing Google and Apple authentication with the service.
-# Features
+  * Try implementing Google or Apple authentication with the service.
+# Screenshots:
 * Coming soon
 
