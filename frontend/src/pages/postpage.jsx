@@ -1,6 +1,8 @@
 import { SearchBar, Topnav, Footer, Sidebar } from "../components"
 import { useEffect, useState, useContext } from "react"
 import { favoritesitems } from "../contexts/favoritesContext"
+import { LoggedInContext } from "../contexts/loggedinContext"
+import { loggedIn } from "../contexts/loggedinContext"
 
 
 function PostPage(){
@@ -11,10 +13,13 @@ function PostPage(){
     const [bigseriesImage, setBigseriesImage] = useState("") //higher res option if available
     const [mangaName, setMangaName] = useState("")
 
+    const [flagged, setFlagged] = useState(0)
+
     const [highres, setHighres] = useState(false)
     const {favorited} = useContext(favoritesitems)
     const {setFavorited} = useContext(favoritesitems)
 
+    const {userID} = useContext(loggedIn)
     const FULL_URL = new URL(window.location.href)
     const url_path = FULL_URL.pathname
     const url_ID = url_path.substring(7, url_path.length)
@@ -37,6 +42,26 @@ function PostPage(){
         }, 1000)
     }
     
+    const flagforDeletion = async () =>{
+        const url =   `http://localhost:8000/flagfordelete/${url_ID}?userID=${userID}`
+
+        if (userID == null){
+            alert("You must be logged in to flag this series for deletion")
+            return
+        }
+
+    try{
+        const response = await fetch(url, {method: "GET"})
+        const data = await response.json()
+        console.log(data)
+        setFlagged(data.flagged)
+}
+    catch (error)
+    {
+        console.log("An error has occured: ", error)
+        
+    }
+    }
 
     const seeFullnewTab = () => {
 
@@ -128,7 +153,7 @@ function PostPage(){
             <ul className="tag-container">
                 <li className="other-tag" onClick={addtofavorites}>Add to Favorites</li>
                 <li className="other-tag">Add tags</li>
-                <li className="other-tag">Flag for Deletion</li>
+                <li className="other-tag" onClick={flagforDeletion}>Flagged for Deletion: {flagged}</li>
                 <strong><li className="tagoutput other-tag" onClick={seeFullnewTab}>See original</li></strong>
             </ul>
 
@@ -162,5 +187,6 @@ function PostPage(){
         </div>
     )
 }
+
 
 export default PostPage

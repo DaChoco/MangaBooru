@@ -72,6 +72,8 @@
     font-size: 1.25rem;
 }
 
+
+
 .user-title{
     background-color: var(--base-color-topnav);
     color: var(--text-color-topnav);
@@ -346,6 +348,10 @@ section{
     margin: 1rem 0;
 }
 
+.upload-container .deletion-btns{
+    margin: 1.5rem auto;
+}
+
 .upload-container input{
     padding: 0.5rem;
 }
@@ -383,6 +389,7 @@ section{
 @media only screen and (max-width: 2560px) and (min-width: 1500px) {
     .banner-container{
         height: 40rem;
+        background-size: 100% 100%;
     }
     .profile-icon{
         width: 20rem;
@@ -418,6 +425,13 @@ section{
 
 @media only screen and (max-width: 430px){
 
+    .user-sig{
+        font-size: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%
+    }
+
     .main-content.profile-page-area > *{
         font-size: 0.75rem;
     }
@@ -435,6 +449,7 @@ section{
 
     .banner-container {
         height: 10rem;
+        background-image: 100% 100%;
     }
 
     .profile-icon{

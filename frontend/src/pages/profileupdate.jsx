@@ -40,7 +40,8 @@ function ProfileUpdate(){
 
         "https://i.pinimg.com/1200x/63/1f/18/631f18d68cee0131c9cf3d63b0516fec.jpg",
         "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/BankaiIchigoBanner.JPG",
-        "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/HoshimiBasic.jpeg"
+        "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/HoshimiBasic.jpeg",
+        "https://img4.gelbooru.com/images/d9/0b/d90bbd74afbb98a927e57ec7f7fccc1c.png"
     ]
 
     const premium_banner_urls = [
@@ -118,12 +119,10 @@ function ProfileUpdate(){
             return
         }
 
-
-        //come up with the backend body structure later
         try{
         const response = await fetch(url, 
             {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     "content-type": "application/json",
                 },
@@ -204,6 +203,7 @@ function ProfileUpdate(){
                         <option value={normal_banners_urls[3]}>Kiana Kaslana & Raiden Mei</option>
                         <option value={normal_banners_urls[4]}>Bankai Ichigo Kurosaki (Soul Society Arc)</option>
                         <option value={normal_banners_urls[5]}>Hoshimi Miyabi</option>
+                        <option value={normal_banners_urls[6]}>Castorice (Honkai: Star Rail)</option>
                         
                         
                         {/*Premium Banners. For users of role Patreon or ADMIN */}

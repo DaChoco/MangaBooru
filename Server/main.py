@@ -37,7 +37,7 @@ from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PU
 #MYSQL CONNECTING FUNCTION
 def createConnection():
     try:
-        conn = mysql.connector.connect(host=hostplace,
+        conn = mysql.connector.connect(host=HOSTWEB,
                                port=3306,
                                database=db,
                                password=passwd,
@@ -124,7 +124,7 @@ def extractuserdetails(userID):
 
     return result
 
-@app.post("/updatemypage/{userID}")
+@app.put("/updatemypage/{userID}")
 def updatingprofile(data: UpdateProfileRequest, userID: str):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
@@ -705,6 +705,60 @@ def AllTags(page: int = Query(1, ge=1)):
     
     conn.close()
     return output
+
+@app.get("/flagfordelete/{seriesID}")
+def flagfordelete(seriesID: str, userID: str | None = None):
+    conn = createConnection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT seriesID from tblseries where seriesID = %s", (seriesID,))
+    print("User:", userID)
+    print("SeriesID:", seriesID)
+    output = cursor.fetchone()
+
+    if not output:
+        return {"message": "This series does not exist"}
+    try:
+        cursor.execute("UPDATE tblseries SET flagged = flagged + 1 WHERE seriesID = %s", (seriesID,))
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        return {"message": f"An error has occurred: {e}"}
+
+    conn.commit()
+    cursor.execute("SELECT flagged from tblseries where seriesID = %s", (seriesID,))
+    output = cursor.fetchone()
+    conn.close()
+
+    return {"message": "Success", "flagged": output["flagged"]}
+
+@app.delete("/deleteSeries")
+def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
+    #This is to delete a series from the database. Will be used for admins only
+    conn = createConnection()
+    conn.autocommit = False
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT seriesID, seriesName from tblseries where seriesID = %s or seriesName = %s", (seriesID, seriesName))
+    output = cursor.fetchone()
+
+    if not output:
+        return {"message": "This series does not exist"}
+    
+    try:
+        cursor.execute("DELETE FROM tblseries WHERE seriesID = %s or seriesName = %s", (seriesID, seriesName))
+        conn.commit()
+        return {"message": "Successfully Deleted. Thank you!", "reply": True}   
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        return {"message": f"An error has occurred: {e}", "reply": False}
+    except TypeError:
+        conn.rollback()
+        return {"message": "An error has occurred. Please try again later", "reply": False}
+    except Exception as e:  
+        conn.rollback()
+        return {"message": f"An error has occurred: {e}", "reply": False}
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000, reload=True)
