@@ -37,7 +37,7 @@ from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PU
 #MYSQL CONNECTING FUNCTION
 def createConnection():
     try:
-        conn = mysql.connector.connect(host=HOSTWEB,
+        conn = mysql.connector.connect(host=hostplace,
                                port=3306,
                                database=db,
                                password=passwd,
@@ -61,7 +61,7 @@ def get_current_user(token: str = Depends(oauth2_scheme_login)):
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
     if not payload:
         return {"reply": False}
-    return {"userID": payload.get("sub"), "userName": payload.get("username")}
+    return {"userID": payload.get("sub"), "userName": payload.get("username"), "role": payload.get("role")}
 
 
 def hashPassword(passwd:str):
@@ -221,20 +221,18 @@ def login(data: LoginRequest):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
-    hashed_password = hashPassword(data.passwd)
-    print(hashed_password, data.email, data.passwd)
-
     SQLParams = (data.email, data.email)
 
     try:
-        cursor.execute("SELECT userID, userName, password FROM tblusers WHERE email = %s or userName = %s;", SQLParams)
+        cursor.execute("SELECT userID, userName, password, role FROM tblusers WHERE email = %s or userName = %s;", SQLParams)
         output = cursor.fetchone()
         if output:
             if verifyPassword(data.passwd, output["password"]) == True:
 
                 if data.ticked == True: #if they tick remember me
                     token_data = {"sub": str(output["userID"]),
-                                "username": output["userName"]
+                                "username": output["userName"],
+                                "role": output["role"]
                                 }
                     access_token = create_access_token(token_data)
                 else:
@@ -290,11 +288,12 @@ def register(data: RegisterRequest):
             cursor.execute("INSERT INTO tbluserinfo (userID) VALUES (%s)", (new_uuid,))
             conn.commit()
 
-            cursor.execute("SELECT userID, userName FROM tblusers WHERE userID = %s", (new_uuid,))
+            cursor.execute("SELECT userID, userName, role FROM tblusers WHERE userID = %s", (new_uuid,))
             output = cursor.fetchone()
             if data.ticked == True: #if they tick remember me
                     token_data = {"sub": str(output["userID"]),
-                                "username": output["userName"]
+                                "username": output["userName"],
+                                "role": output["role"]
                                 }
                     access_token = create_access_token(token_data)
             else:
@@ -322,7 +321,7 @@ def index():
 def getUser(user: dict = Depends(get_current_user)):
     if not user:
         {"reply": False, "instruction": "The user will sign in normally"}
-    return {"reply": True, "userID": user["userID"], "userName": user["userName"]} #is used on reload if signed in
+    return {"reply": True, "userID": user["userID"], "userName": user["userName"], "role": user["role"]} #is used on reload if signed in
  
 
 @app.get("/returnBooruPics/{Page}")
