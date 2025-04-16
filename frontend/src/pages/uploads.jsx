@@ -32,7 +32,7 @@ function UploadPosts(){
         e.preventDefault()
         console.log(forminfo.seriestitle)
 
-        const url = `http://127.0.0.1:8000/uploadSeries`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/uploadSeries`
 
         const formDataprocessing = new FormData()
 

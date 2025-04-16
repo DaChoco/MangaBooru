@@ -46,7 +46,7 @@ function SearchBar({data}){
         e.preventDefault()
         setPage(1) //when someone searches, they should start from page 1
 
-        const url = `http://localhost:8000/search/${page}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/search/${page}`
         console.log(splitTerms)
 
         try{
@@ -109,7 +109,7 @@ function SearchBar({data}){
             setAuto([]) 
             return 
         }
-        const url = `http://localhost:8000/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
         try{
            const response = await fetch(url, {method: "GET"})
            const data = await response.json()

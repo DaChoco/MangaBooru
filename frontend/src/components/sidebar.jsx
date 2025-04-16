@@ -10,7 +10,7 @@ function Sidebar({data, children}){
 
     const linktotag = async (e) => {
         searchbar.value = e.target.textContent
-        let url = `http://localhost:8000/extracttag/?tag=${encodeURIComponent(e.target.textContent)}`
+        let url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/extracttag/?tag=${encodeURIComponent(e.target.textContent)}`
 
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()

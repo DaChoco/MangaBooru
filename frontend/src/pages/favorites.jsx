@@ -34,7 +34,7 @@ function Favorites(){
     useEffect(()=>{
 
         const extractFavorites = async () =>{
-            const url = `http://127.0.0.1:8000/returnFavorites`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavorites`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -81,7 +81,7 @@ function Favorites(){
         }
 
         const extractFavTags = async () => {
-            const url = `http://127.0.0.1:8000/returnFavoriteTagList`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavoriteTagList`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")

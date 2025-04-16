@@ -28,11 +28,6 @@ function ProfileUpdate(){
 
     const [showupdatepic, setShowupdatepic] = useState(false)
 
-    
-
-
-
-
     const normal_banners_urls = [
         "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/8acc4628408cb4ecf0a1bc6c225f85b2.jpg",
         "https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/userBanners/d3ff89457850e066d28f7eb84179d583.jpg",
@@ -79,7 +74,7 @@ function ProfileUpdate(){
         }
 
         previewimg.current.style.opacity = 0.5
-        const url = `http://127.0.0.1:8000/updatemypage/${userID}/uploads`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/updatemypage/${userID}/uploads`
 
         const formdata = new FormData()
         formdata.append("file", file)
@@ -112,7 +107,7 @@ function ProfileUpdate(){
 
     const  updateProfile = async(e)=>{
         e.preventDefault()
-        const url = `http://127.0.0.1:8000/updatemypage/${userID}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/updatemypage/${userID}`
 
         if (forminfo.sig.split(" ").length > 12){
             alert("Use 10 words as your benchmark, that current string of yours is too long.")

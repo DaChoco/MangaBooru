@@ -65,7 +65,7 @@ const navigate = useNavigate()
                 setLogged(false);
                 return;
             }
-            const url = "http://127.0.0.1:8000/getuser"
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/getuser`
 
             const response = await fetch(url, {"method": "GET", headers: {"Authorization": `Bearer ${token}`}})
 
@@ -97,7 +97,7 @@ const navigate = useNavigate()
         }
 
         const extractFavorites = async () =>{
-            const url = `http://127.0.0.1:8000/returnFavorites`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavorites`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -153,7 +153,7 @@ const navigate = useNavigate()
     //LOGIN AND REGISTER
     const userLogin = async (e)=>{
         e.preventDefault()
-        const url = `http://127.0.0.1:8000/login`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/login`
 
         let uemail = emaillogininput.value
         let upasswd = passwdlogininput.value
@@ -195,7 +195,7 @@ const navigate = useNavigate()
 
     const userRegister = async(e)=>{
         e.preventDefault()
-        const url = "http://127.0.0.1:8000/register"
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/register`
  
         const response = await fetch(url, {
             method: "POST",
@@ -224,7 +224,7 @@ const navigate = useNavigate()
     async function userInfoData(userID){
 
         //Extracts user info for the profile page
-        const url = `http://127.0.0.1:8000/returnUserInfo/${userID}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnUserInfo/${userID}`
     try{
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()

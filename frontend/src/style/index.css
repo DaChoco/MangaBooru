@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Roboto';
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;;
   transition: 0.5s;
   margin: 0;
   padding: 0;
