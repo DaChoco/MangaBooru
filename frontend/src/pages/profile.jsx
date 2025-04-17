@@ -344,7 +344,7 @@ if (!userData){ return (<div>LOADING...</div>)}
             </>
              ):(
             <>
-             <div className='profile-page-container'>
+             <div className='profile-page-container hide-it'>
                 <div className="anouncement-ppage">
                     <h3>My Profile Information and Settings</h3>
 

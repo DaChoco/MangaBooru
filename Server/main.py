@@ -14,6 +14,7 @@ from fastapi.security import OAuth2PasswordBearer
 import uuid
 
 #FASTAPI
+
 import uvicorn
 from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form, Depends, Request
 from fastapi.responses import JSONResponse
@@ -195,6 +196,7 @@ async def uploadImageIcons(userID: str, file: UploadFile = File(...)):
     old_response = cursor.fetchone()
     old_icon = str(old_response["userIcon"])
     deleteImage(old_icon, "publicboorufiles-01")
+    print(file.size)
 
     if file.size > 3000000:
         return {"message": "Apologies, but your file is too big", "status_code": 400}

@@ -405,7 +405,14 @@ section{
 }
 
 @media only screen and (max-width: 768px){
-    .profile-page-container{
+
+    .userauthbox{
+        width: 70%;
+    }
+    .userinputs input{
+        width: 90%;
+    }
+    .profile-page-container.hide-it{
         display: none;
     }
 
