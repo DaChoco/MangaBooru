@@ -65,7 +65,7 @@ const navigate = useNavigate()
                 setLogged(false);
                 return;
             }
-            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/getuser`
+            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
 
             const response = await fetch(url, {"method": "GET", headers: {"Authorization": `Bearer ${token}`}})
 
@@ -97,7 +97,7 @@ const navigate = useNavigate()
         }
 
         const extractFavorites = async () =>{
-            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavorites`
+            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnFavorites`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -153,7 +153,7 @@ const navigate = useNavigate()
     //LOGIN AND REGISTER
     const userLogin = async (e)=>{
         e.preventDefault()
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/login`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/login`
 
         let uemail = emaillogininput.value
         let upasswd = passwdlogininput.value
@@ -163,11 +163,7 @@ const navigate = useNavigate()
         const response = await fetch(url, 
             {method: "POST",
                 headers: {
-                    "content-type": "application/json",
-
-                    "Access-Control-Allow-Origin": "*",
-                    'Access-Control-Allow-Headers': "*",
-                    'Access-Control-Allow-Methods': "*"},
+                    "content-type": "application/json"},
             body: JSON.stringify({email: uemail, passwd: upasswd, ticked: ticked})
             }
             
@@ -195,14 +191,13 @@ const navigate = useNavigate()
 
     const userRegister = async(e)=>{
         e.preventDefault()
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/register`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/register`
  
         const response = await fetch(url, {
             method: "POST",
             headers: {
                 "content-type": "application/json",
-                'Access-Control-Allow-Headers': "*",
-                'Access-Control-Allow-Methods': "*"},
+                'Access-Control-Allow-Headers': "*",},
             body: JSON.stringify({email: emailquery, passwd: passwordquery, username: usernamequery, ticked: ticked})
             })
 
@@ -224,7 +219,7 @@ const navigate = useNavigate()
     async function userInfoData(userID){
 
         //Extracts user info for the profile page
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnUserInfo/${userID}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnUserInfo/${userID}`
     try{
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()

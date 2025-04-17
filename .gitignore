@@ -1,2 +1,5 @@
 #Ignore the .env
 **/.env
+lambda-layer/
+**.zip
+lambda-code/

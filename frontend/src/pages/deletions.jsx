@@ -19,7 +19,7 @@ function Deletions(){
                 setLogged(false);
                 return;
             }
-            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/getuser`
+            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
 
             const response = await fetch(url, {"method": "GET", headers: {"Authorization": `Bearer ${token}`}})
 
@@ -59,7 +59,7 @@ function Deletions(){
             alert("You must provide a seriesID or series name to delete")
             return
         }
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/deleteSeries?seriesID=${forminfo.seriesID}&seriesName=${forminfo.seriesName}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/deleteSeries?seriesID=${forminfo.seriesID}&seriesName=${forminfo.seriesName}`
         
 
         try{

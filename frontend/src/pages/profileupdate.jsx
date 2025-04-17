@@ -74,9 +74,9 @@ function ProfileUpdate(){
         }
 
         previewimg.current.style.opacity = 0.5
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/updatemypage/${userID}/uploads`
-
-        const formdata = new FormData()
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/updatemypage/${userID}/uploads`
+        try{
+            const formdata = new FormData()
         formdata.append("file", file)
         setLoading(true)
         const response = await fetch(url, {method: "POST", body: formdata})
@@ -94,10 +94,21 @@ function ProfileUpdate(){
             
         }
         else{
+            console.log(data)
             setLoading(false) 
             console.log("Upload Failed: ", data)
             previewimg.current.style.opacity = 1
         }
+
+        }
+        catch (error){
+            console.log("An error has occured: ", error)
+            setLoading(false)  
+            previewimg.current.style.opacity = 1
+            
+        }
+
+        
 
     }
 
@@ -107,7 +118,7 @@ function ProfileUpdate(){
 
     const  updateProfile = async(e)=>{
         e.preventDefault()
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/updatemypage/${userID}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/updatemypage/${userID}`
 
         if (forminfo.sig.split(" ").length > 12){
             alert("Use 10 words as your benchmark, that current string of yours is too long.")

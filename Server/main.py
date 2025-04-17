@@ -15,7 +15,8 @@ import uuid
 
 #FASTAPI
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form, Depends
+from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, responses, Form, Depends, Request
+from fastapi.responses import JSONResponse
 from mangum import Mangum
 
 
@@ -32,6 +33,7 @@ from aws import mass_presignedurls, uploadImage, deleteImage
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
+
 
 
 #MYSQL CONNECTING FUNCTION
@@ -95,7 +97,7 @@ ORIGINS = ["http://localhost:80",
            "http://localhost:5173",
            "http://127.0.0.1:5173",
            "http://localhost:3306",
-           PERSONAL_IP] 
+           ] 
 
 app.add_middleware(CORSMiddleware,
                    allow_origins=ORIGINS,
@@ -105,6 +107,13 @@ app.add_middleware(CORSMiddleware,
                    )
 
 #MY API ROUTES - THE ROUTES THEMSELVES :
+
+@app.exception_handler(Exception)
+async def all_exception_handler(request: Request, exc: Exception):
+    return responses.JSONResponse(
+        status_code=500,
+        content={"message": f"An internal error occurred: {str(exc)}"},
+    )
 
 #------------WHEN LOGGED IN / PROFILE PAGE
 @app.get("/returnUserInfo/{userID}")
@@ -716,12 +725,12 @@ def flagfordelete(seriesID: str, userID: str | None = None):
     output = cursor.fetchone()
 
     if not output:
-        return {"message": "This series does not exist"}
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": "This series does not exist"})
     try:
         cursor.execute("UPDATE tblseries SET flagged = flagged + 1 WHERE seriesID = %s", (seriesID,))
     except mysql.connector.DatabaseError as e:
         conn.rollback()
-        return {"message": f"An error has occurred: {e}"}
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": f"An error has occurred: {e}"})
 
     conn.commit()
     cursor.execute("SELECT flagged from tblseries where seriesID = %s", (seriesID,))
@@ -741,7 +750,7 @@ def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
     output = cursor.fetchone()
 
     if not output:
-        return {"message": "This series does not exist"}
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": "This series does not exist"})
     
     try:
         cursor.execute("DELETE FROM tblseries WHERE seriesID = %s or seriesName = %s", (seriesID, seriesName))
@@ -759,8 +768,9 @@ def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
     finally:
         conn.close()
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000, reload=True)
+handler = Mangum(app)
+#if __name__ == "__main__":
+ #   uvicorn.run(app, host="localhost", port=8000, reload=True)
 
 #MY JS app, will be commnicating from port 5173 specifically
 
