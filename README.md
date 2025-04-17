@@ -29,9 +29,9 @@ The site will have a tag based searching system, user login, registration, the a
 * EC2 Database hosting with MySQL
 * Styling of and customizing the profile and updating user info pages
 * Creating user uploads for profile pictures
-# Things currently doing
 * Create the ability to flag for deletion
 * Deletions page
+# Things currently doing
 * Checking why JWT Tokens are not expiring, or why my code is not recognizing they are expired.
 # Things to do
 * BONUS - Only for after the rest of prodiction is done
