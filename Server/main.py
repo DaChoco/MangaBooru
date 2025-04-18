@@ -30,7 +30,7 @@ from models import CreateSeries, CreateTag, SearchRequest, FavoritesRequest
 from models import UpdateProfileRequest
 
 #AWS
-from aws import mass_presignedurls, uploadImage, deleteImage
+from aws import mass_presignedurls, uploadImage, deleteImage, insert_user_comment, retrieve_user_comments_list
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
@@ -816,6 +816,38 @@ def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
         return {"message": f"An error has occurred: {e}", "reply": False}
     finally:
         conn.close()
+
+#Comment Making
+
+@app.get('/retrieveUserComments/{seriesID}')
+async def get_comments(seriesID: str):
+    if not seriesID:
+        return {"error": "An error has occured, please try again later"}
+    
+    result = await retrieve_user_comments_list("Mangabooru-Comments", seriesID)
+
+    return JSONResponse(content=result, status_code=200)
+
+@app.get("/inputUserComments")
+async def put_comments(user_id: str, comment: str, series_id: str, userIcon: str):
+
+    if not series_id:
+        return {"message": "Comment was unsuccessful"}
+    result = await insert_user_comment(user_id, comment, "Mangabooru-Comments", series_id, userIcon)
+
+    if result == True:
+        return JSONResponse(content={"message": "Comment was successful!"}, status_code=200)
+    else:
+        return JSONResponse(content={"message": "Comment failed to be inserted"}, status_code=500)
+
+
+    
+
+    
+    
+    
+
+    
 
 handler = Mangum(app)
 if __name__ == "__main__":

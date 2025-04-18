@@ -295,6 +295,10 @@ ul.list-num-page{
 }
 
 @media only screen and (max-width: 430px){
+
+    .sidenav-container{
+        margin: 0;
+    }
     .postcontent-container{
      
         grid-template-columns: 1fr 1fr;

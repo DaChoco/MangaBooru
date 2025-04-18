@@ -28,7 +28,7 @@ function PostBox(){
     const {setFavorited} = useContext(favoritesitems)
 
     function assignfav(index){
-        setFavorited([...favorited, seriesID[index]])
+        setFavorited(favorited => [...favorited, seriesID[index]])
         console.log(favorited)
         localStorage.setItem("favorites", JSON.stringify(favorited))
     }
