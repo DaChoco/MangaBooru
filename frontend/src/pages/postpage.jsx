@@ -26,16 +26,39 @@ function PostPage(){
 
     const addedbox = document.getElementById("ADDFAV")
 
+    async function handleAddingTags(tagInput) {
+        const url = `
+        http://${import.meta.env.VITE_PERSONAL_IP}:8000/tagseriesrelations?taginput=${encodeURIComponent(tagInput)}&seriesinput=${encodeURIComponent(mangaName)}`
+
+        try{
+            const response = await fetch(url, {method: "PUT"})
+            const data = await response.json()
+
+            if (data.reply === true){
+                alert(data.message)
+                setTags(data.tags)
+            }
+            else{
+                console.log(data)
+                alert(data.message)
+            }
+        }
+        catch (error){
+            console.log(error)
+        }
+    }
+
     const addtofavorites = () =>{
         if (favorited.indexOf(url_ID) !== -1){
-            console.log("This is already in your favorites")
+            alert("This is already in your favorites")
             return
         }
 
-        setFavorited(url_ID)
+        setFavorited(prev => ([...prev, url_ID]))
         localStorage.setItem("favorites", JSON.stringify(favorited))
 
         addedbox.style.display = "block"
+        
         setTimeout(function(){
             addedbox.style.display = "none"
        
@@ -142,17 +165,17 @@ function PostPage(){
         
         <article>
             
-            <Sidebar data={tags}>
-                <h2 className="seriestitle">{mangaName.replace(/_/g, " ")}</h2>
-
-                
-            </Sidebar>
+            {Array.isArray(tags) && tags.length > 0 && (<Sidebar data={tags}><h2 className="seriestitle">{typeof mangaName === "string" ? mangaName.replace(/_/g, " "): ""}</h2></Sidebar>)}
             <h2 className="seriestitle">Options:</h2>
 
             <div id="ADDFAV">Manga series has been added to your favorites!</div>
             <ul className="tag-container">
                 <li className="other-tag" onClick={addtofavorites}>Add to Favorites</li>
-                <li className="other-tag">Add tags</li>
+                <li className="other-tag" onClick={async ()=>{
+                    let userInput = prompt("Type in a tag you would like to add to a series")
+                    await handleAddingTags(userInput.toLowerCase())
+                    console.log("transaction complete")
+                }}>Add tags</li>
                 <li className="other-tag" onClick={flagforDeletion}>Flagged for Deletion: {flagged}</li>
                 <strong><li className="tagoutput other-tag" onClick={seeFullnewTab}>See original</li></strong>
             </ul>

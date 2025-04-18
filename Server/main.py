@@ -363,8 +363,6 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY
 
     cursor.execute(SQL_PARAM_NO_TAG_INCLUDED) #returns the urls/keys
     data = cursor.fetchall()
-
-    
     
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
@@ -430,6 +428,10 @@ def seriesExtract(seriesID: str):
         WHERE tblseries.seriesID = %s""", (seriesID,))
     
     output_tags = cursor.fetchall()
+    if not output_tags:
+        #In the event the series has no tags
+        cursor.execute("SELECT seriesID, thumbnail, url, seriesName FROM tblseries WHERE seriesID = %s", (seriesID,))
+        output_tags = cursor.fetchall()
     s3_key = output_tags[0]["url"]
     output_tags[0]["url"] = mass_presignedurls(s3_key, 360)
 
@@ -520,22 +522,62 @@ AND NOT EXISTS (
     finally:
         conn.close()
 
-@app.post("/tagnseriesrelations")
-def updateTagSeries():
+@app.put("/tagseriesrelations")
+def updateTagSeries(taginput: str = Query(...), seriesinput: str = Query(...)):
+    #when someone adds a tag to an existing series, we need to create the junction table link. Since the tag already exists and the series already exists
     conn = createConnection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
+    conn.autocommit = False
 
     SQL_STRING = """
 INSERT INTO tbltagseries (tagID, seriesID)
 SELECT t.tagID, s.seriesID
 FROM tbltags t, tblseries s
 WHERE t.tagName = %s
-AND s.seriesName IN %s
+AND s.seriesName = %s
 AND NOT EXISTS (
     SELECT 1 FROM tbltagseries ts WHERE ts.tagID = t.tagID AND ts.seriesID = s.seriesID
 )
 """
-    return {"result": "results"}
+    SQL_STRING_VERIFICATION = """SELECT tblseries.seriesName, tbltags.tagName FROM tbltagseries 
+INNER JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
+INNER JOIN tblseries ON tbltagseries.seriesID = tblseries.seriesID
+WHERE tblseries.seriesName = %s"""
+
+    try:
+        list_of_tags = []
+        
+        cursor.execute(SQL_STRING, (taginput, seriesinput))
+        cursor.execute(SQL_STRING_VERIFICATION, (seriesinput,))
+        results = cursor.fetchall()
+        
+        if results:
+            for rows in results:
+                list_of_tags.append(rows["tagName"])
+
+            if taginput in list_of_tags:
+                conn.commit()
+                return JSONResponse(content={"reply": True, "message": "Series has been updated, thank you", "tags": list_of_tags}, status_code=200)
+            else:
+                return JSONResponse(content={"reply": False, "message": "The tag was not added to the series"}, status_code=200)
+        else:
+            conn.rollback()
+            return JSONResponse(content={"reply": False, "message": "No new relationships added"}, status_code=200)
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        print(f"Your error has occured. Very sorry: {e}")
+        return JSONResponse(content={"reply": False,"message": "Something has gone wrong. Please try again later"}, status_code=500)
+    except TypeError as e:
+        conn.rollback()
+        print(f"An error has occured: {e}")
+        return JSONResponse(content={"reply": False, "message": "Something is wrong on the server side"}, status_code=502)
+    except Exception as e:
+        conn.rollback()
+        return {"message": f"Something went wrong: {e}"}
+    finally:
+        conn.close()
+   
+ 
 
 #Search -----------------------------------
 

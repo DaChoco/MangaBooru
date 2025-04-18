@@ -216,6 +216,7 @@ const navigate = useNavigate()
         }
         else{
             console.log("Sorry, something has gone wrong. This is the reason: ", data.elaborate)
+            alert(data.elaborate)
         }
         }
         catch (error){

@@ -4,11 +4,13 @@ import { PostItemsContext } from "../contexts/postItemContext"
 import { PageNumContext } from "../contexts/pageNumContext"
 import { favoritesitems } from "../contexts/favoritesContext"
 import { useNavigate } from "react-router-dom"
+import {loggedIn} from "../contexts/loggedinContext"
 import Sidebar from "./sidebar"
 import SearchBar from "./searchsect"
 
 
 function PostBox(){
+    const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
     const [seriesImg, setSeriesImg] = useState([])
     const {posts} = useContext(PostItemsContext)
 
@@ -95,10 +97,11 @@ function PostBox(){
     useEffect(()=>{
         const returnBooruPics = async () =>{ //On page load or when page changes, it extracts series
             const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnBooruPics/${page}`
-            
+            setLoadingcredentials(true)
             const response = await fetch(url, {method: "GET"})
             const data = await response.json()
-    
+            
+            setLoadingcredentials(false)
             setSeriesImg(data.urls)
             setLenoutput(data.numpages) //used to calc number of page num boxes needed
             setTags(data.tags)
@@ -122,6 +125,7 @@ function PostBox(){
         <SearchBar data={{lenoutput, setLenoutput}}></SearchBar>
         
         <div className="postcontent-container">
+        {loadingcredentials && <div className="spinning-circle-container"></div>}
         {//produces all the posts and their images
         seriesPostPics.map((e, index) => (
         <div key={index} className="postitem">

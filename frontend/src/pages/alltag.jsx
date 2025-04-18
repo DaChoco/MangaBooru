@@ -84,7 +84,7 @@ function AllTags(){
 
 
     return (
-        <div className="main-content">
+        <div className="main-content tag-page">
             <Topnav></Topnav>
             <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
 

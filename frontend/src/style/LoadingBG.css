@@ -1,6 +1,6 @@
 .spinning-circle-container{
     position: fixed;
-    background-color: var(--base-color-dark);
+    
     border: 16px #b1aeae solid;
     border-top: var(--generic-tag) solid 16px;
     border-radius: 50%;
@@ -9,6 +9,7 @@
     animation: spin 2s linear infinite;
     top: 50%;
     left: 50%;
+    z-index: 1000;
 }
 
 @keyframes spin {
