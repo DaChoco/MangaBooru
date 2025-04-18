@@ -34,7 +34,7 @@ function Favorites(){
     useEffect(()=>{
 
         const extractFavorites = async () =>{
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnFavorites`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavorites`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -81,7 +81,7 @@ function Favorites(){
         }
 
         const extractFavTags = async () => {
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnFavoriteTagList`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavoriteTagList`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")

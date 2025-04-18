@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 
 function ProfileUpdate(){
+    
 
     const navigate = useNavigate()
     const updatepromptref = useRef(null)
@@ -52,6 +53,7 @@ function ProfileUpdate(){
     const { userID } = useContext(loggedIn)
     const { userIcon, setUserIcon } = useContext(loggedIn)
     const { userRole } = useContext(loggedIn)
+    const {setLoadingcredentials, loadingcredentials} = useContext(loggedIn)
 
     const handleFilechange = (event)=>{
         setFile(event.target.files[0])
@@ -74,7 +76,7 @@ function ProfileUpdate(){
         }
 
         previewimg.current.style.opacity = 0.5
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/updatemypage/${userID}/uploads`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/updatemypage/${userID}/uploads`
         try{
             const formdata = new FormData()
         formdata.append("file", file)
@@ -118,7 +120,7 @@ function ProfileUpdate(){
 
     const  updateProfile = async(e)=>{
         e.preventDefault()
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/updatemypage/${userID}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/updatemypage/${userID}`
 
         if (forminfo.sig.split(" ").length > 12){
             alert("Use 10 words as your benchmark, that current string of yours is too long.")
@@ -126,6 +128,7 @@ function ProfileUpdate(){
         }
 
         try{
+            setLoadingcredentials(true)
         const response = await fetch(url, 
             {
                 method: "PUT",
@@ -137,19 +140,24 @@ function ProfileUpdate(){
         
             if (!response.ok) {
                 const errorData = await response.json(); // Try to read error body
+                setLoadingcredentials(false)
                 throw new Error(`HTTP ${response.status}: ${errorData.elaborate || "Unknown error"}`)};
         
             const data = await response.json()
 
         if (data.message === true){
+            setLoadingcredentials(false)
             alert("Congrats, your profile has been updated")
             navigate("/profile")
         }
         else{
+            setLoadingcredentials(false)
             alert("Apologies, for whatever reason, this process has failed, please try again later: ", data.elaborate)
         }
 
-    } catch (error) {console.log("An error has occured: ", error)}
+    } catch (error) {
+        setLoadingcredentials(false)
+        console.log("An error has occured: ", error)}
 
     }
 
@@ -162,7 +170,7 @@ function ProfileUpdate(){
         const handleclickoutside = (event) => {
             
             if (updatepromptref.current && !updatepromptref.current.contains(event.target)) {
-            console.log(userRole)
+            console.log(userRole);
             setShowupdatepic(false);
             setFileurl(null)
             }

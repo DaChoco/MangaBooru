@@ -14,7 +14,7 @@ function AllTags(){
 
     const linktotag = async (e) => {
         searchbar.value = e.target.textContent
-        let url = `http://${import.meta.env.VITE_LAMBDA_DOMAIN}:8000/extracttag/?tag=${encodeURIComponent(e.target.textContent)}`
+        let url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/extracttag/?tag=${encodeURIComponent(e.target.textContent)}`
 
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()
@@ -53,7 +53,7 @@ function AllTags(){
 
     useEffect(()=>{
         const extractTags = async () => {
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/everytag?page=${pagenumber}`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/everytag?page=${pagenumber}`
 
             try{
                 let arrtags = []

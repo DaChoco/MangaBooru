@@ -98,6 +98,7 @@ ORIGINS = ["http://localhost:80",
            "http://localhost:5173",
            "http://127.0.0.1:5173",
            "http://localhost:3306",
+           PERSONAL_IP, "http://172.20.10.6:5173", 'http://172.24.32.1:5173'
            ] 
 
 app.add_middleware(CORSMiddleware,
@@ -191,6 +192,10 @@ def updatingprofile(data: UpdateProfileRequest, userID: str):
 async def uploadImageIcons(userID: str, file: UploadFile = File(...)):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
+
+    if file.size > 3000000:
+        #3mb is the limit because of how lambda functions work
+        return JSONResponse(status_code=400, content={"message": False, "reply": "Apologies, but your file is too big"})
 
     cursor.execute("SELECT userIcon from tbluserinfo where userID = %s", (userID,))
     old_response = cursor.fetchone()
@@ -771,8 +776,8 @@ def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
         conn.close()
 
 handler = Mangum(app)
-#if __name__ == "__main__":
- #   uvicorn.run(app, host="localhost", port=8000, reload=True)
+if __name__ == "__main__":
+   uvicorn.run(app, host="localhost", port=8000, reload=True)
 
 #MY JS app, will be commnicating from port 5173 specifically
 

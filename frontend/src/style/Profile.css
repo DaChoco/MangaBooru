@@ -48,6 +48,11 @@
     overflow: hidden;
 }
 
+.no-favs{
+    grid-area: maincontent;
+    height: 50vh;
+}
+
 .profile-icon{
     border-radius: 10rem;
     
@@ -414,6 +419,11 @@ section{
     }
     .profile-page-container.hide-it{
         display: none;
+        border-right: 0px;
+    }
+
+    .profile-page-container{
+        border: none;
     }
 
     .main-content.profile-page-area{

@@ -26,14 +26,12 @@ li{
     
 }
 
-.menulinks a:hover{
-    background-color: var(--nav-hover-color)
-}
+
 
 
 
 img{
-    width: 80%;
+    width: 250px;
 }
 
 .lightordark-container{ /*Container of light or dark mode*/
@@ -227,8 +225,8 @@ ul.list-num-page{
 
 .favorite-btn{
     position: absolute;
-    top: 1rem;
-    right: 5rem;
+    top: 0rem;
+    right: 0rem;
     fill: #D16D6A;
     height: 2rem;
     width: 2rem;
@@ -236,6 +234,7 @@ ul.list-num-page{
 
 .imgwrap{
     position: relative;
+    width: max-content;
 
 }
 
@@ -284,6 +283,14 @@ ul.list-num-page{
 }
 
 @media only screen and (max-width: 430px){
+    .postcontent-container{
+     
+        grid-template-columns: 1fr 1fr;
+        height: 100;
+        width: 100;
+        margin: 0;
+        padding: 1rem;
+    }
     .user-spoke-icon.for-small-screens{
         display: none;
     }
@@ -291,11 +298,16 @@ ul.list-num-page{
         margin: 0;
     }
     .imgwrap{
-        max-width: 100px;
+        width: max-content;
+        margin: 0 auto;
+    }
+    .imgwrap img{
+        width: 150px;
     }
 
-    .post-item{
+    .postitem{
         width: 100%;
+        padding: 0;
     }
 
     .main-content.post-box{

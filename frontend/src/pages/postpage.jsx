@@ -43,7 +43,7 @@ function PostPage(){
     }
     
     const flagforDeletion = async () =>{
-        const url =   `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/flagfordelete/${url_ID}?userID=${userID}`
+        const url =   `http://${import.meta.env.VITE_PERSONAL_IP}:8000/flagfordelete/${url_ID}?userID=${userID}`
 
         if (userID == null){
             alert("You must be logged in to flag this series for deletion")
@@ -86,7 +86,7 @@ function PostPage(){
 
 
         const returnMangaInfo = async (urlID) =>{
-            let url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnMangaInfo/${urlID}`
+            let url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnMangaInfo/${urlID}`
             console.log(urlID)
             let tagarray = []
 
