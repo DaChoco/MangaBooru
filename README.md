@@ -1,7 +1,7 @@
 # MangaBooru
 Welcome to the MangaBooru. Inspired by other Booru sites such as Sakugabooru. For those who do not know what Boorus are, they are tag based image gallery sites where users can share content with others. This site intends to be a modern rendition of the niche website style. Full Stack and incorperating popular technologies of today.\
 The main function of the site will be assisting end users in discovering new manga series they may not have the opportunity to discover otherwise. Or just as a simple archive of series that a person may be reading/may want to read.\
-The site will have a tag based searching system, user login, registration, the ability to upload
+The site will have a tag based searching system, user login, registration, the ability to upload. In addition, there will be a commenting system someone can use per manga series upload on the site
 
 # Techstack
 * **Python** with **FastAPI** in order to create restful apis, cookies and authentication. 
@@ -12,6 +12,7 @@ The site will have a tag based searching system, user login, registration, the a
   * **EC2** will be used to host my database. 
 * **HTML** and **Plain CSS** will be used for all the design/styling
 * **MySQL** will be used for the database
+* **Amazon Dynamo DB** will be used to host and create my user comments, as well as creating a commenting system
 
 # Short list of Things already done
 * Landing page
@@ -32,10 +33,12 @@ The site will have a tag based searching system, user login, registration, the a
 * Create the ability to flag for deletion
 * Deletions page
 # Things currently doing
-* Checking why JWT Tokens are not expiring, or why my code is not recognizing they are expired.
+* Creating a simple commenting system with Dynamo DB
+* Making pages more responsive on mobile
 # Things to do
 * BONUS - Only for after the rest of prodiction is done
   * Try implementing Google or Apple authentication with the service.
+
 # Screenshots:
 * Coming soon
 

@@ -2,7 +2,8 @@ import { Footer, SearchBar, Sidebar, Topnav } from '../components'
 import { useContext, useState, useEffect } from 'react'
 import { favoritesitems } from '../contexts/favoritesContext'
 import { useNavigate } from 'react-router-dom'
-
+import {loggedIn} from "../contexts/loggedinContext"
+import "../style/LoadingBG.css"
 
 function Favorites(){
     const {favorited} = useContext(favoritesitems)
@@ -10,6 +11,7 @@ function Favorites(){
 
     const [thumbnails, setThumbnails] = useState([])
     const [title, setTitle] = useState([])
+    const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
 
     const navigate = useNavigate()
 
@@ -34,7 +36,7 @@ function Favorites(){
     useEffect(()=>{
 
         const extractFavorites = async () =>{
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnFavorites`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavorites`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -81,7 +83,7 @@ function Favorites(){
         }
 
         const extractFavTags = async () => {
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnFavoriteTagList`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavoriteTagList`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -89,6 +91,7 @@ function Favorites(){
             }
 
             try{
+                setLoadingcredentials(true)
                 let arrtags = []
                 const response = await fetch(url, 
                     {method: "POST",
@@ -101,6 +104,7 @@ function Favorites(){
                     )
 
                 const data = await response.json()
+                setLoadingcredentials(false)
 
                 if (data.length<=0){
                     console.log("Nothing was returned")
@@ -140,6 +144,7 @@ function Favorites(){
             <Topnav></Topnav>
             <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
             <div className="postcontent-container">
+            {loadingcredentials && <div className="spinning-circle-container"></div>}
         {//produces all the posts and their images
         thumbnails.map((e, index) => (
         <div key={index} className="postitem">
@@ -186,6 +191,7 @@ function Favorites(){
         <div className="main-content">
         <Topnav></Topnav>
         <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
+            
             <div className="no-favs">
                 <p>You appear not to have any favorites, go favorite some things and come back to us! Bye</p>
             </div>

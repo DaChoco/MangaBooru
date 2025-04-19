@@ -18,6 +18,8 @@ li{
     
 }
 
+
+
 .menulinks a{
     align-self: center;
     border-radius: 0.5rem;
@@ -26,14 +28,19 @@ li{
     
 }
 
-.menulinks a:hover{
-    background-color: var(--nav-hover-color)
+.main-content.tags-page{
+    grid-template-columns: auto auto;
+    grid-template-rows: 100%;
 }
 
 
 
 img{
-    width: 80%;
+    width: 250px;
+}
+
+.other-tag{
+    cursor: pointer;
 }
 
 .lightordark-container{ /*Container of light or dark mode*/
@@ -181,6 +188,16 @@ li.tagoutput{
     position: block;
 }
 
+.say-comment{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+li.comment{
+    width: 100%;
+    margin: 1.5rem auto;
+}
 .next-page-arrow{
     width: 3.5rem;
     height: 3.5rem;
@@ -227,21 +244,29 @@ ul.list-num-page{
 
 .favorite-btn{
     position: absolute;
-    top: 1rem;
-    right: 5rem;
+    top: 0rem;
+    right: 0rem;
     fill: #D16D6A;
     height: 2rem;
     width: 2rem;
 }
 
+.comment-sect{
+    width: 70%;
+}
+
 .imgwrap{
     position: relative;
+    width: max-content;
 
 }
 
 #ADDFAV{
     display: none;
-    position: absolute;
+    transform: translate(50%, 50%);
+    position: fixed;
+    top: 50%;
+    left: 50%;
 }
 
 .topnav-content-smallscreen{
@@ -257,15 +282,21 @@ ul.list-num-page{
 
 .comment-list{
     display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
     padding: 0;
     width: 100%;
     
 }
 
+li.menulinks:hover{
+    background-color: var(--topnav-hover) ;
+}
+
 .user-spoke-icon{
     width: 7.5rem;
     height: 7.5rem;
-    background-image: url("https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/2025-04-13-3d15ffe961ba-1acadc7acb3bed2aab06b06e533fdab7.jpg");
+    
     background-size: cover;
     border-radius: 5rem;
     border: 5px solid #FFF;
@@ -274,7 +305,9 @@ ul.list-num-page{
 .user-spoke-content{
     margin-left: 1rem;
     background-color: var(--comment-boxes);
-    padding: 0.5rem;
+    padding: 1rem;
+    width: 70%;
+    border: 1px solid #FFF;
 
 }
 @media only screen and (max-width: 1920px) and (min-width: 1440px) {
@@ -284,6 +317,18 @@ ul.list-num-page{
 }
 
 @media only screen and (max-width: 430px){
+
+    .sidenav-container{
+        margin: 0;
+    }
+    .postcontent-container{
+     
+        grid-template-columns: 1fr 1fr;
+        height: 100;
+        width: 100;
+        margin: 0;
+        padding: 1rem;
+    }
     .user-spoke-icon.for-small-screens{
         display: none;
     }
@@ -291,11 +336,16 @@ ul.list-num-page{
         margin: 0;
     }
     .imgwrap{
-        max-width: 100px;
+        width: max-content;
+        margin: 0 auto;
+    }
+    .imgwrap img{
+        width: 150px;
     }
 
-    .post-item{
+    .postitem{
         width: 100%;
+        padding: 0;
     }
 
     .main-content.post-box{
@@ -342,6 +392,10 @@ ul.list-num-page{
 
     .say-comment{
         padding-left: 1rem;
+    }
+
+    li.comment{
+        justify-content: space-around;
     }
 }
 

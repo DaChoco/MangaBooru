@@ -87,10 +87,14 @@
 
 .my-table{
     margin: 0 auto;
-    grid-area: maincontent;
+    
     padding: 1rem;
     margin-bottom: 2rem;;
-    width: 90%;
+    width: 95vw;
+    
+
+    
+   
 }
 
 th{
@@ -102,3 +106,4 @@ td{
     padding: 0.5rem;
     background-color: var(--tablebg)
 }
+

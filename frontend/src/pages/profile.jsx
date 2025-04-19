@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { SearchBar, Topnav, Footer } from "../components"
 import { favoritesitems } from '../contexts/favoritesContext'
 import { loggedIn } from '../contexts/loggedinContext'
@@ -6,6 +6,7 @@ import { loggedIn } from '../contexts/loggedinContext'
 import { Link, useNavigate } from 'react-router-dom'
 import "../style/Posts.css"
 import "../style/Profile.css"
+import "../style/LoadingBG.css"
 
 import applelogo from "../assets/apple-logo.png"
 import googlelogo from "../assets/google.png"
@@ -33,13 +34,16 @@ function Profile(){
     ]
 //HOOKS -----------------------------------------------------------------
 const navigate = useNavigate()
-
+    const LoginBoxRef = useRef()
+    const RegisterBoxRef = useRef()
 
     const {logged, setLogged} = useContext(loggedIn)
     const {userID, setUserID} = useContext(loggedIn)
     const {userIcon, setUserIcon} = useContext(loggedIn)
     const {showLoginBox, setShowLoginBox} = useContext(loggedIn)
     const {showRegisterBox, setShowRegisterBox} = useContext(loggedIn)
+    const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
+    const {userName, setUserName} = useContext(loggedIn)
     const {setUserRole} = useContext(loggedIn)
     const {userRole} = useContext(loggedIn)
 
@@ -56,22 +60,61 @@ const navigate = useNavigate()
     const [userData, setUserData] = useState({})
 
     useEffect(()=>{
+        if (LoginBoxRef.current){
+            const handleclickoutside =(event)=>{
+                if (!LoginBoxRef.current.contains(event.target)){
+                    setShowLoginBox(false)
+                }
+            }
+            document.addEventListener("mousedown", handleclickoutside);
+            return () => {
+            document.removeEventListener("mousedown", handleclickoutside);
+            };
+        }
+    },[showLoginBox])
+
+    useEffect(()=>{
+        if (RegisterBoxRef.current){
+            const handleclickoutside =(event)=>{
+                if (!RegisterBoxRef.current.contains(event.target)){
+                
+                    setShowRegisterBox(false)
+                }
+            }
+            document.addEventListener("mousedown", handleclickoutside);
+            return () => {
+            document.removeEventListener("mousedown", handleclickoutside);
+            };
+        }
+    },[showRegisterBox])
+
+    useEffect(()=>{
         const getLoginCreds = async () =>{
             //before the user ID is even set we can see if the end user has the tokens to log in automatically. Skipping the filler
             const token = localStorage.getItem("access_token")
 
+            setLoadingcredentials(true)
+
             if (!token) {
                 console.log("No token found");
+                setLoadingcredentials(false)
                 setLogged(false);
                 return;
             }
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
+            else if (token === null || token === undefined){
+                console.log("No token found");
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            }
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/getuser`
 
-            const response = await fetch(url, {"method": "GET", headers: {"Authorization": `Bearer ${token}`}})
+            const response = await fetch(url, {method: "GET", headers: {"Authorization": `Bearer ${token}`}})
 
             if (!response.ok) {
                 console.warn("Token is invalid or expired");
                 localStorage.removeItem("access_token"); 
+                setLoadingcredentials(false)
                 setLogged(false);
                 return;
             } else{
@@ -79,7 +122,10 @@ const navigate = useNavigate()
                 console.log("USER DATA: ", data)
                 setUserID(data.userID)
                 setLogged(true)
+                setUserName(data.userName)
                 userInfoData(data.userID)
+                setLoadingcredentials(false)
+                
             }
      
                
@@ -97,7 +143,7 @@ const navigate = useNavigate()
         }
 
         const extractFavorites = async () =>{
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnFavorites`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnFavorites`
 
             if (favorited.length <= 0){
                 console.log("The user does not have favorites")
@@ -117,7 +163,6 @@ const navigate = useNavigate()
                 )
 
                 const data = await response.json()
-                console.log(data)
                 setFavoritesData(data)
             }
                 catch (error) {console.log(error)}
@@ -138,7 +183,6 @@ const navigate = useNavigate()
         }
         
         setShowLoginBox(!showLoginBox)
-        console.log(showLoginBox)
     }
 
     function showRegister(){
@@ -153,7 +197,7 @@ const navigate = useNavigate()
     //LOGIN AND REGISTER
     const userLogin = async (e)=>{
         e.preventDefault()
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/login`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/login`
 
         let uemail = emaillogininput.value
         let upasswd = passwdlogininput.value
@@ -175,12 +219,14 @@ const navigate = useNavigate()
         if (data.message === true){
             setUserID(data.userID)
             setLogged(true)
+            setUserName(data.userName)
 
             localStorage.setItem("access_token", data.access_token)
             
         }
         else{
             console.log("Sorry, something has gone wrong. This is the reason: ", data.elaborate)
+            alert(data.elaborate)
         }
         }
         catch (error){
@@ -191,7 +237,7 @@ const navigate = useNavigate()
 
     const userRegister = async(e)=>{
         e.preventDefault()
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/register`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/register`
  
         const response = await fetch(url, {
             method: "POST",
@@ -207,6 +253,7 @@ const navigate = useNavigate()
             alert(data.elaborate)
             setUserID(data.userID)
             setLogged(true)
+            setUserName(usernamequery)
 
             localStorage.setItem("access_token", data.access_token)
         }
@@ -219,7 +266,7 @@ const navigate = useNavigate()
     async function userInfoData(userID){
 
         //Extracts user info for the profile page
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnUserInfo/${userID}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnUserInfo/${userID}`
     try{
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()
@@ -228,6 +275,7 @@ const navigate = useNavigate()
         setUserData(data)
         setUserIcon(data.userIcon)
         setUserRole(data.role)
+        setUserName(data.userName)
 
         setUserData((prevdata) =>({...prevdata, DateCreated: new Date(prevdata.DateCreated).toLocaleDateString()}))
 
@@ -260,7 +308,7 @@ const navigate = useNavigate()
 
 if (!userData){ return (<div>LOADING...</div>)}
 
-
+if (loadingcredentials === true) {return (<div className='spinning-circle-container'></div>) }else{
     return(
 
         <div className="main-content profile-page-area" style={{position: "relative"}}>
@@ -288,7 +336,7 @@ if (!userData){ return (<div>LOADING...</div>)}
              
 
              {showLoginBox === true && (
-                <form className="userauthbox" id='login' style={{transform: "translate(-50%, -50%)"}} onSubmit={userLogin}> {/*Swoops in from the left - Login */}
+                <form className="userauthbox" id='login' ref={LoginBoxRef} style={{transform: "translate(-50%, -50%)"}} onSubmit={userLogin}> {/*Swoops in from the left - Login */}
 
                 <span>Login with</span> 
                 <div className="userinputs" >
@@ -317,7 +365,7 @@ if (!userData){ return (<div>LOADING...</div>)}
             )}
             
             {showRegisterBox === true && (
-            <form onSubmit={userRegister} className="userauthbox" id='register' style={{transform: "translate(-50%, -50%)"}} > {/*Swoops in from the right - Register*/}
+            <form onSubmit={userRegister} ref={RegisterBoxRef} className="userauthbox" id='register' style={{transform: "translate(-50%, -50%)"}} > {/*Swoops in from the right - Register*/}
                 <span>Register With</span>
 
             <div className="userinputs">
@@ -422,6 +470,7 @@ if (!userData){ return (<div>LOADING...</div>)}
         
         
     )
+    }
 }
 
 export default Profile

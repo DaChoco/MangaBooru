@@ -102,6 +102,11 @@ h1{
     color: var(--series-text-color);
 }
 
+.search-btn{
+    background-color: var(--base-color-topnav);
+    color: var(--text-color-topnav)
+}
+
 @media only screen and (max-width: 430px){
     .home-container > p, a{
         font-size: 0.75rem;
@@ -116,6 +121,7 @@ h1{
 
     .search-btn{
         width: max-content;
+
     }
     .searchbar{
         border: 1px;
