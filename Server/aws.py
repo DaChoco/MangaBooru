@@ -115,7 +115,7 @@ def retrieve_user_comments_list(table_name: str, page_id: str):
         )
         #We will output this as an array of dict
 
-        print(response['Items'])
+        
 
         list_comments = []
         for item in response['Items']:
@@ -146,15 +146,25 @@ def incrementPostVotes(table_name: str, timestamp: str, seriesID: str, userID: s
         voteID = f"{timestamp}-{seriesID}-{userID}"
         #check if already voted
         check = dynamoDB.get_item(TableName="Mangabooru-Votes", Key={
-            "vote_id": {'S': voteID}
+            "vote_id": {'S': str(voteID)}
         })
 
-        if 'Item' in check:
-            return {"message": "This user has already voted"}
+        if "Item" in check:
         
-        if check['Item']['vote_type']['S'] == category:
+            if check['Item']['vote_type']['S'] == category:
             #prevents repeat votes
-            return
+                return {"message": "This user has voted the same way before", "reply": False}
+            else: 
+                opposite_vote_type = check["Item"]['vote_type']['S']
+
+                response = dynamoDB.update_item(TableName=table_name, Key={
+                'page_id': {'S': seriesID},
+                'timestamp': {'S': timestamp}}, 
+                UpdateExpression=f"SET {opposite_vote_type} = {opposite_vote_type} - :incval",
+                ExpressionAttributeValues={":incval": {"N": str(1)}},
+                ReturnValues="UPDATED_NEW"
+                )
+
         
         response = dynamoDB.update_item(TableName=table_name, Key={
             'page_id': {'S': seriesID},
@@ -164,17 +174,22 @@ def incrementPostVotes(table_name: str, timestamp: str, seriesID: str, userID: s
             ReturnValues="UPDATED_NEW"
             )
     
-        dynamoDB.put_item(TableName="Mangabooru-Votes", Item={
-            'page_id': {'S', seriesID},
-            'timestamp': {'S', str(datetime.now())},
-            "user_id": {'S', userID},
-            "vote_type": {'S', category}
+        dynamoDB.put_item(TableName="Mangabooru-Votes", 
+        Item={
+            'vote_id': {'S': str(voteID)},
+            'timestamp': {'S': str(datetime.now())},
+            "user_id": {'S': str(userID)},
+            "vote_type": {'S': category}
         })
         
-        return response["Attributes"][category]['N']
+        return {"new_votes": response["Attributes"][category]['N'], "reply": True}
         
     except botocore.exceptions.ClientError as e:
         print(f"An error has occured: {e.response['Error']['Message']}. Full details: {e.response['ResponseMetadata']}")
+    except botocore.exceptions.ParamValidationError as e:
+        print(print(f"An error has occured: {e.response['Error']['Message']}. Full details: {e.response['ResponseMetadata']}"))
+    except Exception as e:
+        print("Error: ", e)
         
 
 

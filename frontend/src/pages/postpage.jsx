@@ -29,8 +29,55 @@ function PostPage(){
     const commentarearef = useRef()
 
 
-    const {userID} = useContext(loggedIn)
-    const {userName} = useContext(loggedIn)
+    const {userID, setUserID, logged, setLogged} = useContext(loggedIn)
+
+    //Special Use Effect. Login via cookies:
+    useEffect(()=>{
+        const getLoginCreds = async () =>{
+            //before the user ID is even set we can see if the end user has the tokens to log in automatically. Skipping the filler
+            const token = localStorage.getItem("access_token")
+
+            setLoadingcredentials(true)
+
+            if (!token) {
+                console.log("No token found");
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            }
+            else if (token === null || token === undefined){
+                console.log("No token found");
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            }
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/getuser`
+
+            const response = await fetch(url, {method: "GET", headers: {"Authorization": `Bearer ${token}`}})
+
+            if (!response.ok) {
+                console.warn("Token is invalid or expired");
+                localStorage.removeItem("access_token"); 
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            } else{
+                const data = await response.json()
+                console.log("USER DATA: ", data)
+                setUserID(data.userID)
+                setLogged(true)
+                setUserName(data.userName)
+                setLoadingcredentials(false)
+                
+            }
+     
+               
+            
+
+        }
+        getLoginCreds()
+    }, [])
+    const {userName, setUserName} = useContext(loggedIn)
     
 
     const addedbox = document.getElementById("ADDFAV")
@@ -224,13 +271,24 @@ function PostPage(){
 
     },[])
 
-    async function incrementUpvotes(time, vote_type){
+    async function incrementVotes(time, vote_type){
+        if (userID === null || userID === undefined || userID === ""){
+            return
+        }
         const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/changecommentvotes/${url_ID}?timestamp=${encodeURIComponent(time)}&category=${vote_type}&userID=${userID}`
 
         try{
 
             const response = await fetch(url, {method: "PUT"})
-            
+            const data = await response.json()
+
+            if (data.reply === false){
+                return
+            }
+            else{
+                return data.new_votes
+            }
+
 
         }
         catch (error){
@@ -285,7 +343,7 @@ function PostPage(){
             <div className="say-comment">
             <p>Leave a comment: </p>
             <textarea ref={commentarearef} name="" id="textbox" ></textarea>
-            <button className="comment-sect" onClick={handleCreateComment}>Add comment</button>
+            {logged === true && (<button className="comment-sect" onClick={handleCreateComment}>Add comment</button>)}
             </div>
             { commentlist &&  commentlist.length>0 ? (
                 <ul className="comment-list">
@@ -295,8 +353,26 @@ function PostPage(){
                             <span><strong>{comment.userName ?? "Anonymous"}</strong> commented at {comment.timestamp.substring(0, 19) ?? "00:00"}</span>
                             <p>{comment.commentText ?? "The comment"}</p>
                             <p>
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="m280-400 200-200 200 200H280Z"/></svg>Upvotes: {comment.upvotes ?? 0} 
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M480-360 280-560h400L480-360Z"/></svg>Downvotes: {comment.downvotes ?? 0} </p>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="m280-400 200-200 200 200H280Z" onClick={async ()=> {
+                                    const upvotes = await incrementVotes(comment.timestamp, "upvotes");
+                                    setCommentlist(prevdata => {
+                                        const newList = [...prevdata];
+                                        newList[index] = {...newList[index], upvotes: upvotes };
+                                        return newList;
+                                    })
+                                    }}/></svg>Upvotes: {comment.upvotes ?? 0} 
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M480-360 280-560h400L480-360Z" onClick={async ()=> {
+                                    const downvotes = await incrementVotes(comment.timestamp, "downvotes");
+                                    setCommentlist(prevdata =>{
+                                        const newList = [...prevdata];
+                                        newList[index] = {...newList[index], downvotes: downvotes};
+                                        return newList;
+
+                                    })
+                                
+                                }}/></svg>Downvotes: {comment.downvotes ?? 0} </p>
+
                         </div>
                     </li>)) }
                     

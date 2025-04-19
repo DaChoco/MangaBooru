@@ -840,11 +840,14 @@ def put_comments(userID: str, comment: str, userIcon: str,userName: str, seriesI
     
 @app.put("/changecommentvotes/{seriesID}")
 def change_comment_votes(seriesID: str, timestamp: str, category: str, userID: str):
+
     result = incrementPostVotes(table_name="Mangabooru-Comments", 
                                 timestamp=timestamp,
                                 seriesID=seriesID,
                                 userID=userID,
                                 category=category)
+    
+    return JSONResponse(content=result, status_code=200)
     
 
 handler = Mangum(app)

@@ -301,7 +301,7 @@ ul.list-num-page{
 .user-spoke-content{
     margin-left: 1rem;
     background-color: var(--comment-boxes);
-    padding: 0.5rem;
+    padding: 1rem;
     width: 70%;
     border: 1px solid #FFF;
 

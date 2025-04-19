@@ -101,6 +101,12 @@ const navigate = useNavigate()
                 setLogged(false);
                 return;
             }
+            else if (token === null || token === undefined){
+                console.log("No token found");
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            }
             const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/getuser`
 
             const response = await fetch(url, {method: "GET", headers: {"Authorization": `Bearer ${token}`}})
