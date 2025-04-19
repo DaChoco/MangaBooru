@@ -141,6 +141,7 @@ def retrieve_user_comments_list(table_name: str, page_id: str):
         return {"error_message": "Something has gone wrong, please try again later"}
     except botocore.exceptions.ParamValidationError as e:
         print(print(f"An error has occured: {e.response['Error']['Message']}. Full details: {e.response['ResponseMetadata']}"))
+        return {"error_message": "Something has gone wrong, please try again later. Params"}
     except Exception as e:
         print("Error: ", e)
     

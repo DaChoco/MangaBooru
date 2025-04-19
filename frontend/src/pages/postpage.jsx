@@ -204,7 +204,7 @@ function PostPage(){
 
     }, [])
     const retrieveCommentList = async () =>{
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/retrieveUserComments/${url_ID}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/retrieveUserComments/${url_ID}`
         
 
         try{
@@ -240,7 +240,7 @@ function PostPage(){
             return
         }
 
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/inputUserComments/${userComment.seriesID}?userID=${userID}&comment=${encodeURIComponent(commentarearef.current.value)}&userIcon=${encodeURIComponent(userIcon)}&userName=${encodeURIComponent(userName)}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/inputUserComments/${userComment.seriesID}?userID=${userID}&comment=${encodeURIComponent(commentarearef.current.value)}&userIcon=${encodeURIComponent(userIcon)}&userName=${encodeURIComponent(userName)}`
 
         setLoadingcredentials(true)
         try{
@@ -275,7 +275,7 @@ function PostPage(){
         if (userID === null || userID === undefined || userID === ""){
             return
         }
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/changecommentvotes/${url_ID}?timestamp=${encodeURIComponent(time)}&category=${vote_type}&userID=${userID}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/changecommentvotes/${url_ID}?timestamp=${encodeURIComponent(time)}&category=${vote_type}&userID=${userID}`
 
         try{
 

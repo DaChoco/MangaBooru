@@ -41,6 +41,7 @@ html[data-theme=light]{
   --generic-tag: #3d88b3;
 
   --comment-boxes: #dfecea;
+  --topnav-hover: #577377;
 }
 
 
@@ -63,6 +64,7 @@ html[data-theme=dark]{
 
   --auth-box-bg-color: #191e1f;
   --comment-boxes: #383c3c;
+  --topnav-hover: var(--comment-boxes);
 
 
 

@@ -289,6 +289,10 @@ ul.list-num-page{
     
 }
 
+li.menulinks:hover{
+    background-color: var(--topnav-hover) ;
+}
+
 .user-spoke-icon{
     width: 7.5rem;
     height: 7.5rem;
@@ -388,6 +392,10 @@ ul.list-num-page{
 
     .say-comment{
         padding-left: 1rem;
+    }
+
+    li.comment{
+        justify-content: space-around;
     }
 }
 

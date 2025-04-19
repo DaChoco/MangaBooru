@@ -360,17 +360,17 @@ def getUrls(Page: int):
 
 #Extracts the image whether it has tags or not, but also gets tags - Cant use outer joins since this is not Post gres. Came up with an alternative
     SQL_PARAM_NO_TAG_INCLUDED = """ 
-SELECT tblseries.seriesID as series, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
+SELECT tblseries.seriesID as series,uploadDate, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 LEFT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
 WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID
 UNION
-SELECT tblseries.seriesID as series, url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
+SELECT tblseries.seriesID as series, uploadDate, url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY url DESC LIMIT 9 OFFSET %s
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID, uploadDate ORDER BY url DESC LIMIT 9 OFFSET %s
 """
     offsetval = (Page)*9
 
