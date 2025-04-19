@@ -188,6 +188,16 @@ li.tagoutput{
     position: block;
 }
 
+.say-comment{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+li.comment{
+    width: 100%;
+    margin: 1.5rem auto;
+}
 .next-page-arrow{
     width: 3.5rem;
     height: 3.5rem;
@@ -241,6 +251,10 @@ ul.list-num-page{
     width: 2rem;
 }
 
+.comment-sect{
+    width: 70%;
+}
+
 .imgwrap{
     position: relative;
     width: max-content;
@@ -268,6 +282,8 @@ ul.list-num-page{
 
 .comment-list{
     display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
     padding: 0;
     width: 100%;
     
@@ -276,7 +292,7 @@ ul.list-num-page{
 .user-spoke-icon{
     width: 7.5rem;
     height: 7.5rem;
-    background-image: url("https://publicboorufiles-01.s3.af-south-1.amazonaws.com/userIcons/2025-04-13-3d15ffe961ba-1acadc7acb3bed2aab06b06e533fdab7.jpg");
+    
     background-size: cover;
     border-radius: 5rem;
     border: 5px solid #FFF;
@@ -286,6 +302,8 @@ ul.list-num-page{
     margin-left: 1rem;
     background-color: var(--comment-boxes);
     padding: 0.5rem;
+    width: 70%;
+    border: 1px solid #FFF;
 
 }
 @media only screen and (max-width: 1920px) and (min-width: 1440px) {

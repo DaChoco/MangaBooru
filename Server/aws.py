@@ -69,22 +69,36 @@ dynamoDB: DynamoDBClient = session.client("dynamodb",
                     region_name="af-south-1",
                     endpoint_url="https://dynamodb.af-south-1.amazonaws.com")
 
-def insert_user_comment(user_id: str, comment: str, table_name: str, page_id: str, userIcon: str):
+def insert_user_comment(user_id: str, comment: str, table_name: str, page_id: str, userIcon: str, userName: str):
     #Page ID references a specific series aka series ID
     try:
+        my_uuid = str(uuid.uuid4())
         print("Inserting comment...")
         response = dynamoDB.put_item(
             TableName=table_name,
             Item={
+                "page_id": {'S': page_id},
                 'user_id': {'S': user_id},
                 'comment_text': {'S': comment},
                 'timestamp': {'S': str(datetime.now())},
-                "commented_on_page": {'S': page_id},
-                "usericon": {'S', userIcon}
+                "usericon": {'S': userIcon},
+                "userName": {'S': userName},
+                "upvotes": {'N': str(0)},
+                "downvotes": {'N': str(0)},
+                "comment_id": {'S': my_uuid}
             }
         )
-        print("Success!", response)
-        return True
+        print("Success!")
+
+        return {"userID": user_id,
+                "commentText": comment,
+                "timestamp": str(datetime.now()),
+                "seriesID": page_id,
+                "usericon": userIcon,
+                "username": userName,
+                "upvotes": 0,
+                "downvotes": 0,
+                "commentID": my_uuid}
     except botocore.exceptions.ClientError as e:
         print(f"An error occurred: {e.response['Error']['Message']}")
         return False
@@ -95,24 +109,73 @@ def retrieve_user_comments_list(table_name: str, page_id: str):
             TableName=table_name,
             KeyConditionExpression='page_id = :pid',
             ExpressionAttributeValues={
-                ':pid': {'S': page_id}
+                ':pid': {'S': page_id},
+   
             }
         )
         #We will output this as an array of dict
+
+        print(response['Items'])
 
         list_comments = []
         for item in response['Items']:
             comment = {
                 "userID": item["user_id"]['S'],
-                "comment_text": item['comment_text']['S'],
+                "commentText": item['comment_text']['S'],
                 "timestamp": item['timestamp']['S'],
-                "seriesID": item['commented_on_page']['S']
+                "seriesID": item['page_id']['S'],
+                "upvotes": item['upvotes']['N'],
+                "userName": item['userName']['S'],
+                "downvotes": item['downvotes']['N'],
+                "usericon": item["usericon"]['S'],
+                "commentID": item["comment_id"]['S']
             }
             list_comments.append(comment)
+     
+        if list_comments == []:
+            return {"message": "No comments on this page"}
 
         return list_comments
     except botocore.exceptions.ClientError as e:
         print(f"An error occurred: {e.response['Error']['Message']}")
         return {"error_message": "Something has gone wrong, please try again later"}
+    
+def incrementPostVotes(table_name: str, timestamp: str, seriesID: str, userID: str, category: str):
+    try:
+
+        voteID = f"{timestamp}-{seriesID}-{userID}"
+        #check if already voted
+        check = dynamoDB.get_item(TableName="Mangabooru-Votes", Key={
+            "vote_id": {'S': voteID}
+        })
+
+        if 'Item' in check:
+            return {"message": "This user has already voted"}
+        
+        if check['Item']['vote_type']['S'] == category:
+            #prevents repeat votes
+            return
+        
+        response = dynamoDB.update_item(TableName=table_name, Key={
+            'page_id': {'S': seriesID},
+            'timestamp': {'S': timestamp}}, 
+            UpdateExpression=f"SET {category} = {category} + :incval",
+            ExpressionAttributeValues={":incval": {"N": str(1)}},
+            ReturnValues="UPDATED_NEW"
+            )
+    
+        dynamoDB.put_item(TableName="Mangabooru-Votes", Item={
+            'page_id': {'S', seriesID},
+            'timestamp': {'S', str(datetime.now())},
+            "user_id": {'S', userID},
+            "vote_type": {'S', category}
+        })
+        
+        return response["Attributes"][category]['N']
+        
+    except botocore.exceptions.ClientError as e:
+        print(f"An error has occured: {e.response['Error']['Message']}. Full details: {e.response['ResponseMetadata']}")
+        
+
 
 #END OF AWS

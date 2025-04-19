@@ -13,8 +13,9 @@ export function LoggedInContext({children}){
     const [userIcon, setUserIcon] = useState("")
     const [userRole, setUserRole] = useState("")
     const [loadingcredentials, setLoadingcredentials] = useState(false)
+    const [userName, setUserName] = useState("")
     return (
-        <loggedIn.Provider value={{loadingcredentials, setLoadingcredentials,logged, setLogged, userID, setUserID, userIcon, setUserIcon, showLoginBox, setShowLoginBox, showRegisterBox, setShowRegisterBox, userRole, setUserRole}}>
+        <loggedIn.Provider value={{userName, setUserName,loadingcredentials, setLoadingcredentials,logged, setLogged, userID, setUserID, userIcon, setUserIcon, showLoginBox, setShowLoginBox, showRegisterBox, setShowRegisterBox, userRole, setUserRole}}>
             {children}
         </loggedIn.Provider>
     )

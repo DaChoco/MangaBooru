@@ -43,6 +43,7 @@ const navigate = useNavigate()
     const {showLoginBox, setShowLoginBox} = useContext(loggedIn)
     const {showRegisterBox, setShowRegisterBox} = useContext(loggedIn)
     const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
+    const {userName, setUserName} = useContext(loggedIn)
     const {setUserRole} = useContext(loggedIn)
     const {userRole} = useContext(loggedIn)
 
@@ -115,8 +116,10 @@ const navigate = useNavigate()
                 console.log("USER DATA: ", data)
                 setUserID(data.userID)
                 setLogged(true)
+                setUserName(data.userName)
                 userInfoData(data.userID)
                 setLoadingcredentials(false)
+                
             }
      
                
@@ -210,6 +213,7 @@ const navigate = useNavigate()
         if (data.message === true){
             setUserID(data.userID)
             setLogged(true)
+            setUserName(data.userName)
 
             localStorage.setItem("access_token", data.access_token)
             
@@ -243,6 +247,7 @@ const navigate = useNavigate()
             alert(data.elaborate)
             setUserID(data.userID)
             setLogged(true)
+            setUserName(usernamequery)
 
             localStorage.setItem("access_token", data.access_token)
         }
@@ -264,6 +269,7 @@ const navigate = useNavigate()
         setUserData(data)
         setUserIcon(data.userIcon)
         setUserRole(data.role)
+        setUserName(data.userName)
 
         setUserData((prevdata) =>({...prevdata, DateCreated: new Date(prevdata.DateCreated).toLocaleDateString()}))
 

@@ -30,7 +30,7 @@ from models import CreateSeries, CreateTag, SearchRequest, FavoritesRequest
 from models import UpdateProfileRequest
 
 #AWS
-from aws import mass_presignedurls, uploadImage, deleteImage, insert_user_comment, retrieve_user_comments_list
+from aws import mass_presignedurls, uploadImage, deleteImage, insert_user_comment, retrieve_user_comments_list, incrementPostVotes
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
@@ -817,36 +817,34 @@ def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
     finally:
         conn.close()
 
-#Comment Making
+#Comment Making ---------- DYNAMO DB
 
 @app.get('/retrieveUserComments/{seriesID}')
-async def get_comments(seriesID: str):
+def get_comments(seriesID: str):
     if not seriesID:
         return {"error": "An error has occured, please try again later"}
     
-    result = await retrieve_user_comments_list("Mangabooru-Comments", seriesID)
+    result = retrieve_user_comments_list("Mangabooru-Comments", seriesID)
 
     return JSONResponse(content=result, status_code=200)
 
-@app.get("/inputUserComments")
-async def put_comments(user_id: str, comment: str, series_id: str, userIcon: str):
+@app.put("/inputUserComments/{seriesID}")
+def put_comments(userID: str, comment: str, userIcon: str,userName: str, seriesID: str):
 
-    if not series_id:
+    if not seriesID:
         return {"message": "Comment was unsuccessful"}
-    result = await insert_user_comment(user_id, comment, "Mangabooru-Comments", series_id, userIcon)
+    result = insert_user_comment(userID, comment, "Mangabooru-Comments", seriesID, userIcon, userName)
 
-    if result == True:
-        return JSONResponse(content={"message": "Comment was successful!"}, status_code=200)
-    else:
-        return JSONResponse(content={"message": "Comment failed to be inserted"}, status_code=500)
-
-
+    if result:
+        return JSONResponse(content={"message": "Comment was successful!", "reply": result}, status_code=200)
     
-
-    
-    
-    
-
+@app.put("/changecommentvotes/{seriesID}")
+def change_comment_votes(seriesID: str, timestamp: str, category: str, userID: str):
+    result = incrementPostVotes(table_name="Mangabooru-Comments", 
+                                timestamp=timestamp,
+                                seriesID=seriesID,
+                                userID=userID,
+                                category=category)
     
 
 handler = Mangum(app)

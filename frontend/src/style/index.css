@@ -40,7 +40,7 @@ html[data-theme=light]{
   --demographic-color-tag: #dca80b;
   --generic-tag: #3d88b3;
 
-  --comment-boxes: #dff0ed;
+  --comment-boxes: #dfecea;
 }
 
 
@@ -62,7 +62,9 @@ html[data-theme=dark]{
   --generic-tag: #3d88b3;
 
   --auth-box-bg-color: #191e1f;
-  --comment-boxes: #becbc9;
+  --comment-boxes: #383c3c;
+
+
 
 
 }
