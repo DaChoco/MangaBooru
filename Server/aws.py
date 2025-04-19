@@ -4,7 +4,6 @@ from mypy_boto3_s3 import S3Client
 from mypy_boto3_dynamodb import DynamoDBClient
 import botocore.exceptions
 from botocore.client import Config
-from boto3.dynamodb.types import TypeDeserializer
 from datetime import datetime
 from urllib.parse import urlparse
 import uuid
@@ -104,6 +103,7 @@ def insert_user_comment(user_id: str, comment: str, table_name: str, page_id: st
         return False
     
 def retrieve_user_comments_list(table_name: str, page_id: str):
+    print("Page ID: ", page_id)
     try:
         response = dynamoDB.query(
             TableName=table_name,
@@ -139,6 +139,10 @@ def retrieve_user_comments_list(table_name: str, page_id: str):
     except botocore.exceptions.ClientError as e:
         print(f"An error occurred: {e.response['Error']['Message']}")
         return {"error_message": "Something has gone wrong, please try again later"}
+    except botocore.exceptions.ParamValidationError as e:
+        print(print(f"An error has occured: {e.response['Error']['Message']}. Full details: {e.response['ResponseMetadata']}"))
+    except Exception as e:
+        print("Error: ", e)
     
 def incrementPostVotes(table_name: str, timestamp: str, seriesID: str, userID: str, category: str):
     try:

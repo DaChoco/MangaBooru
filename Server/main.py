@@ -35,6 +35,9 @@ from aws import mass_presignedurls, uploadImage, deleteImage, insert_user_commen
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
 
+#OTHER
+import math
+
 
 
 #MYSQL CONNECTING FUNCTION
@@ -346,6 +349,15 @@ def getUrls(Page: int):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
+    COUNT_IN_SQL = """
+    SELECT COUNT(*) AS TOTAL
+    FROM (SELECT DISTINCT tblseries.seriesID, thumbnail FROM tblseries WHERE thumbnail is NOT NULL) 
+    as filtered"""
+
+    cursor.execute(COUNT_IN_SQL)
+    total_rows = cursor.fetchone()["TOTAL"]
+    total_pages = math.ceil(total_rows/9) 
+
 #Extracts the image whether it has tags or not, but also gets tags - Cant use outer joins since this is not Post gres. Came up with an alternative
     SQL_PARAM_NO_TAG_INCLUDED = """ 
 SELECT tblseries.seriesID as series, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
@@ -358,10 +370,11 @@ SELECT tblseries.seriesID as series, url, thumbnail, GROUP_CONCAT(DISTINCT tagNa
 FROM tblseries 
 RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY url DESC
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY url DESC LIMIT 9 OFFSET %s
 """
+    offsetval = (Page)*9
 
-    cursor.execute(SQL_PARAM_NO_TAG_INCLUDED) #returns the urls/keys
+    cursor.execute(SQL_PARAM_NO_TAG_INCLUDED, (offsetval,)) #returns the urls/keys
     data = cursor.fetchall()
     
     if not data:
@@ -377,25 +390,16 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY
             if tag != None:
                 cleaned_tag = tag.split(",")
                 listtags.append(cleaned_tag)    
-        
-        keysdata: list[int] = listkeys
-        batch: batched = batched(keysdata, n=9)
-        paginated_list = list(batch)
-
-        seriesdata: list[int] = listseriesID
-        batchseries: batched = batched(seriesdata, n=9)
-        seriespaginate = list(batchseries)
-        
     
         flattened = list(chain(*listtags))
 
         cursor.close()
         conn.close()
 
-        return {"urls": paginated_list[Page],
-                 "numpages": len(paginated_list), 
+        return {"urls":  listkeys,
+                 "numpages": total_pages, 
                  "tags": set(flattened), 
-                 "series": seriespaginate[Page]} #Functional will be used for general browsing
+                 "series": listseriesID} #Functional will be used for general browsing
     
 @app.get("/returnMangaInfo") #general info #for internal use only
 def extractInfo():
@@ -432,8 +436,10 @@ def seriesExtract(seriesID: str):
         #In the event the series has no tags
         cursor.execute("SELECT seriesID, thumbnail, url, seriesName FROM tblseries WHERE seriesID = %s", (seriesID,))
         output_tags = cursor.fetchall()
-    s3_key = output_tags[0]["url"]
-    output_tags[0]["url"] = mass_presignedurls(s3_key, 360)
+
+    if output_tags[0].get("url"):
+        s3_key = output_tags[0]["url"]
+        output_tags[0]["url"] = mass_presignedurls(s3_key, 360)
 
     cursor.close()
     conn.close()
@@ -621,6 +627,7 @@ def fullsearch(page: int, datareq: SearchRequest):
     #This search only occurs when enter is clicked or when the button is clicked.
     #Separating this from auto complete
     page = page - 1
+    offsetval = page * 9
     if datareq == None:
         return {"Message": "The user inputted nothing", "Success": False}
     conn = createConnection()
@@ -628,7 +635,36 @@ def fullsearch(page: int, datareq: SearchRequest):
 
     searchTerms = datareq.inputtxt
 
+    if len(searchTerms[0])<=2:
+        return {"communication": False, "message": "type a longer search and try again"}
+
+    counting_terms = []
+    for terms in searchTerms:
+        counting_terms.append(terms)
+
+    for term in searchTerms:
+        counting_terms.append(terms)
+
+    dynamic_counting_placeholders = ",".join(["%s"]*len(searchTerms))
+
+    COUNT_VIA_SQL = f"""SELECT COUNT(*) as TOTAL FROM
+    (SELECT DISTINCT tblseries.seriesID, seriesName, url, thumbnail, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName 
+    FROM tblseries 
+    INNER JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID 
+    INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID WHERE tblseries.seriesName IN ({dynamic_counting_placeholders})
+    OR tbltags.tagName IN ({dynamic_counting_placeholders})
+    GROUP BY tblseries.seriesID, seriesName, url, thumbnail 
+    ) as filtered"""
+
+    print(tuple(counting_terms))
+
+    cursor.execute(COUNT_VIA_SQL, tuple(counting_terms))
+    total_rows = cursor.fetchone()["TOTAL"]
+    total_pages = math.ceil(total_rows/9)
+    print(total_pages)
+
     print(searchTerms)
+    print(tuple(searchTerms))
     
     search_append = ""
     searchtuple = []
@@ -645,15 +681,15 @@ def fullsearch(page: int, datareq: SearchRequest):
         listkeys = []
         listtags = []
         listseriesID = []
-        GROUP_BY_APPEND = "GROUP BY tblseries.seriesID, seriesName, url"
+        listthumb = []
+        GROUP_BY_APPEND = "GROUP BY tblseries.seriesID, seriesName, url, thumbnail"
         SQL_Query_Base = """
-        SELECT tblseries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblseries 
+        SELECT tblseries.seriesID, seriesName, url, thumbnail, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblseries 
         INNER JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID 
         INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
         """
-        FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append}"
-
-        
+        searchtuple.append(offsetval)
+        FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append} LIMIT 9 OFFSET %s"
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
 
@@ -663,10 +699,12 @@ def fullsearch(page: int, datareq: SearchRequest):
         else:
             for rows in datareq:
                 s3_key = rows.get("url")
+                listseriesID.append(rows.get("seriesID"))
+                listtags.append(rows.get("tagName"))
+                listthumb.append(rows.get("thumbnail"))
                 if s3_key:
-                    listseriesID.append(rows.get("seriesID"))
                     listkeys.append( mass_presignedurls(s3_key, 3600) )
-                    listtags.append(rows.get("tagName"))
+                    
             
             keysdata: list[int] = listkeys
             batch: batched = batched(keysdata, n=9)
@@ -674,9 +712,10 @@ def fullsearch(page: int, datareq: SearchRequest):
 
      
             return {"result": datareq, 
-                    "url": paginated_list[page], 
+                    "url": listkeys, 
                     "tags": listtags, 
-                    "numpages": len(paginated_list), 
+                    "thumbnail": listthumb,
+                    "numpages": total_pages, 
                     "seriesID": listseriesID,
                     "Success": True}
 

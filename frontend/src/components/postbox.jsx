@@ -169,7 +169,7 @@ function PostBox(){
                 </li>)}
                 
 
-                   {lenoutput > 0 && lenoutput <= 6 ? (Array.apply(null, Array(lenoutput)).map((e, index) => 
+                   {lenoutput && lenoutput !==undefined && lenoutput !== null && lenoutput > 0 && lenoutput <= 6 ? (Array.apply(null, Array(lenoutput)).map((e, index) => 
                    (<li onClick={extractNum} className="pageboxes" key={index}>{index + 1}</li>
                    ))
                     ): 

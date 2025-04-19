@@ -13,7 +13,7 @@ function SearchBar({data}){
     
     const [splitTerms, setSplitTerms] = useState([])
     const {seriesID, setSeriesID} = useContext(PostItemsContext)
-    const {tags, setTags} = useContext(PostItemsContext)
+    const {tags, setTags, posts} = useContext(PostItemsContext)
 
     const {setPage} = useContext(PageNumContext)
     const {page} = useContext(PageNumContext)
@@ -46,7 +46,7 @@ function SearchBar({data}){
         e.preventDefault()
         setPage(1) //when someone searches, they should start from page 1
 
-        const url = `http://${import.meta.env.VITE_LAMBDA_DOMAIN}:8000/search/${page}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/search/${page}`
         console.log(splitTerms)
 
         try{
@@ -68,9 +68,10 @@ function SearchBar({data}){
                 setQuery("")
                 return
             }
-            setPosts(data.url)
+            setPosts(data.thumbnail)
             setSeriesID(data.seriesID)
             setLenoutput(data.numpages)
+            console.log(posts)
 
             let noncleanArr = []
 
@@ -162,11 +163,7 @@ function SearchBar({data}){
             ): (null)} 
         </div>
 
-            <button className="search-btn" type="submit">Search</button>
-
-         
-
-               
+            <button className="search-btn" type="submit">Search</button>          
             
         </form>
 

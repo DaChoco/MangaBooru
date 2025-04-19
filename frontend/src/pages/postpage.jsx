@@ -354,7 +354,7 @@ function PostPage(){
                             <p>{comment.commentText ?? "The comment"}</p>
                             <p>
 
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="m280-400 200-200 200 200H280Z" onClick={async ()=> {
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" style={{fill: "#FFF"}}><path d="m280-400 200-200 200 200H280Z" onClick={async ()=> {
                                     const upvotes = await incrementVotes(comment.timestamp, "upvotes");
                                     setCommentlist(prevdata => {
                                         const newList = [...prevdata];
@@ -362,7 +362,7 @@ function PostPage(){
                                         return newList;
                                     })
                                     }}/></svg>Upvotes: {comment.upvotes ?? 0} 
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M480-360 280-560h400L480-360Z" onClick={async ()=> {
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" style={{fill: "#FFF"}}><path d="M480-360 280-560h400L480-360Z" onClick={async ()=> {
                                     const downvotes = await incrementVotes(comment.timestamp, "downvotes");
                                     setCommentlist(prevdata =>{
                                         const newList = [...prevdata];
