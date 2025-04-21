@@ -60,7 +60,7 @@ const navigate = useNavigate()
     const [userData, setUserData] = useState({})
 
     useEffect(()=>{
-        if (LoginBoxRef.current){
+        if (LoginBoxRef.current !== null){
             const handleclickoutside =(event)=>{
                 if (!LoginBoxRef.current.contains(event.target)){
                     setShowLoginBox(false)
@@ -95,14 +95,16 @@ const navigate = useNavigate()
 
             setLoadingcredentials(true)
 
-            if (!token) {
+            if (!token || token == "null") {
                 console.log("No token found");
+                localStorage.removeItem("access_token")
                 setLoadingcredentials(false)
                 setLogged(false);
                 return;
             }
             else if (token === null || token === undefined){
                 console.log("No token found");
+                localStorage.removeItem("access_token")
                 setLoadingcredentials(false)
                 setLogged(false);
                 return;
@@ -301,12 +303,13 @@ const navigate = useNavigate()
     const logout = async () =>{
         setLogged(!logged)
         setUserID("")
+        setUserIcon("")
         localStorage.removeItem("access_token")
         console.log("Thank you for using the service. Bye!")
     }
 //JSX ---------------------------------------------------
 
-if (!userData){ return (<div>LOADING...</div>)}
+if (userData){ return (<div className='spinning-circle-container'></div>)}
 
 if (loadingcredentials === true) {return (<div className='spinning-circle-container'></div>) }else{
     return(
@@ -420,10 +423,10 @@ if (loadingcredentials === true) {return (<div className='spinning-circle-contai
                 
                 <div  className="banner-container" style={{backgroundImage: `url(${userData.userBanner})`}}></div>
         
-                <div className="profile-user-display">
+                <section className="profile-user-display">
                     <img className="profile-icon" src={userData.userIcon} alt='user profile picture'/>
                     <span className='user-title'><strong>{userData.userName}</strong> - {userData.role}</span>
-                </div>
+                </section>
 
                 <div className="profile-content">
 

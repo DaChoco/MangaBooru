@@ -4,7 +4,7 @@ from mypy_boto3_s3 import S3Client
 from mypy_boto3_dynamodb import DynamoDBClient
 import botocore.exceptions
 from botocore.client import Config
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 import uuid
 
@@ -79,7 +79,7 @@ def insert_user_comment(user_id: str, comment: str, table_name: str, page_id: st
                 "page_id": {'S': page_id},
                 'user_id': {'S': user_id},
                 'comment_text': {'S': comment},
-                'timestamp': {'S': str(datetime.now())},
+                'timestamp': {'S': str(datetime.now(timezone.utc))},
                 "usericon": {'S': userIcon},
                 "userName": {'S': userName},
                 "upvotes": {'N': str(0)},

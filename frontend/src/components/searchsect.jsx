@@ -1,4 +1,4 @@
-import React, {useState, useContext, createContext} from 'react'
+import React, {useState, useContext, createContext, useRef} from 'react'
 import { PostItemsContext } from '../contexts/postItemContext'
 import { PageNumContext } from '../contexts/pageNumContext'
 import { useNavigate } from 'react-router-dom'
@@ -18,9 +18,11 @@ function SearchBar({data}){
     const {setPage} = useContext(PageNumContext)
     const {page} = useContext(PageNumContext)
 
+    const savedSearchedBoxRef = useRef()
+
     const navigate = useNavigate()
 
-    let savedSearches = []
+    const [savedSearches, setSavedSearches] = useState([])
 
     function incFunction(){
         console.log(page)
@@ -121,23 +123,47 @@ function SearchBar({data}){
             console.log("An error has occured: ", error)
         }
 
-        }, 250)
+        }, 100)
 
         
         }
         
     }
 
-    const saveSearchTerm = ()=>{
-        savedSearches.push(query)
-        localStorage.setItem("savedsearch", JSON.stringify(savedSearches))
+    const saveSearchTerm = () =>{
+        if (query === null || query === undefined){
+            return 
+        }
+        const oldarr = localStorage.getItem("savedsearch")
+        const newQuery = query
+        let newarr = []
+
+        if (oldarr){
+            newarr = JSON.parse(oldarr)
+            newarr.push(newQuery)
+
+        }
+        
+      
+        newarr.push(newQuery)
+        localStorage.setItem("savedsearch", JSON.stringify(newarr))
+
+        savedSearchedBoxRef.current.style.display = "block"
+        setTimeout(function(){
+            if (savedSearchedBoxRef.current){
+
+                savedSearchedBoxRef.current.style.display = "none"
+            }
+           
+        }, 3000)
+  
     }
 
     return (
         <>
         
         <form className="search-container" onSubmit={fullSearch}>
-        <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"  className='svglightdark star' style={{padding: 0, marginRight: "0.25rem", fill: "var(--base-text-dark)", width: "4rem", cursor: "pointer"}}>
+        <svg onClick={saveSearchTerm} xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"  className='svglightdark star' style={{padding: 0, marginRight: "0.25rem", fill: "var(--base-text-dark)", width: "4rem", cursor: "pointer"}}>
             <path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"/>
         </svg>
         <div className="autowrap">
@@ -165,7 +191,12 @@ function SearchBar({data}){
 
             <button className="search-btn" type="submit">Search</button>          
             
+            <div ref={savedSearchedBoxRef} className="saved-box-confirm">
+            <span>Your search has been saved for later!</span>
+        </div>
         </form>
+
+        
 
         </>
 

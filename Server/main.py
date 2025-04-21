@@ -62,7 +62,8 @@ TOKEN_EXPIRES_IN_MINUTES = 60
 oauth2_scheme_login = OAuth2PasswordBearer(tokenUrl="login")
 
 def get_current_user(token: str = Depends(oauth2_scheme_login)):
-    if not token:
+
+    if not token or token.count(".") != 2:
         return {"reply": "Apologies, youre not signed in"}
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
     if not payload:
@@ -338,9 +339,12 @@ def index():
 
 @app.get("/getuser") #Will be used to extract JWT Tokens later
 def getUser(user: dict = Depends(get_current_user)):
+    if not user.get("userID"):
+        {"reply": False, "instruction": "The user will sign in normally"}
+    
     if not user:
         {"reply": False, "instruction": "The user will sign in normally"}
-    return {"reply": True, "userID": user["userID"], "userName": user["userName"], "role": user["role"]} #is used on reload if signed in
+    return {"reply": True, "userID": user.get("userID"), "userName": user.get("userName"), "role": user.get("role")} #is used on reload if signed in
  
 
 @app.get("/returnBooruPics/{Page}")

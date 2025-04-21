@@ -1,12 +1,14 @@
 import React from "react"
 import "../style/Posts.css"
 import {useState, useContext, createContext} from 'react'
+import { useNavigate } from "react-router-dom"
 import PostItemsContext from "../contexts/postItemContext"
 
 function Sidebar({data, children}){
     const {setPosts} = useContext(PostItemsContext)
     const searchbar = document.getElementById("SearchInput")
     const listoftags = document.querySelectorAll(".tagoutput")
+    const navigate = useNavigate()
 
     const linktotag = async (e) => {
         searchbar.value = e.target.textContent
@@ -18,6 +20,7 @@ function Sidebar({data, children}){
 
         if (data){
             setPosts(data.url)
+            navigate("/posts")
             
         }
         else{
