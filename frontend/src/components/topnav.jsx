@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom"
 import {useState, useEffect, useContext, useRef} from "react"
 import {loggedIn} from "../contexts/loggedinContext"
+import { HoverProfile } from "../pages"
 import "../style/Posts.css"
+import "../style/topnavbar.css"
 
 
 
@@ -12,7 +14,7 @@ function Topnav({children}){
 
     const menusidebar = useRef(null)
 
-    const {userID} = useContext(loggedIn)
+    const {userID, userIcon} = useContext(loggedIn)
     const {logged} = useContext(loggedIn)
 
     useEffect(()=>{
@@ -122,11 +124,16 @@ function Topnav({children}){
                 
                 
                 
-                <li className="menulinks"><Link to="/profile">My account</Link></li>
-                <li className="menulinks"><Link to="/favorites">My Favorites </Link></li>
-                <li className="menulinks"><Link to="/posts">Posts</Link></li>
-                <li className="menulinks"><Link to="/tags">All Tags</Link></li>
+                <li className="menulinks hover-account">
+                    <Link to="/profile" className="link-text">My account
+                        {width >768 && (<HoverProfile></HoverProfile>)}
+                    </Link></li>
+                <li className="menulinks"><Link to="/favorites" className="link-text">My Favorites </Link></li>
+                <li className="menulinks"><Link to="/posts" className="link-text">Posts</Link></li>
+                <li className="menulinks"><Link to="/tags" className="link-text">All Tags</Link></li>
             </ul>
+            
+
 
             <div className="lightordark-container"> 
             <div>

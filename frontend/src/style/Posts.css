@@ -212,9 +212,10 @@ li .next-page-arrow{
 ul.list-num-page{
     display: flex;
     flex-direction: row;
-    width: 50%;
+    width: max-content;
     padding: 0;
-    margin: 1rem auto;
+    overflow: hidden;
+    
     position: relative;
 
 }
@@ -222,7 +223,7 @@ ul.list-num-page{
 .pageboxes{
     padding: 1rem 2rem;
     font-size: 1.5rem;
-    margin: 0 1rem;
+    margin: 0 0.25rem;
     border: 0.2rem solid var(--nav-hover-color);
 }
 
@@ -289,8 +290,24 @@ ul.list-num-page{
     
 }
 
-li.menulinks:hover{
-    background-color: var(--topnav-hover) ;
+.saved-box-confirm{
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 5rem;
+    background-color: var(--comment-boxes);
+    padding: 1rem;
+    animation: fading-out 2s forwards;
+
+}
+
+@keyframes fading-out {
+    0% {opacity: 100%}
+    100% {opacity: 0%}
+    
 }
 
 .user-spoke-icon{
@@ -309,6 +326,42 @@ li.menulinks:hover{
     width: 70%;
     border: 1px solid #FFF;
 
+}
+
+.page-nums-container{
+    display: flex;
+    justify-content: space-around;
+    overflow: hidden;
+    width: 100dvw;
+}
+
+.hover-account{
+    position: relative;
+    
+}
+
+.hover-account:hover .hover-box-container{
+    display: flex;
+    justify-content: space-between;
+}
+
+.hover-box-container{
+    transition: 1s;
+    position: absolute;
+    left: calc(0rem - 1.5rem);
+    top: calc(100% + 2.5rem);
+    border-radius: 0.5rem;
+    padding: 1.5rem 2rem;
+    background-color: var(--base-color-topnav);
+    display: none;
+    flex-direction: column;
+    border: #FFF solid 5px;
+    z-index: 1000;
+}
+
+.hover-box-container > *{
+    text-align: center;
+    margin: 0.5rem 0;
 }
 @media only screen and (max-width: 1920px) and (min-width: 1440px) {
     .tagoutput{
@@ -362,6 +415,7 @@ li.menulinks:hover{
 
     .page-nums-container{
         display: flex;
+        
         
     }
 

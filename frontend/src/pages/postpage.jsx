@@ -23,13 +23,33 @@ function PostPage(){
     const [highres, setHighres] = useState(false)
     const {favorited} = useContext(favoritesitems)
     const {setFavorited} = useContext(favoritesitems)
-    const {userIcon} = useContext(loggedIn)
+    const {userIcon, setUserIcon, setUserRole} = useContext(loggedIn)
     const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
     
     const commentarearef = useRef()
 
 
     const {userID, setUserID, logged, setLogged} = useContext(loggedIn)
+    const {userName, setUserName} = useContext(loggedIn)
+
+    async function userInfoData(userID){
+
+        //Extracts user info for the profile page
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnUserInfo/${userID}`
+    try{
+        const response = await fetch(url, {method: "GET"})
+        const data = await response.json()
+
+        console.log("Data: ", data)
+        setUserIcon(data.userIcon)
+        setUserRole(data.role)
+
+    }
+    catch (error){
+        console.log("An unforseen error has occured")
+    }
+        
+    }
 
     //Special Use Effect. Login via cookies:
     useEffect(()=>{
@@ -37,9 +57,14 @@ function PostPage(){
             //before the user ID is even set we can see if the end user has the tokens to log in automatically. Skipping the filler
             const token = localStorage.getItem("access_token")
 
+            if (userID && userIcon && userName){
+                //if the info is here. don't call the function
+                return
+            }
+
             setLoadingcredentials(true)
 
-            if (!token) {
+            if (!token || token == "null") {
                 console.log("No token found");
                 setLoadingcredentials(false)
                 setLogged(false);
@@ -63,27 +88,42 @@ function PostPage(){
                 return;
             } else{
                 const data = await response.json()
+
+                if (data.reply == false){
+                    console.log(data.instruction)
+                    return
+                }
                 console.log("USER DATA: ", data)
                 setUserID(data.userID)
                 setLogged(true)
                 setUserName(data.userName)
+                await userInfoData(data.userID)
                 setLoadingcredentials(false)
                 
             }
      
-               
-            
-
         }
         getLoginCreds()
     }, [])
-    const {userName, setUserName} = useContext(loggedIn)
+
     
 
     const addedbox = document.getElementById("ADDFAV")
 
     const [userComment] = useState({username: userName, userID: userID, userIcon: userIcon, seriesID: url_ID})
     const [commentlist, setCommentlist] = useState([])
+
+    function convertDatetoLocal(userDate){
+        if (!userDate){
+            return null
+        }
+        const convertedDate = new Date(userDate + "Z")
+        if (isNaN(convertedDate)) return "Invalid"
+        const finaltime = convertedDate.toLocaleString(undefined, 
+            {year: "numeric", hour12: false, day: "2-digit", month: "2-digit", minute: "2-digit", hour: "2-digit"})
+
+        return finaltime.replace("/", "-").replace("/","-")
+    }
 
     async function handleAddingTags(tagInput) {
         const url = `
@@ -350,7 +390,7 @@ function PostPage(){
                 {commentlist.map((comment, index)=> (<li key={index} className="comment">
                         <img src={comment.usericon ?? null} className="user-spoke-icon for-small-screens"></img>
                         <div className="user-spoke-content">
-                            <span><strong>{comment.userName ?? "Anonymous"}</strong> commented at {comment.timestamp.substring(0, 19) ?? "00:00"}</span>
+                            <span><strong>{comment.userName ?? "Anonymous"}</strong> commented at {convertDatetoLocal(comment.timestamp) ?? "00:00"}</span>
                             <p>{comment.commentText ?? "The comment"}</p>
                             <p>
 
