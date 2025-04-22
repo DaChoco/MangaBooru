@@ -174,6 +174,9 @@ function ProfileUpdate(){
             setShowupdatepic(false);
             setFileurl(null)
             }
+            else{
+                return
+            }
           };
         
           document.addEventListener("mousedown", handleclickoutside);

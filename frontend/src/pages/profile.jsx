@@ -1,3 +1,4 @@
+import {jwtDecode} from "jwt-decode"
 import { useState, useEffect, useContext, useRef } from 'react'
 import { SearchBar, Topnav, Footer } from "../components"
 import { favoritesitems } from '../contexts/favoritesContext'
@@ -94,9 +95,8 @@ const navigate = useNavigate()
         const getLoginCreds = async () =>{
             //before the user ID is even set we can see if the end user has the tokens to log in automatically. Skipping the filler
             const token = localStorage.getItem("access_token")
-
             setLoadingcredentials(true)
-
+            
             if (!token || token == "null") {
                 console.log("No token found");
                 localStorage.removeItem("access_token")
@@ -104,21 +104,47 @@ const navigate = useNavigate()
                 setLogged(false);
                 return;
             }
-            else if (token === null || token === undefined){
-                console.log("No token found");
-                localStorage.removeItem("access_token")
+
+           
+
+            try{
+                
+                const {expire} = jwtDecode(token)
+
+                console.log("Decoded token:", jwtDecode(token));
+                console.log("exp:", expire);
+
+                if (Date.now() >= expire * 1000){
+                    throw new Error("Token expired")
+                }
+                else{
+                    const remainder = (expire * 1000) - Date.now()
+                    console.log((remainder/1000/60) + " minutes")
+                }
+
+            }
+            catch (error){
+                
+                localStorage.removeItem("access_token"); 
                 setLoadingcredentials(false)
                 setLogged(false);
+                console.warn("Token is invalid or expired: ", error);
                 return;
             }
+
+  
+
+     
+
             const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
 
             const response = await fetch(url, {method: "GET", headers: {"Authorization": `Bearer ${token}`}})
 
+            try{
             if (!response.ok) {
                 console.warn("Token is invalid or expired");
                 localStorage.removeItem("access_token"); 
-                setLoadingcredentials(false)
+               
                 setLogged(false);
                 return;
             } else{
@@ -128,9 +154,20 @@ const navigate = useNavigate()
                 setLogged(true)
                 setUserName(data.userName)
                 userInfoData(data.userID)
-                setLoadingcredentials(false)
+              
                 
             }
+        }
+        catch (error){
+            console.log(error)
+            localStorage.removeItem("access_token"); 
+         
+            setLogged(false)
+        }
+        finally{
+            setLoadingcredentials(false)
+
+        }
      
                
             
@@ -328,9 +365,12 @@ const navigate = useNavigate()
 
 if (!userData){ return (<div className='spinning-circle-container'></div>)}
 
+
+
     return(
 
         <div className="main-content profile-page-area" style={{position: "relative"}}>
+            {!userID && loadingcredentials && (<div className='spinning-circle-container'></div>)}
             <Topnav>
                 <li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer"}}>Upload</h3></Link></li>
                 {userRole === "ADMIN" && (<li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/deletions`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></Link></li>)}

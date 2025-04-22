@@ -80,12 +80,41 @@ function Topnav({children}){
     }
 
     const showMenu = ()=>{
-        if (menusidebar.current){
-            const currentDisplay = getComputedStyle(menusidebar.current).display;
-            menusidebar.current.style.display = (currentDisplay === "none") ? "flex" : "none";
-        }
+        setShowtopbar(!showtopbar)
 
     }
+    const [showtopbar, setShowtopbar] = useState(false)
+    const [mountref, setMountref] = useState(false)
+    const svgiconref = useRef()
+
+    const handleref = (node)=>{
+        menusidebar.current = node
+        setMountref(!!node)
+    }
+    useEffect(()=>{
+        
+        if (mountref === false){
+            return
+        }
+
+
+        const handleclickoutsidemenu = (e) => {
+            if (svgiconref.current && svgiconref.current.contains(e.target)){
+                return
+            }
+            if (menusidebar.current && !menusidebar.current.contains(e.target)){
+                setShowtopbar(false)
+            }
+            else{
+                return
+            }
+        }
+
+        document.addEventListener("mousedown", handleclickoutsidemenu);
+          return () => {
+            document.removeEventListener("mousedown", handleclickoutsidemenu);
+          };
+    },[mountref])
     
 
     return(
@@ -94,11 +123,11 @@ function Topnav({children}){
 
         {width < 450 ? (
             <>
-            <svg style={{zIndex: "1000"}} onClick={showMenu} xmlns="http://www.w3.org/2000/svg" className="svglightdark" viewBox="0 -960 960 960">
+            <svg ref={svgiconref} style={{zIndex: "1000"}} onClick={(e)=>{e.stopPropagation(); setShowtopbar(!showtopbar)}} xmlns="http://www.w3.org/2000/svg" className="svglightdark" viewBox="0 -960 960 960">
             <path d="M120-240v-66.67h720V-240H120Zm0-206.67v-66.66h720v66.66H120Zm0-206.66V-720h720v66.67H120Z"/>
             </svg>
             
-            <ul className="topnav-content-smallscreen" ref={menusidebar}>
+            <ul className="topnav-content-smallscreen" ref={handleref} style={{display: showtopbar ? "flex": "none"}}>
                 
                 <li className="menulinks"><Link to="/profile">My account</Link></li>
                 <li className="menulinks"><Link to="/favorites">My Favorites </Link></li>
