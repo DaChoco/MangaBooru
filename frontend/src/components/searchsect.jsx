@@ -112,7 +112,7 @@ function SearchBar({data}){
             setAuto([]) 
             return 
         }
-        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
         try{
            const response = await fetch(url, {method: "GET"})
            const data = await response.json()

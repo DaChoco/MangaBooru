@@ -96,7 +96,7 @@ function PostBox(){
     let info
     useEffect(()=>{
         const returnBooruPics = async () =>{ //On page load or when page changes, it extracts series
-            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnBooruPics/${page}`
+            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnBooruPics/${page}`
             setLoadingcredentials(true)
             const response = await fetch(url, {method: "GET"})
             const data = await response.json()
