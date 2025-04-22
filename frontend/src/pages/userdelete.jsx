@@ -2,7 +2,7 @@ import { Footer, Topnav } from "../components";
 import { useState, useEffect, useContext } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { loggedIn } from "../contexts/loggedinContext";
-import {userInfoData} from "../api_calls/userinfo"
+import {userInfoData} from "../general_utils/userinfo"
 
 
 function DeleteUsers(){

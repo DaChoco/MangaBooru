@@ -3,6 +3,7 @@ import { useEffect, useState, useContext, useRef } from "react"
 import { favoritesitems } from "../contexts/favoritesContext"
 import { LoggedInContext } from "../contexts/loggedinContext"
 import { loggedIn } from "../contexts/loggedinContext"
+import { handleJWT } from "../general_utils/jwthandle"
 import "../style/LoadingBG.css"
 import "../style/Profile.css"
 
@@ -28,6 +29,7 @@ function PostPage(){
     const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
     
     const commentarearef = useRef()
+    const [uploader, setUploader] = useState("")
 
 
     const {userID, setUserID, logged, setLogged} = useContext(loggedIn)
@@ -71,12 +73,15 @@ function PostPage(){
                 setLogged(false);
                 return;
             }
-            else if (token === null || token === undefined){
-                console.log("No token found");
+            
+            const decodeToken = handleJWT(token)
+
+            if (decodeToken === false) {
                 setLoadingcredentials(false)
                 setLogged(false);
-                return;
+                return
             }
+
             const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
 
             const response = await fetch(url, {method: "GET", headers: {"Authorization": `Bearer ${token}`}})
@@ -235,6 +240,7 @@ function PostPage(){
 
                 setThumbnail(data[0].thumbnail)
                 setTags(tagarray)
+                setUploader(data[0].uploaderId)
                 setBigseriesImage(data[0].url)
                 setMangaName(data[0].seriesName)
 
@@ -305,9 +311,6 @@ function PostPage(){
         }
     }
 
-    useEffect(()=>{
-        console.log(commentlist)
-    },[commentlist])
 
     useEffect(()=>{
         setLoadingcredentials(true)
@@ -348,7 +351,7 @@ function PostPage(){
     return(
         <div className="main-content series-page">
         <Topnav></Topnav>
-        {loadingcredentials && (<div className='spinning-circle-container'></div>)}
+        {loadingcredentials === true && (<div className='spinning-circle-container'></div>)}
         <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
         {highres == false && bigseriesImage != false && (
                 <div className="high-res-question">
@@ -363,7 +366,10 @@ function PostPage(){
         
         <article>
             
-            {Array.isArray(tags) && tags.length > 0 && (<Sidebar data={tags}><h2 className="seriestitle">{typeof mangaName === "string" ? mangaName.replace(/_/g, " "): ""}</h2></Sidebar>)}
+            {Array.isArray(tags) && tags.length > 0 && (
+                <Sidebar data={tags}>
+                <h2 className="seriestitle">{typeof mangaName === "string" ? mangaName.replace(/_/g, " "): ""}</h2>
+                </Sidebar>)}
             <h2 className="seriestitle">Options:</h2>
 
             <div id="ADDFAV">Manga series has been added to your favorites!</div>
@@ -376,6 +382,7 @@ function PostPage(){
                 }}>Add tags</li>
                 <li className="other-tag" onClick={flagforDeletion}>Flagged for Deletion: {flagged}</li>
                 <strong><li className="tagoutput other-tag" onClick={seeFullnewTab}>See original</li></strong>
+                <li className="other-tag">Uploader: {uploader ?? ""}</li>
             </ul>
 
 

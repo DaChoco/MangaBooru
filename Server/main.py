@@ -441,6 +441,9 @@ def seriesExtract(seriesID: str):
         cursor.execute("SELECT seriesID, thumbnail, url, seriesName FROM tblseries WHERE seriesID = %s", (seriesID,))
         output_tags = cursor.fetchall()
 
+    userName = output_tags[0]["uploaderId"]
+    cursor.execute("SELECT userName FROM tblusers WHERE userID = %s", (userName, ))
+    output_tags[0]["uploaderId"] = cursor.fetchone()["userName"]
     if output_tags[0].get("url"):
         s3_key = output_tags[0]["url"]
         output_tags[0]["url"] = mass_presignedurls(s3_key, 360)

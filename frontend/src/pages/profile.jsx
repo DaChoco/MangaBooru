@@ -1,9 +1,10 @@
 import {jwtDecode} from "jwt-decode"
+
 import { useState, useEffect, useContext, useRef } from 'react'
 import { SearchBar, Topnav, Footer } from "../components"
 import { favoritesitems } from '../contexts/favoritesContext'
 import { loggedIn } from '../contexts/loggedinContext'
-import {SavedSearch} from "../pages"
+import { SavedSearch } from "../pages"
 
 import { Link, useNavigate } from 'react-router-dom'
 import "../style/Posts.css"
@@ -12,6 +13,7 @@ import "../style/LoadingBG.css"
 
 import applelogo from "../assets/apple-logo.png"
 import googlelogo from "../assets/google.png"
+import { handleJWT } from "../general_utils/jwthandle"
 
 
 function Profile(){
@@ -105,36 +107,13 @@ const navigate = useNavigate()
                 return;
             }
 
-           
+            const decodeToken = handleJWT(token)
 
-            try{
-                
-                const {expire} = jwtDecode(token)
-
-                console.log("Decoded token:", jwtDecode(token));
-                console.log("exp:", expire);
-
-                if (Date.now() >= expire * 1000){
-                    throw new Error("Token expired")
-                }
-                else{
-                    const remainder = (expire * 1000) - Date.now()
-                    console.log((remainder/1000/60) + " minutes")
-                }
-
-            }
-            catch (error){
-                
-                localStorage.removeItem("access_token"); 
+            if (decodeToken === false){
                 setLoadingcredentials(false)
                 setLogged(false);
-                console.warn("Token is invalid or expired: ", error);
-                return;
+                return
             }
-
-  
-
-     
 
             const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
 
