@@ -498,7 +498,7 @@ if (!userData){ return (<div className='spinning-circle-container'></div>)}
         
         
     )
-    }
+    
 }
 
 export default Profile
