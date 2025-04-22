@@ -1,0 +1,25 @@
+.link-text{
+    position: relative;
+}
+
+.link-text::after{
+    position: absolute;
+    content: "";
+    width: 0%;
+    height: 5px;
+    background-color: #FFF;
+    bottom: 0;
+    left: 0;
+    
+}
+
+.link-text:hover::after{
+    animation: expand-line 0.75s normal ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+@keyframes expand-line {
+    0% {width: 0%}
+    100% {width: 100%}
+    
+}

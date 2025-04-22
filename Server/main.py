@@ -30,10 +30,13 @@ from models import CreateSeries, CreateTag, SearchRequest, FavoritesRequest
 from models import UpdateProfileRequest
 
 #AWS
-from aws import mass_presignedurls, uploadImage, deleteImage
+from aws import mass_presignedurls, uploadImage, deleteImage, insert_user_comment, retrieve_user_comments_list, incrementPostVotes
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
+
+#OTHER
+import math
 
 
 
@@ -59,7 +62,8 @@ TOKEN_EXPIRES_IN_MINUTES = 60
 oauth2_scheme_login = OAuth2PasswordBearer(tokenUrl="login")
 
 def get_current_user(token: str = Depends(oauth2_scheme_login)):
-    if not token:
+
+    if not token or token.count(".") != 2:
         return {"reply": "Apologies, youre not signed in"}
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
     if not payload:
@@ -98,6 +102,7 @@ ORIGINS = ["http://localhost:80",
            "http://localhost:5173",
            "http://127.0.0.1:5173",
            "http://localhost:3306",
+           PERSONAL_IP, "http://172.20.10.6:5173", 'http://172.24.32.1:5173'
            ] 
 
 app.add_middleware(CORSMiddleware,
@@ -191,6 +196,10 @@ def updatingprofile(data: UpdateProfileRequest, userID: str):
 async def uploadImageIcons(userID: str, file: UploadFile = File(...)):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
+
+    if file.size > 3000000:
+        #3mb is the limit because of how lambda functions work
+        return JSONResponse(status_code=400, content={"message": False, "reply": "Apologies, but your file is too big"})
 
     cursor.execute("SELECT userIcon from tbluserinfo where userID = %s", (userID,))
     old_response = cursor.fetchone()
@@ -330,9 +339,12 @@ def index():
 
 @app.get("/getuser") #Will be used to extract JWT Tokens later
 def getUser(user: dict = Depends(get_current_user)):
+    if not user.get("userID"):
+        {"reply": False, "instruction": "The user will sign in normally"}
+    
     if not user:
         {"reply": False, "instruction": "The user will sign in normally"}
-    return {"reply": True, "userID": user["userID"], "userName": user["userName"], "role": user["role"]} #is used on reload if signed in
+    return {"reply": True, "userID": user.get("userID"), "userName": user.get("userName"), "role": user.get("role")} #is used on reload if signed in
  
 
 @app.get("/returnBooruPics/{Page}")
@@ -341,25 +353,33 @@ def getUrls(Page: int):
     conn = createConnection()
     cursor = conn.cursor(dictionary=True)
 
+    COUNT_IN_SQL = """
+    SELECT COUNT(*) AS TOTAL
+    FROM (SELECT DISTINCT tblseries.seriesID, thumbnail FROM tblseries WHERE thumbnail is NOT NULL) 
+    as filtered"""
+
+    cursor.execute(COUNT_IN_SQL)
+    total_rows = cursor.fetchone()["TOTAL"]
+    total_pages = math.ceil(total_rows/9) 
+
 #Extracts the image whether it has tags or not, but also gets tags - Cant use outer joins since this is not Post gres. Came up with an alternative
     SQL_PARAM_NO_TAG_INCLUDED = """ 
-SELECT tblseries.seriesID as series, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
+SELECT tblseries.seriesID as series,uploadDate, url, thumbnail, group_concat(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 LEFT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 LEFT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
 WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID
 UNION
-SELECT tblseries.seriesID as series, url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
+SELECT tblseries.seriesID as series, uploadDate, url, thumbnail, GROUP_CONCAT(DISTINCT tagName order by tagName) as tagName
 FROM tblseries 
 RIGHT JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID
 RIGHT JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
-WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY url DESC
+WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID, uploadDate ORDER BY url DESC LIMIT 9 OFFSET %s
 """
+    offsetval = (Page)*9
 
-    cursor.execute(SQL_PARAM_NO_TAG_INCLUDED) #returns the urls/keys
+    cursor.execute(SQL_PARAM_NO_TAG_INCLUDED, (offsetval,)) #returns the urls/keys
     data = cursor.fetchall()
-
-    
     
     if not data:
         raise HTTPException(status.HTTP_404_INTERNAL_SERVER_ERROR, detail="Unable to retrieve images due to a lack of urls")
@@ -374,25 +394,16 @@ WHERE thumbnail IS NOT NULL GROUP BY url, thumbnail, tblseries.seriesID ORDER BY
             if tag != None:
                 cleaned_tag = tag.split(",")
                 listtags.append(cleaned_tag)    
-        
-        keysdata: list[int] = listkeys
-        batch: batched = batched(keysdata, n=9)
-        paginated_list = list(batch)
-
-        seriesdata: list[int] = listseriesID
-        batchseries: batched = batched(seriesdata, n=9)
-        seriespaginate = list(batchseries)
-        
     
         flattened = list(chain(*listtags))
 
         cursor.close()
         conn.close()
 
-        return {"urls": paginated_list[Page],
-                 "numpages": len(paginated_list), 
+        return {"urls":  listkeys,
+                 "numpages": total_pages, 
                  "tags": set(flattened), 
-                 "series": seriespaginate[Page]} #Functional will be used for general browsing
+                 "series": listseriesID} #Functional will be used for general browsing
     
 @app.get("/returnMangaInfo") #general info #for internal use only
 def extractInfo():
@@ -425,8 +436,14 @@ def seriesExtract(seriesID: str):
         WHERE tblseries.seriesID = %s""", (seriesID,))
     
     output_tags = cursor.fetchall()
-    s3_key = output_tags[0]["url"]
-    output_tags[0]["url"] = mass_presignedurls(s3_key, 360)
+    if not output_tags:
+        #In the event the series has no tags
+        cursor.execute("SELECT seriesID, thumbnail, url, seriesName FROM tblseries WHERE seriesID = %s", (seriesID,))
+        output_tags = cursor.fetchall()
+
+    if output_tags[0].get("url"):
+        s3_key = output_tags[0]["url"]
+        output_tags[0]["url"] = mass_presignedurls(s3_key, 360)
 
     cursor.close()
     conn.close()
@@ -515,22 +532,62 @@ AND NOT EXISTS (
     finally:
         conn.close()
 
-@app.post("/tagnseriesrelations")
-def updateTagSeries():
+@app.put("/tagseriesrelations")
+def updateTagSeries(taginput: str = Query(...), seriesinput: str = Query(...)):
+    #when someone adds a tag to an existing series, we need to create the junction table link. Since the tag already exists and the series already exists
     conn = createConnection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
+    conn.autocommit = False
 
     SQL_STRING = """
 INSERT INTO tbltagseries (tagID, seriesID)
 SELECT t.tagID, s.seriesID
 FROM tbltags t, tblseries s
 WHERE t.tagName = %s
-AND s.seriesName IN %s
+AND s.seriesName = %s
 AND NOT EXISTS (
     SELECT 1 FROM tbltagseries ts WHERE ts.tagID = t.tagID AND ts.seriesID = s.seriesID
 )
 """
-    return {"result": "results"}
+    SQL_STRING_VERIFICATION = """SELECT tblseries.seriesName, tbltags.tagName FROM tbltagseries 
+INNER JOIN tbltags ON tbltagseries.tagID = tbltags.tagID
+INNER JOIN tblseries ON tbltagseries.seriesID = tblseries.seriesID
+WHERE tblseries.seriesName = %s"""
+
+    try:
+        list_of_tags = []
+        
+        cursor.execute(SQL_STRING, (taginput, seriesinput))
+        cursor.execute(SQL_STRING_VERIFICATION, (seriesinput,))
+        results = cursor.fetchall()
+        
+        if results:
+            for rows in results:
+                list_of_tags.append(rows["tagName"])
+
+            if taginput in list_of_tags:
+                conn.commit()
+                return JSONResponse(content={"reply": True, "message": "Series has been updated, thank you", "tags": list_of_tags}, status_code=200)
+            else:
+                return JSONResponse(content={"reply": False, "message": "The tag was not added to the series"}, status_code=200)
+        else:
+            conn.rollback()
+            return JSONResponse(content={"reply": False, "message": "No new relationships added"}, status_code=200)
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        print(f"Your error has occured. Very sorry: {e}")
+        return JSONResponse(content={"reply": False,"message": "Something has gone wrong. Please try again later"}, status_code=500)
+    except TypeError as e:
+        conn.rollback()
+        print(f"An error has occured: {e}")
+        return JSONResponse(content={"reply": False, "message": "Something is wrong on the server side"}, status_code=502)
+    except Exception as e:
+        conn.rollback()
+        return {"message": f"Something went wrong: {e}"}
+    finally:
+        conn.close()
+   
+ 
 
 #Search -----------------------------------
 
@@ -574,6 +631,7 @@ def fullsearch(page: int, datareq: SearchRequest):
     #This search only occurs when enter is clicked or when the button is clicked.
     #Separating this from auto complete
     page = page - 1
+    offsetval = page * 9
     if datareq == None:
         return {"Message": "The user inputted nothing", "Success": False}
     conn = createConnection()
@@ -581,7 +639,36 @@ def fullsearch(page: int, datareq: SearchRequest):
 
     searchTerms = datareq.inputtxt
 
+    if len(searchTerms[0])<=2:
+        return {"communication": False, "message": "type a longer search and try again"}
+
+    counting_terms = []
+    for terms in searchTerms:
+        counting_terms.append(terms)
+
+    for term in searchTerms:
+        counting_terms.append(terms)
+
+    dynamic_counting_placeholders = ",".join(["%s"]*len(searchTerms))
+
+    COUNT_VIA_SQL = f"""SELECT COUNT(*) as TOTAL FROM
+    (SELECT DISTINCT tblseries.seriesID, seriesName, url, thumbnail, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName 
+    FROM tblseries 
+    INNER JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID 
+    INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID WHERE tblseries.seriesName IN ({dynamic_counting_placeholders})
+    OR tbltags.tagName IN ({dynamic_counting_placeholders})
+    GROUP BY tblseries.seriesID, seriesName, url, thumbnail 
+    ) as filtered"""
+
+    print(tuple(counting_terms))
+
+    cursor.execute(COUNT_VIA_SQL, tuple(counting_terms))
+    total_rows = cursor.fetchone()["TOTAL"]
+    total_pages = math.ceil(total_rows/9)
+    print(total_pages)
+
     print(searchTerms)
+    print(tuple(searchTerms))
     
     search_append = ""
     searchtuple = []
@@ -598,15 +685,15 @@ def fullsearch(page: int, datareq: SearchRequest):
         listkeys = []
         listtags = []
         listseriesID = []
-        GROUP_BY_APPEND = "GROUP BY tblseries.seriesID, seriesName, url"
+        listthumb = []
+        GROUP_BY_APPEND = "GROUP BY tblseries.seriesID, seriesName, url, thumbnail"
         SQL_Query_Base = """
-        SELECT tblseries.seriesID, seriesName, url, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblseries 
+        SELECT tblseries.seriesID, seriesName, url, thumbnail, GROUP_CONCAT(tagName SEPARATOR ',') AS tagName FROM tblseries 
         INNER JOIN tbltagseries ON tbltagseries.seriesID = tblseries.seriesID 
         INNER JOIN tbltags ON tbltags.tagID = tbltagseries.tagID 
         """
-        FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append}"
-
-        
+        searchtuple.append(offsetval)
+        FinalSQL_Query = f"{SQL_Query_Base} {GROUP_BY_APPEND} HAVING {search_append} LIMIT 9 OFFSET %s"
 
         cursor.execute(FinalSQL_Query, tuple(searchtuple))
 
@@ -616,10 +703,12 @@ def fullsearch(page: int, datareq: SearchRequest):
         else:
             for rows in datareq:
                 s3_key = rows.get("url")
+                listseriesID.append(rows.get("seriesID"))
+                listtags.append(rows.get("tagName"))
+                listthumb.append(rows.get("thumbnail"))
                 if s3_key:
-                    listseriesID.append(rows.get("seriesID"))
                     listkeys.append( mass_presignedurls(s3_key, 3600) )
-                    listtags.append(rows.get("tagName"))
+                    
             
             keysdata: list[int] = listkeys
             batch: batched = batched(keysdata, n=9)
@@ -627,9 +716,10 @@ def fullsearch(page: int, datareq: SearchRequest):
 
      
             return {"result": datareq, 
-                    "url": paginated_list[page], 
+                    "url": listkeys, 
                     "tags": listtags, 
-                    "numpages": len(paginated_list), 
+                    "thumbnail": listthumb,
+                    "numpages": total_pages, 
                     "seriesID": listseriesID,
                     "Success": True}
 
@@ -838,8 +928,8 @@ def change_comment_votes(seriesID: str, timestamp: str, category: str, userID: s
     
 
 handler = Mangum(app)
-#if __name__ == "__main__":
- #   uvicorn.run(app, host="localhost", port=8000, reload=True)
+if __name__ == "__main__":
+   uvicorn.run(app, host="localhost", port=8000, reload=True)
 
 #MY JS app, will be commnicating from port 5173 specifically
 

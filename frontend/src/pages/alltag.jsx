@@ -53,7 +53,7 @@ function AllTags(){
 
     useEffect(()=>{
         const extractTags = async () => {
-            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/everytag?page=${pagenumber}`
+            const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/everytag?page=${pagenumber}`
 
             try{
                 let arrtags = []
@@ -84,7 +84,7 @@ function AllTags(){
 
 
     return (
-        <div className="main-content">
+        <div className="main-content tag-page">
             <Topnav></Topnav>
             <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
 

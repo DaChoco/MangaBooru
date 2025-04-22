@@ -1,0 +1,20 @@
+.spinning-circle-container{
+    position: fixed;
+    
+    border: 16px #b1aeae solid;
+    border-top: var(--generic-tag) solid 16px;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 1s linear infinite;
+    top: 50%;
+    left: 50%;
+    z-index: 1000;
+}
+
+@keyframes spin {
+    0% {transform: translate(-50%, -50%) rotate(0deg);}
+    50% {border-top: var(--demographic-color-tag) solid 16px;}
+    75% {border-top: #91df74 16px solid;}
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}

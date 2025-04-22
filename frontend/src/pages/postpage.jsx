@@ -1,5 +1,5 @@
 import { SearchBar, Topnav, Footer, Sidebar } from "../components"
-import { useEffect, useState, useContext } from "react"
+import { useEffect, useState, useContext, useRef } from "react"
 import { favoritesitems } from "../contexts/favoritesContext"
 import { LoggedInContext } from "../contexts/loggedinContext"
 import { loggedIn } from "../contexts/loggedinContext"
@@ -8,13 +8,17 @@ import "../style/Profile.css"
 
 
 function PostPage(){
+    const FULL_URL = new URL(window.location.href)
+    const url_path = FULL_URL.pathname
+    const url_ID = url_path.substring(7, url_path.length)
+
     const mangaimage = document.getElementById("mangaimage")
 
     const [thumbnail, setThumbnail] = useState(null)
     const [tags, setTags] = useState([])
     const [bigseriesImage, setBigseriesImage] = useState("") //higher res option if available
     const [mangaName, setMangaName] = useState("")
-
+    
     const [flagged, setFlagged] = useState(0)
 
     const [highres, setHighres] = useState(false)
@@ -151,14 +155,15 @@ function PostPage(){
 
     const addtofavorites = () =>{
         if (favorited.indexOf(url_ID) !== -1){
-            console.log("This is already in your favorites")
+            alert("This is already in your favorites")
             return
         }
 
-        setFavorited(url_ID)
+        setFavorited(prev => ([...prev, url_ID]))
         localStorage.setItem("favorites", JSON.stringify(favorited))
 
         addedbox.style.display = "block"
+        
         setTimeout(function(){
             addedbox.style.display = "none"
        
@@ -166,7 +171,7 @@ function PostPage(){
     }
     
     const flagforDeletion = async () =>{
-        const url =   `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/flagfordelete/${url_ID}?userID=${userID}`
+        const url =   `http://${import.meta.env.VITE_PERSONAL_IP}:8000/flagfordelete/${url_ID}?userID=${userID}`
 
         if (userID == null){
             alert("You must be logged in to flag this series for deletion")
@@ -209,7 +214,7 @@ function PostPage(){
 
 
         const returnMangaInfo = async (urlID) =>{
-            let url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnMangaInfo/${urlID}`
+            let url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/returnMangaInfo/${urlID}`
             console.log(urlID)
             let tagarray = []
 
@@ -343,6 +348,7 @@ function PostPage(){
     return(
         <div className="main-content series-page">
         <Topnav></Topnav>
+        {loadingcredentials && (<div className='spinning-circle-container'></div>)}
         <SearchBar data={{ lenoutput: 0, setLenoutput: () => {} }}></SearchBar>
         {highres == false && bigseriesImage != false && (
                 <div className="high-res-question">
@@ -357,17 +363,17 @@ function PostPage(){
         
         <article>
             
-            <Sidebar data={tags}>
-                <h2 className="seriestitle">{mangaName.replace(/_/g, " ")}</h2>
-
-                
-            </Sidebar>
+            {Array.isArray(tags) && tags.length > 0 && (<Sidebar data={tags}><h2 className="seriestitle">{typeof mangaName === "string" ? mangaName.replace(/_/g, " "): ""}</h2></Sidebar>)}
             <h2 className="seriestitle">Options:</h2>
 
             <div id="ADDFAV">Manga series has been added to your favorites!</div>
             <ul className="tag-container">
                 <li className="other-tag" onClick={addtofavorites}>Add to Favorites</li>
-                <li className="other-tag">Add tags</li>
+                <li className="other-tag" onClick={async ()=>{
+                    let userInput = prompt("Type in a tag you would like to add to a series")
+                    await handleAddingTags(userInput.toLowerCase())
+                    console.log("transaction complete")
+                }}>Add tags</li>
                 <li className="other-tag" onClick={flagforDeletion}>Flagged for Deletion: {flagged}</li>
                 <strong><li className="tagoutput other-tag" onClick={seeFullnewTab}>See original</li></strong>
             </ul>
@@ -381,16 +387,40 @@ function PostPage(){
             <textarea ref={commentarearef} name="" id="textbox" className="about-me-text"></textarea>
             {logged === true && (<button className="profile-button comment-sect" onClick={handleCreateComment}>Add comment</button>)}
             </div>
-            <ul className="comment-list">
-                <li className="comment">
-                    <div className="user-spoke-icon for-small-screens"></div>
-                    <div className="user-spoke-content">
-                        <span>Anonymous commented at TIME #THECOMMENTID</span>
-                        <p>The user's comment</p>
-                        <p>Upvotes: Downvotes: </p>
-                    </div>
-                </li>
-            </ul>
+            { commentlist &&  commentlist.length>0 ? (
+                <ul className="comment-list">
+                {commentlist.map((comment, index)=> (<li key={index} className="comment">
+                        <img src={comment.usericon ?? null} className="user-spoke-icon for-small-screens"></img>
+                        <div className="user-spoke-content">
+                            <span><strong>{comment.userName ?? "Anonymous"}</strong> commented at {convertDatetoLocal(comment.timestamp) ?? "00:00"}</span>
+                            <p>{comment.commentText ?? "The comment"}</p>
+                            <p>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" style={{fill: "#FFF"}}><path d="m280-400 200-200 200 200H280Z" onClick={async ()=> {
+                                    const upvotes = await incrementVotes(comment.timestamp, "upvotes");
+                                    setCommentlist(prevdata => {
+                                        const newList = [...prevdata];
+                                        newList[index] = {...newList[index], upvotes: upvotes };
+                                        return newList;
+                                    })
+                                    }}/></svg>Upvotes: {comment.upvotes ?? 0} 
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" style={{fill: "#FFF"}}><path d="M480-360 280-560h400L480-360Z" onClick={async ()=> {
+                                    const downvotes = await incrementVotes(comment.timestamp, "downvotes");
+                                    setCommentlist(prevdata =>{
+                                        const newList = [...prevdata];
+                                        newList[index] = {...newList[index], downvotes: downvotes};
+                                        return newList;
+
+                                    })
+                                
+                                }}/></svg>Downvotes: {comment.downvotes ?? 0} </p>
+
+                        </div>
+                    </li>)) }
+                    
+                </ul>
+            ): (null)}
+            
         </div>
 
         

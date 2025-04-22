@@ -32,7 +32,7 @@ function UploadPosts(){
         e.preventDefault()
         console.log(forminfo.seriestitle)
 
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/uploadSeries`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/uploadSeries`
 
         const formDataprocessing = new FormData()
 

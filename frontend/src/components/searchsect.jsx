@@ -1,4 +1,4 @@
-import React, {useState, useContext, createContext} from 'react'
+import React, {useState, useContext, createContext, useRef} from 'react'
 import { PostItemsContext } from '../contexts/postItemContext'
 import { PageNumContext } from '../contexts/pageNumContext'
 import { useNavigate } from 'react-router-dom'
@@ -13,14 +13,16 @@ function SearchBar({data}){
     
     const [splitTerms, setSplitTerms] = useState([])
     const {seriesID, setSeriesID} = useContext(PostItemsContext)
-    const {tags, setTags} = useContext(PostItemsContext)
+    const {tags, setTags, posts} = useContext(PostItemsContext)
 
     const {setPage} = useContext(PageNumContext)
     const {page} = useContext(PageNumContext)
 
+    const savedSearchedBoxRef = useRef()
+
     const navigate = useNavigate()
 
-    let savedSearches = []
+    const [savedSearches, setSavedSearches] = useState([])
 
     function incFunction(){
         console.log(page)
@@ -68,9 +70,10 @@ function SearchBar({data}){
                 setQuery("")
                 return
             }
-            setPosts(data.url)
+            setPosts(data.thumbnail)
             setSeriesID(data.seriesID)
             setLenoutput(data.numpages)
+            console.log(posts)
 
             let noncleanArr = []
 
@@ -109,7 +112,7 @@ function SearchBar({data}){
             setAuto([]) 
             return 
         }
-        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
+        const url = `http://${import.meta.env.VITE_PERSONAL_IP}:8000/autocomplete?query=${encodeURIComponent(splitTerms[splitTerms.length -1])}`
         try{
            const response = await fetch(url, {method: "GET"})
            const data = await response.json()
@@ -120,7 +123,7 @@ function SearchBar({data}){
             console.log("An error has occured: ", error)
         }
 
-        }, 250)
+        }, 100)
 
         
         }
@@ -160,7 +163,7 @@ function SearchBar({data}){
         <>
         
         <form className="search-container" onSubmit={fullSearch}>
-        <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"  className='svglightdark star' style={{padding: 0, marginRight: "0.25rem", fill: "var(--base-text-dark)", width: "4rem", cursor: "pointer"}}>
+        <svg onClick={saveSearchTerm} xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"  className='svglightdark star' style={{padding: 0, marginRight: "0.25rem", fill: "var(--base-text-dark)", width: "4rem", cursor: "pointer"}}>
             <path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"/>
         </svg>
         <div className="autowrap">
@@ -186,13 +189,14 @@ function SearchBar({data}){
             ): (null)} 
         </div>
 
-            <button className="search-btn" type="submit">Search</button>
-
-         
-
-               
+            <button className="search-btn" type="submit">Search</button>          
             
+            <div ref={savedSearchedBoxRef} className="saved-box-confirm">
+            <span>Your search has been saved for later!</span>
+        </div>
         </form>
+
+        
 
         </>
 

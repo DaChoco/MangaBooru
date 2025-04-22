@@ -12,9 +12,10 @@ export function LoggedInContext({children}){
     const [userID, setUserID] = useState("") //set this in tandem with a get user esque api call on load with a use effect
     const [userIcon, setUserIcon] = useState("")
     const [userRole, setUserRole] = useState("")
-    const [userBanner, setUserBanner] = useState("")
+    const [loadingcredentials, setLoadingcredentials] = useState(false)
+    const [userName, setUserName] = useState("")
     return (
-        <loggedIn.Provider value={{logged, setLogged, userID, setUserID, userIcon, setUserIcon, showLoginBox, setShowLoginBox, showRegisterBox, setShowRegisterBox, userRole, setUserRole}}>
+        <loggedIn.Provider value={{userName, setUserName,loadingcredentials, setLoadingcredentials,logged, setLogged, userID, setUserID, userIcon, setUserIcon, showLoginBox, setShowLoginBox, showRegisterBox, setShowRegisterBox, userRole, setUserRole}}>
             {children}
         </loggedIn.Provider>
     )
