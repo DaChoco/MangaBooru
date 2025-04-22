@@ -46,6 +46,7 @@ Notes: You will need an aws account (with valid credentials) if you want to make
 * Input .venv\Scripts\activate (forwards slash if you are on Linux or Mac)
 * pip install -r requirements.txt (A requirements.txt file has been left for you. You can also modify the docker file instead)
 * Navigate to the frontend folder, then you can add a .env to direct the backend to your own server/machine. As currently VITE_LAMBDA_DOMAIN or VITE_PERSONAL_IP are env variables used in my api calls
+* Next make sure you are still in the root of the frontend folder. Run NPM install. this will install all the packages that were used for the project.
   * I left many console.logs that are safe to delete, but you can keep them for debugging.
 * Now navigate to your server folder (if you want to localhost test your server) then configure your database credentials. If you don't use MySQL or use a Postgres library equivalent to Mysql-connector-python, you will need to slightly modify my code. If you prefer to use ORMS though, there will be a substantial rewrite of all my database calls. But having the original SQL raw should help you formulate your ORM queries well.
 * Now that you have done all that, the code is free to modify, have fun. If you use it for a project largely unchanged, credit would be heavily appreciated. Thank you for reading through all this.
