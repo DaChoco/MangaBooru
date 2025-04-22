@@ -49,6 +49,3 @@ Notes: You will need an aws account (with valid credentials) if you want to make
   * I left many console.logs that are safe to delete, but you can keep them for debugging.
 * Now navigate to your server folder (if you want to localhost test your server) then configure your database credentials. If you don't use MySQL or use a Postgres library equivalent to Mysql-connector-python, you will need to slightly modify my code. If you prefer to use ORMS though, there will be a substantial rewrite of all my database calls. But having the original SQL raw should help you formulate your ORM queries well.
 * Now that you have done all that, the code is free to modify, have fun. If you use it for a project largely unchanged, credit would be heavily appreciated. Thank you for reading through all this.
-# Screenshots:
-* Coming soon
-
