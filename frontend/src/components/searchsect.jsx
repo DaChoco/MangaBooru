@@ -46,7 +46,7 @@ function SearchBar({data}){
         e.preventDefault()
         setPage(1) //when someone searches, they should start from page 1
 
-        const url = `http://${import.meta.env.VITE_LAMBDA_DOMAIN}:8000/search/${page}`
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/search/${page}`
         console.log(splitTerms)
 
         try{
@@ -127,9 +127,33 @@ function SearchBar({data}){
         
     }
 
-    const saveSearchTerm = ()=>{
-        savedSearches.push(query)
-        localStorage.setItem("savedsearch", JSON.stringify(savedSearches))
+    const saveSearchTerm = () =>{
+        if (query === null || query === undefined){
+            return 
+        }
+        const oldarr = localStorage.getItem("savedsearch")
+        const newQuery = query
+        let newarr = []
+
+        if (oldarr){
+            newarr = JSON.parse(oldarr)
+            newarr.push(newQuery)
+
+        }
+        
+      
+        newarr.push(newQuery)
+        localStorage.setItem("savedsearch", JSON.stringify(newarr))
+
+        savedSearchedBoxRef.current.style.display = "block"
+        setTimeout(function(){
+            if (savedSearchedBoxRef.current){
+
+                savedSearchedBoxRef.current.style.display = "none"
+            }
+           
+        }, 3000)
+  
     }
 
     return (

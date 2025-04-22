@@ -270,6 +270,11 @@ section{
 
 }
 
+.profile-button.comment-sect{
+    margin: 0.5rem auto;
+    width: 60%;
+}
+
 
 
 #aboutmeInput{
@@ -440,7 +445,7 @@ section{
     }
 
     .main-content.profile-page-area > *{
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 
     button{
@@ -451,7 +456,7 @@ section{
     }
 
     h3{
-        font-size: 0.80rem;
+        font-size: 1rem;
     }
 
     .banner-container {
@@ -490,7 +495,10 @@ section{
         
     }
     .menulinks{
-        padding: 1rem 0.75rem;
+        padding: 2rem 1rem;
+    }
+    .menulinks:hover{
+        background-color: var(--topnav-hover);
     }
     /*The Upload Page*/
     .new-pic-container input{

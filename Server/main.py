@@ -770,6 +770,73 @@ def deleteSeries(seriesID: str = Query(...), seriesName: str = Query(...)):
     finally:
         conn.close()
 
+@app.put("/api/v1/ban/users")
+def banUser(userID: str = Query(...), userName: str = Query(...)):
+    #This is to delete a series from the database. Will be used for admins only
+    conn = createConnection()
+    conn.autocommit = False
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT userID, userName from tblusers where userID = %s or userName = %s", (userID, userName))
+    output = cursor.fetchone()
+
+    if not output:
+        conn.close()
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": "This series does not exist", "reply": False})
+    
+    new_uuid = str(uuid.uuid4())
+    timestamp = str(datetime.datetime.now())
+    perma_ban_code = f"{new_uuid}#{timestamp}"
+    hashed_perma_ban_code = hashPassword(perma_ban_code)
+    try:
+        cursor.execute("UPDATE tblusers SET password = %s WHERE userID = %s or userName = %s", (hashed_perma_ban_code,userID, userName))
+        conn.commit()
+        return {"message": "Successfully Banned forever. Thank you!", "reply": True}   
+    except mysql.connector.DatabaseError as e:
+        conn.rollback()
+        return {"message": f"An error has occurred: {e}", "reply": False}
+    except TypeError:
+        conn.rollback()
+        return {"message": "An error has occurred. Please try again later", "reply": False}
+    except Exception as e:  
+        conn.rollback()
+        return {"message": f"An error has occurred: {e}", "reply": False}
+    finally:
+        conn.close()
+
+#Comment Making ---------- DYNAMO DB
+
+@app.get('/retrieveUserComments/{seriesID}')
+def get_comments(seriesID: str):
+    if not seriesID:
+        return {"error": "An error has occured, please try again later"}
+    
+    result = retrieve_user_comments_list("Mangabooru-Comments", seriesID)
+
+    return JSONResponse(content=result, status_code=200)
+
+@app.put("/inputUserComments/{seriesID}")
+def put_comments(userID: str, comment: str, userIcon: str,userName: str, seriesID: str):
+
+    if not seriesID:
+        return {"message": "Comment was unsuccessful"}
+    result = insert_user_comment(userID, comment, "Mangabooru-Comments", seriesID, userIcon, userName)
+
+    if result:
+        return JSONResponse(content={"message": "Comment was successful!", "reply": result}, status_code=200)
+    
+@app.put("/changecommentvotes/{seriesID}")
+def change_comment_votes(seriesID: str, timestamp: str, category: str, userID: str):
+
+    result = incrementPostVotes(table_name="Mangabooru-Comments", 
+                                timestamp=timestamp,
+                                seriesID=seriesID,
+                                userID=userID,
+                                category=category)
+    
+    return JSONResponse(content=result, status_code=200)
+    
+
 handler = Mangum(app)
 #if __name__ == "__main__":
  #   uvicorn.run(app, host="localhost", port=8000, reload=True)

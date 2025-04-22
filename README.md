@@ -32,10 +32,21 @@ The site will have a tag based searching system, user login, registration, the a
 * Create the ability to flag for deletion
 * Deletions page
 # Things currently doing
-* Checking why JWT Tokens are not expiring, or why my code is not recognizing they are expired.
+* Polish
 # Things to do
 * BONUS - Only for after the rest of prodiction is done
   * Try implementing Google or Apple authentication with the service.
+# How to tinker with it yourself
+Notes: You will need an aws account (with valid credentials) if you want to make use of how I handled the comment system with dynamo db. S3 is not neccessary, as I primarily stored links in my MySQL database. Meaning your own alternatives will work fine. You may be able to modify my comment code heavily with MongoDB though.
+* Clone the main repository to your personal machine with the following:
+  * Git Clone https://github.com/DaChoco/MangaBooru.git
+* Create your .venv file with python -m venv .venv
+* Input .venv\Scripts\activate (forwards slash if you are on Linux or Mac)
+* pip install -r requirements.txt (A requirements.txt file has been left for you. You can also modify the docker file instead)
+* Navigate to the frontend folder, then you can add a .env to direct the backend to your own server/machine. As currently VITE_LAMBDA_DOMAIN or VITE_PERSONAL_IP are env variables used in my api calls
+  * I left many console.logs that are safe to delete, but you can keep them for debugging.
+* Now navigate to your server folder (if you want to localhost test your server) then configure your database credentials. If you don't use MySQL or use a Postgres library equivalent to Mysql-connector-python, you will need to slightly modify my code. If you prefer to use ORMS though, there will be a substantial rewrite of all my database calls. But having the original SQL raw should help you formulate your ORM queries well.
+* Now that you have done all that, the code is free to modify, have fun. If you use it for a project largely unchanged, credit would be heavily appreciated. Thank you for reading through all this.
 # Screenshots:
 * Coming soon
 

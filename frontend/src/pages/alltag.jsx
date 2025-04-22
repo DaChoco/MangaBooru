@@ -14,7 +14,7 @@ function AllTags(){
 
     const linktotag = async (e) => {
         searchbar.value = e.target.textContent
-        let url = `http://${import.meta.env.VITE_LAMBDA_DOMAIN}:8000/extracttag/?tag=${encodeURIComponent(e.target.textContent)}`
+        let url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/extracttag/?tag=${encodeURIComponent(e.target.textContent)}`
 
         const response = await fetch(url, {method: "GET"})
         const data = await response.json()

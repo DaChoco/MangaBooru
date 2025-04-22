@@ -3,6 +3,8 @@ import { useEffect, useState, useContext } from "react"
 import { favoritesitems } from "../contexts/favoritesContext"
 import { LoggedInContext } from "../contexts/loggedinContext"
 import { loggedIn } from "../contexts/loggedinContext"
+import "../style/LoadingBG.css"
+import "../style/Profile.css"
 
 
 function PostPage(){
@@ -18,13 +20,134 @@ function PostPage(){
     const [highres, setHighres] = useState(false)
     const {favorited} = useContext(favoritesitems)
     const {setFavorited} = useContext(favoritesitems)
+    const {userIcon, setUserIcon, setUserRole} = useContext(loggedIn)
+    const {loadingcredentials, setLoadingcredentials} = useContext(loggedIn)
+    
+    const commentarearef = useRef()
 
-    const {userID} = useContext(loggedIn)
-    const FULL_URL = new URL(window.location.href)
-    const url_path = FULL_URL.pathname
-    const url_ID = url_path.substring(7, url_path.length)
+
+    const {userID, setUserID, logged, setLogged} = useContext(loggedIn)
+    const {userName, setUserName} = useContext(loggedIn)
+
+    async function userInfoData(userID){
+
+        //Extracts user info for the profile page
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/returnUserInfo/${userID}`
+    try{
+        const response = await fetch(url, {method: "GET"})
+        const data = await response.json()
+
+        console.log("Data: ", data)
+        setUserIcon(data.userIcon)
+        setUserRole(data.role)
+
+    }
+    catch (error){
+        console.log("An unforseen error has occured")
+    }
+        
+    }
+
+    //Special Use Effect. Login via cookies:
+    useEffect(()=>{
+        const getLoginCreds = async () =>{
+            //before the user ID is even set we can see if the end user has the tokens to log in automatically. Skipping the filler
+            const token = localStorage.getItem("access_token")
+
+            if (userID && userIcon && userName){
+                //if the info is here. don't call the function
+                return
+            }
+
+            setLoadingcredentials(true)
+
+            if (!token || token == "null") {
+                console.log("No token found");
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            }
+            else if (token === null || token === undefined){
+                console.log("No token found");
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            }
+            const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/getuser`
+
+            const response = await fetch(url, {method: "GET", headers: {"Authorization": `Bearer ${token}`}})
+
+            if (!response.ok) {
+                console.warn("Token is invalid or expired");
+                localStorage.removeItem("access_token"); 
+                setLoadingcredentials(false)
+                setLogged(false);
+                return;
+            } else{
+                const data = await response.json()
+
+                if (data.reply == false){
+                    console.log(data.instruction)
+                    return
+                }
+                console.log("USER DATA: ", data)
+                setUserID(data.userID)
+                setLogged(true)
+                setUserName(data.userName)
+                await userInfoData(data.userID)
+                setLoadingcredentials(false)
+                
+            }
+     
+        }
+        getLoginCreds()
+    }, [])
+
+    
 
     const addedbox = document.getElementById("ADDFAV")
+
+    const [userComment] = useState({username: userName, userID: userID, userIcon: userIcon, seriesID: url_ID})
+    const [commentlist, setCommentlist] = useState([])
+
+    function convertDatetoLocal(userDate){
+        if (!userDate){
+            return null
+        }
+        const convertedDate = new Date(userDate + "Z")
+        
+        if (isNaN(convertedDate)) {
+            const backup = new Date(userDate)
+            return backup.toLocaleString().replace("/", "-").replace("/","-")
+
+        }
+        const finaltime = convertedDate.toLocaleString(undefined, 
+            {year: "numeric", hour12: false, day: "2-digit", month: "2-digit", minute: "2-digit", hour: "2-digit"})
+
+        return finaltime.replace("/", "-").replace("/","-")
+    }
+
+    async function handleAddingTags(tagInput) {
+        const url = `
+        https://${import.meta.env.VITE_LAMBDA_DOMAIN}/tagseriesrelations?taginput=${encodeURIComponent(tagInput)}&seriesinput=${encodeURIComponent(mangaName)}`
+
+        try{
+            const response = await fetch(url, {method: "PUT"})
+            const data = await response.json()
+
+            if (data.reply === true){
+                alert(data.message)
+                setTags(data.tags)
+            }
+            else{
+                console.log(data)
+                alert(data.message)
+            }
+        }
+        catch (error){
+            console.log(error)
+        }
+    }
 
     const addtofavorites = () =>{
         if (favorited.indexOf(url_ID) !== -1){
@@ -121,9 +244,101 @@ function PostPage(){
     
 
     }, [])
+    const retrieveCommentList = async () =>{
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/retrieveUserComments/${url_ID}`
+        
+        setLoadingcredentials(true)
+        try{
+            const response = await fetch(url, {method: "GET"})
+            const data = await response.json()
+            console.log("GENERIC DATA: ", data)
+
+            
+            setCommentlist(data)
+            console.log("Data list: ", commentlist)
+            setLoadingcredentials(false)
+        }
+        catch (error){
+            console.log(error)
+            
+        }
+        
+
+    
+    }
+
+    const handleCreateComment = async() =>{
+        if (!commentarearef.current){
+            return
+        }
+
+        if (commentarearef.current.value === "" || commentarearef.current.value === undefined || commentarearef.current.value === null){
+            return
+        }
+
+        if (userComment.userID === null || userComment.userID === undefined){
+            alert("You are not logged in. Sorry")
+            return
+        }
+
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/inputUserComments/${userComment.seriesID}?userID=${userID}&comment=${encodeURIComponent(commentarearef.current.value)}&userIcon=${encodeURIComponent(userIcon)}&userName=${encodeURIComponent(userName)}`
+
+        setLoadingcredentials(true)
+        try{
+            const response = await fetch(url, {method: "PUT"})
+            const data = await response.json()
+            console.log("GENERIC DATA: ", data)
+            console.log("Data list: ", commentlist)
+
+            await retrieveCommentList()
+            setLoadingcredentials(false)
+            commentarearef.current.value = ""
+        }
+        catch (error){
+            console.log(error)
+            setLoadingcredentials(false)
+        }
+    }
+
+    useEffect(()=>{
+        console.log(commentlist)
+    },[commentlist])
+
+    useEffect(()=>{
+        setLoadingcredentials(true)
+        retrieveCommentList()
+        setLoadingcredentials(false)
+        console.log("Data list: ", commentlist)
+
+    },[])
+
+    async function incrementVotes(time, vote_type){
+        if (userID === null || userID === undefined || userID === ""){
+            return
+        }
+        const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/changecommentvotes/${url_ID}?timestamp=${encodeURIComponent(time)}&category=${vote_type}&userID=${userID}`
+
+        try{
+
+            const response = await fetch(url, {method: "PUT"})
+            const data = await response.json()
+
+            if (data.reply === false){
+                return
+            }
+            else{
+                return data.new_votes
+            }
 
 
+        }
+        catch (error){
+            console.log(error)
+        }
 
+    }
+    
+    
     
     return(
         <div className="main-content series-page">
@@ -157,17 +372,14 @@ function PostPage(){
                 <strong><li className="tagoutput other-tag" onClick={seeFullnewTab}>See original</li></strong>
             </ul>
 
-            <h2 className="seriestitle">Statistics</h2>
-            <ul className="tag-container">
-                <li className="other-tag">Year First Published: </li>
-                <li className="other-tag">Image Resolution: </li>
-            </ul>
+
         </article>
 
         <div className="user-comments">
             <div className="say-comment">
             <p>Leave a comment: </p>
-            <textarea name="" id="textbox"></textarea>
+            <textarea ref={commentarearef} name="" id="textbox" className="about-me-text"></textarea>
+            {logged === true && (<button className="profile-button comment-sect" onClick={handleCreateComment}>Add comment</button>)}
             </div>
             <ul className="comment-list">
                 <li className="comment">

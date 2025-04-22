@@ -1,6 +1,13 @@
-function SavedSearch(){
+function SavedSearch({data}){
     return(
-        <div></div>
+        <>
+        <ul>
+        {data.map((item, index)=> (
+            <li key={index}>{item}</li>
+            ))}
+        </ul>
+        
+        </>
     )
 }
 

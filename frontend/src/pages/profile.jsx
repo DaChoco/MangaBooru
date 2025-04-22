@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react'
 import { SearchBar, Topnav, Footer } from "../components"
 import { favoritesitems } from '../contexts/favoritesContext'
 import { loggedIn } from '../contexts/loggedinContext'
+import {SavedSearch} from "../pages"
 
 import { Link, useNavigate } from 'react-router-dom'
 import "../style/Posts.css"
@@ -50,6 +51,7 @@ const navigate = useNavigate()
     const [passwordquery, setPasswordquery] = useState("")
     const [showstats, setShowstats] = useState(false)
     const [favoritesData, setFavoritesData] = useState({})
+    const [showSearch, setShowSearch] = useState(false)
 
     const [ticked, setTicked] = useState(false)
 
@@ -192,12 +194,12 @@ const navigate = useNavigate()
     const userRegister = async(e)=>{
         e.preventDefault()
         const url = `https://${import.meta.env.VITE_LAMBDA_DOMAIN}/register`
- 
+        
+        setLoadingcredentials(true)
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "content-type": "application/json",
-                'Access-Control-Allow-Headers': "*",},
+                "content-type": "application/json",},
             body: JSON.stringify({email: emailquery, passwd: passwordquery, username: usernamequery, ticked: ticked})
             })
 
@@ -207,6 +209,8 @@ const navigate = useNavigate()
             alert(data.elaborate)
             setUserID(data.userID)
             setLogged(true)
+            setUserName(usernamequery)
+            setLoadingcredentials(false)
 
             localStorage.setItem("access_token", data.access_token)
         }
@@ -228,6 +232,8 @@ const navigate = useNavigate()
         setUserData(data)
         setUserIcon(data.userIcon)
         setUserRole(data.role)
+        setUserName(data.userName)
+        setLogged(true)
 
         setUserData((prevdata) =>({...prevdata, DateCreated: new Date(prevdata.DateCreated).toLocaleDateString()}))
 
@@ -256,10 +262,22 @@ const navigate = useNavigate()
         localStorage.removeItem("access_token")
         console.log("Thank you for using the service. Bye!")
     }
+    const [showsaved, setShowsaved] = useState(false)
+    const returnSavedSearch = ()=>{
+        const searchinfo = localStorage.getItem("savedsearch")
+
+        if (!searchinfo || searchinfo === null || searchinfo === undefined || searchinfo === "null"){
+            return []
+        }
+
+        const arr = JSON.parse(searchinfo)
+        console.log(arr)
+
+        return arr
+    }
 //JSX ---------------------------------------------------
 
-if (!userData){ return (<div>LOADING...</div>)}
-
+if (!userData){ return (<div className='spinning-circle-container'></div>)}
 
     return(
 
@@ -267,6 +285,7 @@ if (!userData){ return (<div>LOADING...</div>)}
             <Topnav>
                 <li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer"}}>Upload</h3></Link></li>
                 {userRole === "ADMIN" && (<li className='menulinks sidebar-to-topnav'><Link to={`/profile/${userID}/deletions`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></Link></li>)}
+               
                 <li className='menulinks sidebar-to-topnav'><h3><Link to={"/favorites"} >Show My Favorites</Link></h3></li>
                 <li className='menulinks sidebar-to-topnav'><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
             </Topnav> 
@@ -350,7 +369,8 @@ if (!userData){ return (<div>LOADING...</div>)}
 
                     <ul className="islogged-container">
                         <li><Link to={`/profile/${userID}/uploads`}><h3 style={{cursor: "pointer", color: "var(--base-text-dark)"}}>Upload</h3></Link></li>
-                        {userRole === "ADMIN" && (<li><Link to={`/profile/${userID}/${userRole}/Deletions`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></Link></li>)}
+                        {userRole === "ADMIN" && (<li><Link to={`/profile/${userID}/${userRole}/deletions`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Deletions</h3></Link></li>)}
+                        {userRole === "ADMIN" && (<li><Link to={`/profile/${userID}/${userRole}/users/deletions`}><h3 style={{cursor: "pointer", color: "#c21237 "}}>Bans</h3></Link></li>)}
                         <li><h3><Link to={"/favorites"} style={{color: "var(--base-text-dark)"}}>Show My Favorites</Link></h3></li>
                         <li><h3 onClick={logout} style={{cursor: "pointer"}}>Logout</h3></li>
                     </ul>
@@ -387,7 +407,7 @@ if (!userData){ return (<div>LOADING...</div>)}
 
                 <section id="btnsection">
                     <button type='button' className='profile-button' onClick={()=> {navigate(`/profile/${userData.userID}/update`)}}>Edit Profile</button>
-                    <button type='button' className='profile-button'>View Saved Searches</button>
+                    <button type='button' className='profile-button' onClick={()=> setShowsaved(!showsaved)}>View Saved Searches</button>
                     <button type='button' className='profile-button' onClick={()=> setShowstats(!showstats)}>Toggle Statistics</button>
                 </section>
 
@@ -406,6 +426,13 @@ if (!userData){ return (<div>LOADING...</div>)}
                     <p> {userData.userabout}
                     </p>
                 </section>
+
+                {showsaved && (<section id="savedsrch">
+                    <h1 className="header-section" style={{fontSize: "2rem"}}>Saved Searches:</h1>
+                    <p>You can copy and paste your saved searches into the search bar if you want to search something you wanted to get back to later again.</p>
+                    
+                    <SavedSearch data={returnSavedSearch()}></SavedSearch>
+                </section>)}
                 
 
                 </div>
