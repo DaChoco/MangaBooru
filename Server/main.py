@@ -337,10 +337,13 @@ def register(data: RegisterRequest):
 def index():
     return {"message": "Welcome to Mangabooru, hope you enjoy your stay"}
 
+import time
 @app.get("/getuser") #Will be used to extract JWT Tokens later
 def getUser(user: dict = Depends(get_current_user)):
     if not user.get("userID"):
         {"reply": False, "instruction": "The user will sign in normally"}
+    is_expired = time.time() - user.get("expire")
+    print(is_expired)
     
     if not user:
         {"reply": False, "instruction": "The user will sign in normally"}
@@ -430,7 +433,7 @@ def seriesExtract(seriesID: str):
 
     cursor.execute(
         """
-        SELECT tblseries.seriesID, thumbnail, url, seriesName, tagName FROM tbltags INNER JOIN 
+        SELECT tblseries.seriesID, thumbnail, uploaderId url, seriesName, tagName FROM tbltags INNER JOIN 
         tbltagseries ON tbltags.tagID = tbltagseries.tagID 
         INNER JOIN tblseries ON tbltagseries.seriesID = tblseries.seriesID
         WHERE tblseries.seriesID = %s""", (seriesID,))
@@ -438,7 +441,7 @@ def seriesExtract(seriesID: str):
     output_tags = cursor.fetchall()
     if not output_tags:
         #In the event the series has no tags
-        cursor.execute("SELECT seriesID, thumbnail, url, seriesName FROM tblseries WHERE seriesID = %s", (seriesID,))
+        cursor.execute("SELECT seriesID, thumbnail, uploaderId, url, seriesName FROM tblseries WHERE seriesID = %s", (seriesID,))
         output_tags = cursor.fetchall()
 
     userName = output_tags[0]["uploaderId"]

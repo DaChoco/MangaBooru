@@ -65,7 +65,7 @@ const navigate = useNavigate()
     const [userData, setUserData] = useState({})
 
     useEffect(()=>{
-        if (LoginBoxRef.current !== null){
+        if (LoginBoxRef.current !== null && LoginBoxRef.current !== undefined){
             const handleclickoutside =(event)=>{
                 if (!LoginBoxRef.current.contains(event.target)){
                     setShowLoginBox(false)
@@ -456,7 +456,7 @@ if (!userData){ return (<div className='spinning-circle-container'></div>)}
             </div>
 
              <div className="profile-info-container">
-                {/*Currently dummy data. Will have dynamic data later */}
+      
                 
                 <div  className="banner-container" style={{backgroundImage: `url(${userData.userBanner})`}}></div>
         

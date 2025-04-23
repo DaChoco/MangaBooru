@@ -276,7 +276,7 @@ ul.list-num-page{
     position: absolute;
     top: 3rem;
     background-color: var(--base-color-topnav);
-    z-index: 900;
+    z-index: 1600;
     width: 50vw;
 
 }

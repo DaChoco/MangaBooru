@@ -2,6 +2,13 @@
     position: relative;
 }
 
+.topnav-container{
+    position: sticky;
+    top: 0;
+    width: 100dvw;
+    z-index: 2000;
+}
+
 .link-text::after{
     position: absolute;
     content: "";

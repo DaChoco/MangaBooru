@@ -3,6 +3,7 @@
     grid-area: sidenav;
     margin-left: 0.5rem;
     padding: 1rem;
+    
 
 
     border-right: solid var(--base-color-topnav) 5px;
@@ -17,6 +18,7 @@
 
 .islogged-container{
     padding: 0;
+    
 }
 
 .anouncement.ppage{
@@ -31,8 +33,8 @@
 
 .profile-info-container{
     grid-area: maincontent;
-    width: 90%;
     
+   
     margin: 0 auto;
 }
 
@@ -42,11 +44,14 @@
 }
 
 .banner-container{
+    
     width: 100%;
     height: 25rem;
     background-size: cover;
     background-repeat: no-repeat;
-    overflow: hidden;
+    position: sticky;
+    top: 0;
+    
 }
 
 .no-favs{
@@ -400,7 +405,8 @@ section{
 @media only screen and (max-width: 2560px) and (min-width: 1500px) {
     .banner-container{
         height: 40rem;
-        background-size: 100% 100%;
+        background-size: 100%;
+        background-position: top;
     }
     .profile-icon{
         width: 20rem;
@@ -426,6 +432,7 @@ section{
     .profile-page-container.hide-it{
         display: none;
         border-right: 0px;
+        z-index: 1500;
     }
 
     .profile-page-container{
@@ -447,6 +454,9 @@ section{
 }
 
 @media only screen and (max-width: 430px){
+    .user-title{
+        margin: 0rem 0;
+    }
 
     .user-sig{
         font-size: 0.75rem;
@@ -472,14 +482,18 @@ section{
 
     .banner-container {
         height: 10rem;
-        background-image: 100% 100%;
+        background-size: 100%;
+        background-position: top;
+    
+        z-index: 500;
     }
 
     .profile-icon{
         width: 5rem;
         height: 5rem;
         bottom: 2rem;
-        border-color: var(--base-color-dark)
+        border-color: var(--base-color-dark);
+        z-index: 1000;
     }
 
     .profile-button{
@@ -506,7 +520,7 @@ section{
         
     }
     .menulinks{
-        padding: 2rem 1rem;
+        padding: 1rem 1rem;
     }
     .menulinks:hover{
         background-color: var(--topnav-hover);
@@ -514,6 +528,10 @@ section{
     /*The Upload Page*/
     .new-pic-container input{
         width: 60%;
+    }
+
+    .profile-info-container{
+        width: 90%;
     }
 
   
