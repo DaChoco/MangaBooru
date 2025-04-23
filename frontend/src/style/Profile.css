@@ -35,11 +35,12 @@
     grid-area: maincontent;
     
    
-    margin: 0 auto;
+    margin: 0 2rem;
 }
 
 .profile-user-display{
     position: relative;
+    width: 100%;
 
 }
 
@@ -129,7 +130,7 @@
 
 section{
     width: 100%;
-    max-width: 70vw;
+    
 }
 
 .show-my-favs-container{
