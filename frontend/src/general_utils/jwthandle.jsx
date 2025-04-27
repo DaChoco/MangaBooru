@@ -3,16 +3,16 @@ import {jwtDecode} from "jwt-decode"
 export function handleJWT(token) {
     try {
 
-        const { expire } = jwtDecode(token)
+        const { exp } = jwtDecode(token)
 
         console.log("Decoded token:", jwtDecode(token));
-        console.log("exp:", expire);
+        console.log("exp:", exp);
 
-        if (Date.now() >= expire * 1000) {
+        if (Date.now() >= exp * 1000) {
             throw new Error("Token expired")
         }
         else {
-            const remainder = (expire * 1000) - Date.now()
+            const remainder = (exp * 1000) - Date.now()
             console.log((remainder / 1000 / 60) + " minutes")
             return true
         }

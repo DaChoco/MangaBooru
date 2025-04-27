@@ -5,7 +5,6 @@ from itertools import batched, chain
 import datetime
 from datetime import timedelta
 
-
 #SECURITY
 import bcrypt
 import jwt
@@ -20,17 +19,17 @@ from fastapi import FastAPI, HTTPException, status, Query, File, UploadFile, res
 from fastapi.responses import JSONResponse
 from mangum import Mangum
 
-
-
 from fastapi.middleware.cors import CORSMiddleware
 
-#splitting it up cause it was getting too long
+#splitting it up cause it was getting too long - These are our pydantic models
 from models import LoginRequest, RegisterRequest 
 from models import CreateSeries, CreateTag, SearchRequest, FavoritesRequest
 from models import UpdateProfileRequest
 
-#AWS
-from aws import mass_presignedurls, uploadImage, deleteImage, insert_user_comment, retrieve_user_comments_list, incrementPostVotes
+#AWS - These are helper functions made to work with S3
+from aws import mass_presignedurls, uploadImage, deleteImage
+#AWS - These helper functions are made to work with dynamoDB
+from aws import insert_user_comment, retrieve_user_comments_list, incrementPostVotes
 
 #Getting ENV files
 from vars import hostplace, db, passwd, username, PERSONAL_IP, BUCKET_PREFIX, PUBLIC_BUCKET, HOSTWEB, JWT_SECRET_KEY
@@ -52,6 +51,7 @@ def createConnection():
         return conn
     except mysql.connector.Error as e:
         print(f"This connection was refused: {e}")
+        return None
 #END OF CONNECTIONS - Further MYSQL shall be handled within the APIs
 
 #Security
@@ -65,11 +65,26 @@ def get_current_user(token: str = Depends(oauth2_scheme_login)):
 
     if not token or token.count(".") != 2:
         return {"reply": "Apologies, youre not signed in"}
-    payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
-    if not payload:
-        return {"reply": False}
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        if not payload:
+            return {"reply": False}
+    except jwt.exceptions.DecodeError as e:
+        return {"reply": "Apologies, youre not signed in", "msg": e}
+    except jwt.exceptions.ExpiredSignatureError as e:
+        return {"reply": "Apologies, youre not signed in", "msg": e}
+    except InvalidTokenError as e:
+        return {"reply": "Apologies, youre not signed in", "msg": e}
+    
     return {"userID": payload.get("sub"), "userName": payload.get("username"), "role": payload.get("role")}
 
+def create_access_token(data: dict, expiring_delta: timedelta | None = None):
+    to_encode = data.copy()
+    expire = datetime.datetime.now(tz=datetime.timezone.utc) + (expiring_delta or datetime.timedelta(minutes=TOKEN_EXPIRES_IN_MINUTES))
+    print(expire)
+    to_encode.update({"exp": int(expire.timestamp())})
+    return jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
 def hashPassword(passwd:str):
     password_bytes = passwd.encode('utf-8')
@@ -80,13 +95,6 @@ def verifyPassword(normalpasswd: str, hashedpasswd: str):
     return bcrypt.checkpw(normalpasswd.encode("utf-8"), hashedpasswd.encode("utf-8"))
 
 
-
-def create_access_token(data: dict, expiring_delta: timedelta | None = None):
-    to_encode = data.copy()
-    expire = datetime.datetime.now(tz=datetime.timezone.utc) + (expiring_delta or datetime.timedelta(minutes=TOKEN_EXPIRES_IN_MINUTES))
-    print(expire)
-    to_encode.update({"expire": int(expire.timestamp())})
-    return jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
 #Will be used in a register and login function
 
