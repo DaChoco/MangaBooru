@@ -33,9 +33,10 @@
 
 .profile-info-container{
     grid-area: maincontent;
+    width: 75dvw;
     
    
-    margin: 0 2rem;
+    margin: 0 auto;
 }
 
 .profile-user-display{
@@ -129,7 +130,7 @@
 }
 
 section{
-    width: 100%;
+    width: 80%;
     
 }
 
