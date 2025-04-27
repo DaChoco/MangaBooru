@@ -32,21 +32,21 @@ The site will have a tag based searching system, user login, registration, the a
 * Creating user uploads for profile pictures
 * Create the ability to flag for deletion
 * Deletions page
-# Things currently doing
-* Creating a simple commenting system with Dynamo DB
-* Making pages more responsive on mobile
 # Things to do
 * BONUS - Only for after the rest of prodiction is done
   * Try implementing Google or Apple authentication with the service.
 # How to tinker with it yourself
 Notes: You will need an aws account (with valid credentials) if you want to make use of how I handled the comment system with dynamo db. S3 is not neccessary, as I primarily stored links in my MySQL database. Meaning your own alternatives will work fine. You may be able to modify my comment code heavily with MongoDB though.
+## Getting the code
 * Clone the main repository to your personal machine with the following:
-  * Git Clone https://github.com/DaChoco/MangaBooru.git
+  * ```git clone https://github.com/DaChoco/MangaBooru.git```
+## Configure your environment
 * Create your .venv file with python -m venv .venv
-* Input .venv\Scripts\activate (forwards slash if you are on Linux or Mac)
-* pip install -r requirements.txt (A requirements.txt file has been left for you. You can also modify the docker file instead)
+* Input ```.venv\Scripts\activate``` (Windows, do your equivalent if on Mac or Linux)
+* ```pip install -r requirements.txt``` (A requirements.txt file has been left for you. You can also modify the docker file instead)
 * Navigate to the frontend folder, then you can add a .env to direct the backend to your own server/machine. As currently VITE_LAMBDA_DOMAIN or VITE_PERSONAL_IP are env variables used in my api calls
-* Next make sure you are still in the root of the frontend folder. Run NPM install. this will install all the packages that were used for the project.
+* Next make sure you are still in the root of the frontend folder. Run ``` npm install ```. this will install all the packages that were used for the project.
   * I left many console.logs that are safe to delete, but you can keep them for debugging.
+## Final Notes
 * Now navigate to your server folder (if you want to localhost test your server) then configure your database credentials. If you don't use MySQL or use a Postgres library equivalent to Mysql-connector-python, you will need to slightly modify my code. If you prefer to use ORMS though, there will be a substantial rewrite of all my database calls. But having the original SQL raw should help you formulate your ORM queries well.
 * Now that you have done all that, the code is free to modify, have fun. If you use it for a project largely unchanged, credit would be heavily appreciated. Thank you for reading through all this.
