@@ -134,6 +134,14 @@ section{
     
 }
 
+#mysig{
+    width: 100%;
+}
+
+#btnsection{
+    width: 100%;
+}
+
 .show-my-favs-container{
     display: flex;
     flex-direction: row;
